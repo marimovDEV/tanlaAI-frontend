@@ -112,11 +112,11 @@ const ProductDetailPage: React.FC = () => {
 
   return (
     <div className="px-4 sm:px-6 pt-2 pb-10">
-      <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-surface-variant mb-6 shadow-sm flex items-center justify-center">
+      <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden bg-surface-variant mb-6 shadow-sm flex items-center justify-center">
         <img 
           src={product.image || 'https://via.placeholder.com/800'} 
           alt={product.name} 
-          className="max-w-full max-h-full object-contain"
+          className="w-full h-full object-contain"
         />
         {product.ai_status === 'processing' && (
           <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-4">
