@@ -7,7 +7,7 @@ import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 
 interface AIUploadResponse {
-  status: 'ok' | 'error' | 'processing';
+  status: 'ok' | 'error' | 'processing' | 'preparing';
   message?: string;
   code?: string;
   limit?: number;
