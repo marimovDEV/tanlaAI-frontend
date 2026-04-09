@@ -135,7 +135,6 @@ const MainLayout: React.FC = () => {
         ))}
       </footer>
     </div>
-    </div>
   );
 };
 
