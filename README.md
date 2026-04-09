@@ -67,4 +67,7 @@ npm run lint
 
 - API base URL default holatda `/api/v1`
 - Agar kerak bo'lsa `VITE_API_URL` bilan override qilish mumkin
+- Productionda Vercel uchun `VITE_API_URL=https://tanla-ai.ardentsoft.uz/api/v1` ishlating
+- `VITE_BACKEND_ORIGIN` berilsa, frontend productionda shu origin asosida API manzilini yig'adi
+- `vercel.json` SPA route'larni `/index.html` ga rewrite qiladi
 - Legacy route aliaslar React router ichida saqlangan
