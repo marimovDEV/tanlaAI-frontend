@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Heart, RefreshCcw } from 'lucide-react';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 
@@ -39,6 +39,12 @@ const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted 
             className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
           />
         </NavLink>
+        {product.ai_status === 'processing' && (
+          <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center gap-2 border border-white/20 z-10 animate-pulse">
+            <RefreshCcw size={12} className="text-white animate-spin" />
+            <span className="text-[10px] text-white font-bold tracking-wider uppercase">SI...</span>
+          </div>
+        )}
         {onToggleWishlist && (
           <button 
             onClick={(e) => {

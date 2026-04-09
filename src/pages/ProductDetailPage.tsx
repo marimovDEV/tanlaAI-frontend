@@ -119,9 +119,9 @@ const ProductDetailPage: React.FC = () => {
           className="w-full h-full object-contain"
         />
         {product.ai_status === 'processing' && (
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-4">
-            <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin mb-4" />
-            <p className="text-xs font-black text-white uppercase tracking-widest">Sun'iy intellekt ishlamoqda...</p>
+          <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 border border-white/20 z-10 animate-pulse">
+            <RefreshCcw size={16} className="text-white animate-spin" />
+            <span className="text-[10px] font-black text-white uppercase tracking-widest">SI...</span>
           </div>
         )}
       </div>
