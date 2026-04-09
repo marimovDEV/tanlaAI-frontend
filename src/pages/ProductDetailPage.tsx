@@ -52,7 +52,8 @@ const ProductDetailPage: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
-    if (webApp) {
+    // BackButton is supported since v6.1+
+    if (webApp && webApp.isVersionAtLeast('6.1')) {
       webApp.BackButton.show();
       const handleBack = () => navigate(-1);
       webApp.BackButton.onClick(handleBack);
