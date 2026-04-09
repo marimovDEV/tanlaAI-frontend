@@ -146,7 +146,7 @@ const DiscountsPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="aspect-[3/4] bg-surface-variant animate-pulse rounded-3xl" />
           ))}

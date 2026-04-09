@@ -24,29 +24,54 @@ const MainLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-on-background font-manrope">
       {/* Header */}
-      <nav className="fixed top-0 w-full z-[60] bg-background/80 backdrop-blur-md flex items-center justify-between px-6 h-16 border-b border-outline/5">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => {
-              setIsMenuOpen(!isMenuOpen);
-              haptic('light');
-            }}
-            className="p-2 hover:bg-surface-variant rounded-full transition-colors"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+      <nav className="fixed top-0 w-full z-[60] bg-background/80 backdrop-blur-md border-b border-outline/5 h-16">
+        <div className="max-w-screen-xl mx-auto h-full flex items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => {
+                setIsMenuOpen(!isMenuOpen);
+                haptic('light');
+              }}
+              className="p-2 hover:bg-surface-variant rounded-full transition-colors md:hidden"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            <div className="font-bold tracking-tight text-xl text-primary md:text-2xl">
+              TanlaAI
+            </div>
+          </div>
+          
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={() => haptic('light')}
+                className={({ isActive: isLinkActive }) => cn(
+                  "px-4 py-2 rounded-xl text-sm font-bold transition-all",
+                  isLinkActive ? "bg-primary/10 text-primary" : "text-outline hover:bg-surface-variant hover:text-on-surface"
+                )}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <NavLink 
+              to="/creator" 
+              className="hidden lg:flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold shadow-md shadow-primary/20 hover:bg-primary/90 transition-all"
+            >
+              <Building2 size={18} /> Studio
+            </NavLink>
+          </div>
         </div>
-        
-        <div className="font-bold tracking-tight text-xl absolute left-1/2 transform -translate-x-1/2">
-          TanlaAI
-        </div>
-        
-        <div className="w-10"></div>
       </nav>
 
-      {/* Sliding Menu (Simplification for now) */}
+      {/* Sliding Menu (Mobile) */}
       <div className={cn(
-        "fixed top-16 left-0 w-full z-[55] bg-surface border-b border-outline/10 shadow-xl transform transition-all duration-300 ease-out",
+        "fixed top-16 left-0 w-full z-[55] bg-surface border-b border-outline/10 shadow-xl transform transition-all duration-300 ease-out md:hidden",
         isMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
       )}>
         <div className="p-6 flex flex-col gap-4">
@@ -81,12 +106,12 @@ const MainLayout: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <main className="pt-16 pb-24 min-h-[calc(100vh-4rem)]">
+      <main className="pt-16 pb-24 min-h-[calc(100vh-4rem)] max-w-screen-xl mx-auto w-full">
         <Outlet />
       </main>
 
-      {/* Footer Navigation */}
-      <footer className="fixed bottom-0 w-full z-50 rounded-t-2xl bg-background/80 backdrop-blur-md shadow-[0_-12px_40px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 pb-[env(safe-area-inset-bottom,0)] px-4">
+      {/* Footer Navigation (Mobile Only) */}
+      <footer className="fixed bottom-0 w-full z-50 rounded-t-2xl bg-background/80 backdrop-blur-md shadow-[0_-12px_40px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 pb-[env(safe-area-inset-bottom,0)] px-4 md:hidden">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
@@ -109,6 +134,7 @@ const MainLayout: React.FC = () => {
           </NavLink>
         ))}
       </footer>
+    </div>
     </div>
   );
 };

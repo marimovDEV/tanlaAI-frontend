@@ -100,7 +100,7 @@ const HomePage: React.FC = () => {
         <div className="flex items-center justify-between mb-4 px-1">
           <h2 className="font-extrabold text-lg text-on-surface">So'nggi mahsulotlar</h2>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4">
           {products.map((product) => (
             <ProductCard 
               key={product.id} 
