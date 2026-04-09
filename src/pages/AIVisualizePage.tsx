@@ -116,6 +116,11 @@ const AIVisualizePage: React.FC = () => {
         setStatus('processing');
         setError(null);
         startPolling(product.id);
+      } else if (response.data.status === 'preparing') {
+        setStatus('processing');
+        setError('Mahsulot tayyorlanmoqda (SI fonni o\'chirmoqda)...');
+        // Retry after 5 seconds
+        setTimeout(() => handleUpload(), 5000);
       } else {
         setStatus('error');
         setError(response.data.message || 'Server error');
