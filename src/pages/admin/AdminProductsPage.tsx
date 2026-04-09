@@ -43,7 +43,7 @@ export default function AdminProductsPage() {
   }, [search, fetchProducts]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Bu mahsulotni o'chirmoqchimisiz?')) return;
+    if (!confirm("Bu mahsulotni o'chirmoqchimisiz?")) return;
     setDeleting(id);
     try {
       await apiClient.delete(`/admin/products/${id}/`);

@@ -40,7 +40,7 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-        <p className="text-sm text-slate-500 mt-1">Platformangiz statistikasi va umumiy ko'rinishi</p>
+        <p className="text-sm text-slate-500 mt-1">Platformangiz statistikasi va umumiy ko{"'"}rinishi</p>
       </div>
 
       {/* Stats Grid */}

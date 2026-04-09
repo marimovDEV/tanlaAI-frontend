@@ -73,7 +73,7 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Bu kategoriyani o'chirmoqchimisiz?')) return;
+    if (!confirm("Bu kategoriyani o'chirmoqchimisiz?")) return;
     await apiClient.delete(`/admin/categories/${id}/`);
     setCategories((c) => c.filter((x) => x.id !== id));
   };
@@ -102,7 +102,7 @@ export default function AdminCategoriesPage() {
       ) : categories.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-16 text-center">
           <FolderTree size={48} className="mx-auto text-slate-200 mb-3" />
-          <p className="text-slate-500">Hali kategoriya yo'q</p>
+          <p className="text-slate-500">Hali kategoriya yo{"'"}q</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

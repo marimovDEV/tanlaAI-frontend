@@ -9,7 +9,7 @@ type SettingsResponse = {
 export default function AdminSystemPage() {
   const [token, setToken] = useState('');
   const [deployEnabled, setDeployEnabled] = useState(false);
-  const [output, setOutput] = useState('Output bu yerda ko'rinadi...');
+  const [output, setOutput] = useState("Output bu yerda ko'rinadi...");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -86,8 +86,8 @@ export default function AdminSystemPage() {
           <h2 className="font-semibold text-lg text-slate-800">Deploy Actions</h2>
           {!deployEnabled ? (
             <p className="text-sm text-red-600 bg-red-50 rounded-xl p-3">
-              Deploy actions o'chiq. Backend <code className="bg-red-100 px-1 rounded">.env</code> ga{' '}
-              <code className="bg-red-100 px-1 rounded">ALLOW_ADMIN_DEPLOY_ACTIONS=True</code> qo'ying.
+              Deploy actions o&apos;chiq. Backend <code className="bg-red-100 px-1 rounded">.env</code> ga{' '}
+              <code className="bg-red-100 px-1 rounded">ALLOW_ADMIN_DEPLOY_ACTIONS=True</code> qo&apos;ying.
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-2">

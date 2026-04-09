@@ -116,7 +116,7 @@ export default function AdminBannersPage() {
       ) : banners.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-16 text-center">
           <ImageIcon size={48} className="mx-auto text-slate-200 mb-3" />
-          <p className="text-slate-500">Hali banner yo'q</p>
+          <p className="text-slate-500">Hali banner yo{"'"}q</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
