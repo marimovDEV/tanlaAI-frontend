@@ -48,6 +48,10 @@ function App() {
             <Route path="system" element={<AdminSystemPage />} />
           </Route>
 
+          {/* Legacy /admin -> /adminka redirects */}
+          <Route path="/admin" element={<Navigate to="/adminka" replace />} />
+          <Route path="/admin/*" element={<Navigate to="/adminka" replace />} />
+
           {/* User-facing App */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
@@ -74,6 +78,9 @@ function App() {
             <Route path="/company/create" element={<CompanyCreatePage />} />
             <Route path="/product/create" element={<ProductCreatePage />} />
           </Route>
+
+          {/* Catch-all: unknown routes -> home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </TelegramProvider>
     </Router>
