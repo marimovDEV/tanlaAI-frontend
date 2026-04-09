@@ -31,12 +31,12 @@ const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted 
 
   return (
     <div className="bg-white rounded-3xl overflow-hidden border border-outline/5 shadow-sm group active:scale-[0.98] transition-all flex flex-col h-full">
-      <div className="relative aspect-square">
-        <NavLink to={`/product/${product.id}`} className="block w-full h-full">
+      <div className="relative aspect-[3/4] bg-surface-variant">
+        <NavLink to={`/product/${product.id}`} className="block w-full h-full flex items-center justify-center">
           <img 
-            src={product.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='400' height='400' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' font-weight='bold' fill='%2394a3b8' text-anchor='middle' dominant-baseline='middle'%3EProduct%3C/text%3E%3C/svg%3E"} 
+            src={product.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' font-weight='bold' fill='%2394a3b8' text-anchor='middle' dominant-baseline='middle'%3EProduct%3C/text%3E%3C/svg%3E"} 
             alt={product.name} 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
           />
         </NavLink>
         {onToggleWishlist && (
