@@ -4,7 +4,7 @@ import {
   Package, FolderTree, Building2, Users, Image, Tag,
   TrendingUp, Eye, ArrowUpRight,
 } from 'lucide-react';
-import apiClient from '../api/client';
+import apiClient from '../../api/client';
 
 type DashboardStats = {
   product_count: number;
@@ -32,7 +32,7 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
-    apiClient.get('/admin/dashboard/').then(({ data }) => setStats(data));
+    apiClient.get('/admin/dashboard/').then(({ data }: { data: DashboardStats }) => setStats(data));
   }, []);
 
   return (

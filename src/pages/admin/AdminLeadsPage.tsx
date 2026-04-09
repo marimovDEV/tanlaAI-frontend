@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Search, TrendingUp, CheckCircle2, Clock, Trash2, MessageSquare, Phone, Ruler } from 'lucide-react';
+import { TrendingUp, CheckCircle2, Clock, Trash2, MessageSquare, Phone, Ruler } from 'lucide-react';
 import apiClient from '../../api/client';
 
 type Lead = {
