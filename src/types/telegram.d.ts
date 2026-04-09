@@ -46,6 +46,8 @@ interface TelegramWebApp {
   viewportStableHeight: number;
   headerColor: string;
   backgroundColor: string;
+  setHeaderColor: (color: string) => void;
+  setBackgroundColor: (color: string) => void;
   isClosingConfirmationEnabled: boolean;
   BackButton: {
     isVisible: boolean;
