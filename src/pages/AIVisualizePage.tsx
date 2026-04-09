@@ -110,9 +110,7 @@ const AIVisualizePage: React.FC = () => {
     }
 
     try {
-      const response = await apiClient.post<AIUploadResponse>(`/products/${product.id}/ai-generate/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await apiClient.post<AIUploadResponse>(`/products/${product.id}/ai-generate/`, formData);
 
       if (response.data.status === 'ok' || response.data.status === 'processing') {
         setStatus('processing');

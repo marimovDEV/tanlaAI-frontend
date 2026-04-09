@@ -129,12 +129,8 @@ const CompanyEditPage: React.FC = () => {
 
     try {
       const request = companyExists
-        ? apiClient.patch('/companies/my/', data, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          })
-        : apiClient.post('/companies/my/', data, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
+        ? apiClient.patch('/companies/my/', data)
+        : apiClient.post('/companies/my/', data);
 
       await request;
       setCompanyExists(true);
