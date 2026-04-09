@@ -121,9 +121,16 @@ const AIVisualizePage: React.FC = () => {
         setError(response.data.message || 'Server error');
       }
     } catch (error: unknown) {
-      console.error('Upload error:', error);
+      console.error('Upload error details:', error);
       setStatus('error');
-      setError(isAxiosError<{ message?: string }>(error) ? error.response?.data?.message || 'Failed to upload image' : 'Failed to upload image');
+      
+      let msg = 'Failed to upload image';
+      if (isAxiosError<{ message?: string, error?: string }>(error)) {
+        msg = error.response?.data?.message || error.response?.data?.error || `Server error (${error.response?.status})`;
+      } else if (error instanceof Error) {
+        msg = error.message;
+      }
+      setError(msg);
     }
   };
 
@@ -168,7 +175,7 @@ const AIVisualizePage: React.FC = () => {
             className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-[40px] aspect-[4/5] flex flex-col items-center justify-center cursor-pointer active:scale-[0.98] transition-all relative overflow-hidden"
           >
             {preview ? (
-              <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+              <img src={preview} alt="Preview" className="w-full h-full object-contain" />
             ) : (
               <>
                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg mb-4 text-primary">
