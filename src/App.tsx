@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import { TelegramProvider } from './contexts/TelegramContext';
 import MainLayout from './layout/MainLayout';
+import AdminLayout from './layout/AdminLayout';
 import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import LeadersPage from './pages/LeadersPage';
@@ -20,14 +21,34 @@ import CompanyDetailPage from './pages/CompanyDetailPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminSystemPage from './pages/AdminSystemPage';
 
+// Admin pages
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminProductsPage from './pages/admin/AdminProductsPage';
+import AdminCategoriesPage from './pages/admin/AdminCategoriesPage';
+import AdminPromotionsPage from './pages/admin/AdminPromotionsPage';
+import AdminCompaniesPage from './pages/admin/AdminCompaniesPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminBannersPage from './pages/admin/AdminBannersPage';
+
 function App() {
   return (
     <Router>
       <TelegramProvider>
         <Routes>
+          {/* Admin Panel */}
           <Route path="/adminka/login" element={<AdminLoginPage />} />
-          <Route path="/adminka/system" element={<AdminSystemPage />} />
-          <Route path="/adminka" element={<Navigate to="/adminka/login" replace />} />
+          <Route path="/adminka" element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="products" element={<AdminProductsPage />} />
+            <Route path="categories" element={<AdminCategoriesPage />} />
+            <Route path="promotions" element={<AdminPromotionsPage />} />
+            <Route path="companies" element={<AdminCompaniesPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="banners" element={<AdminBannersPage />} />
+            <Route path="system" element={<AdminSystemPage />} />
+          </Route>
+
+          {/* User-facing App */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/search" element={<SearchPage />} />

@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
     setLoading(true);
     try {
       await apiClient.post('/admin/login/', { username, password });
-      navigate('/adminka/system');
+      navigate('/adminka');
     } catch {
       setError('Login xato. Username yoki password noto‘g‘ri.');
     } finally {
