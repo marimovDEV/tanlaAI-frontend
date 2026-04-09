@@ -42,8 +42,12 @@ export default function AdminLayout() {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await apiClient.post('/admin/logout/');
-    navigate('/adminka/login');
+    try {
+      await apiClient.post('/admin/logout/');
+    } finally {
+      localStorage.removeItem('admin_token');
+      navigate('/adminka/login');
+    }
   };
 
   if (loading) {

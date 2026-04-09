@@ -39,8 +39,10 @@ const apiClient = axios.create({
 
 // Interceptor to handle authentication
 apiClient.interceptors.request.use((config) => {
-  // If we had a token in localStorage, we would add it here
-  // But for now, we rely on Session cookies or will send initData in the auth call
+  const token = localStorage.getItem('admin_token');
+  if (token) {
+    config.headers.Authorization = `Token ${token}`;
+  }
   return config;
 });
 
