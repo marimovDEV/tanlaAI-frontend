@@ -65,10 +65,8 @@ const AIVisualizePage: React.FC = () => {
         setInputHeight(response.data.height ?? '');
         setInputWidth(response.data.width ?? '');
 
-        if (response.data.ai_status === 'processing' || response.data.ai_status === 'completed') {
-          setStatus('processing');
-          startPolling(response.data.id);
-        }
+        // Don't auto-trigger processing state here. 
+        // Let the user upload their room photo first.
       } catch (err) {
         console.error('Error fetching product:', err);
       }
@@ -175,6 +173,15 @@ const AIVisualizePage: React.FC = () => {
 
       {status === 'idle' && (
         <div className="space-y-6">
+          {product?.ai_status === 'processing' && (
+            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-start gap-3 text-primary animate-pulse">
+              <RefreshCcw size={20} className="shrink-0 mt-0.5 animate-spin" />
+              <div className="text-sm">
+                <b>Mahsulot tayyorlanmoqda:</b> AI fonni o‘chirmoqda. Siz o‘z rasmingizni yuklab turishingiz mumkin.
+              </div>
+            </div>
+          )}
+
           <div 
             onClick={() => fileInputRef.current?.click()}
             className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-[40px] aspect-[4/5] flex flex-col items-center justify-center cursor-pointer active:scale-[0.98] transition-all relative overflow-hidden"
