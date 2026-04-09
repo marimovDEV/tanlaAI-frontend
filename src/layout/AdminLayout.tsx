@@ -67,30 +67,22 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full w-[260px] bg-[#1a2332] text-white
+          fixed top-0 left-0 z-50 h-full w-[280px] bg-white border-r border-slate-200/60
           flex flex-col transition-transform duration-300 ease-in-out
           lg:translate-x-0 lg:static lg:z-auto
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
         {/* Brand */}
-        <div className="px-6 py-5 flex items-center justify-between border-b border-white/10">
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-sky-400">TanlaAI</h1>
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
-              Admin Panel
-            </p>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1 hover:bg-white/10 rounded"
-          >
-            <X size={20} />
-          </button>
+        <div className="px-8 py-8 flex flex-col justify-center border-b border-slate-50">
+          <h1 className="text-2xl font-black tracking-tight text-[#0067a5]">TanlaAI</h1>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mt-1">
+            Admin Panel
+          </p>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 py-8 px-4 space-y-2 overflow-y-auto">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
@@ -98,38 +90,34 @@ export default function AdminLayout() {
               end={item.end}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                `flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[13px] font-bold transition-all duration-300 group
                 ${
                   isActive
-                    ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30'
-                    : 'text-slate-300 hover:bg-white/8 hover:text-white'
+                    ? 'bg-[#0067a5] text-white shadow-xl shadow-blue-900/20'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-[#0067a5]'
                 }`
               }
             >
-              <item.icon size={20} />
+              <item.icon size={20} className={sidebarOpen ? '' : 'transition-transform group-hover:scale-110'} />
               <span>{item.label}</span>
-              <ChevronRight
-                size={14}
-                className="ml-auto opacity-40"
-              />
             </NavLink>
           ))}
         </nav>
 
         {/* User footer */}
-        <div className="p-4 border-t border-white/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-full bg-sky-600/20 flex items-center justify-center text-sky-400 text-sm font-bold">
+        <div className="p-6 border-t border-slate-100 bg-slate-50/30">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-10 h-10 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-[#0067a5] text-sm font-black">
               {admin?.username?.charAt(0).toUpperCase() || 'A'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">{admin?.username || 'admin'}</p>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Administrator</p>
+              <p className="text-sm font-black text-slate-700 truncate">{admin?.username || 'admin'}</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Admin</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2 text-sm text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-slate-400 hover:text-red-500 hover:bg-red-50/50 rounded-xl transition-all"
           >
             <LogOut size={16} />
             Chiqish
@@ -138,7 +126,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen min-w-0">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 bg-[#f8f9fa]">
         {/* Top bar */}
         <header className="sticky top-0 z-30 h-16 bg-white border-b border-slate-200/80 flex items-center px-4 lg:px-8 gap-4 shadow-sm">
           <button
