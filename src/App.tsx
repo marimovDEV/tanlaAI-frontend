@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { TelegramProvider } from './contexts/TelegramContext';
 import MainLayout from './layout/MainLayout';
 import HomePage from './pages/HomePage';
@@ -16,12 +17,17 @@ import CompanyEditPage from './pages/CompanyEditPage';
 import LeadListView from './pages/LeadListView';
 import WishlistPage from './pages/WishlistPage';
 import CompanyDetailPage from './pages/CompanyDetailPage';
+import AdminLoginPage from './pages/AdminLoginPage';
+import AdminSystemPage from './pages/AdminSystemPage';
 
 function App() {
   return (
     <Router>
       <TelegramProvider>
         <Routes>
+          <Route path="/adminka/login" element={<AdminLoginPage />} />
+          <Route path="/adminka/system" element={<AdminSystemPage />} />
+          <Route path="/adminka" element={<Navigate to="/adminka/login" replace />} />
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/search" element={<SearchPage />} />
