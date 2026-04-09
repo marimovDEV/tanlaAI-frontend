@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, User, Calculator, Stars, MessageCircle, Phone, Ruler } from 'lucide-react';
+import { Heart, User, Calculator, Stars, MessageCircle, Phone, Ruler, RefreshCcw } from 'lucide-react';
 import apiClient from '../api/client';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
