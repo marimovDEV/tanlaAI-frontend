@@ -81,6 +81,7 @@ interface TelegramWebApp {
   };
   ready: () => void;
   expand: () => void;
+  isVersionAtLeast: (version: string) => boolean;
   close: () => void;
   onEvent: (eventType: string, eventHandler: (params: TelegramEventPayload) => void) => void;
   offEvent: (eventType: string, eventHandler: (params: TelegramEventPayload) => void) => void;
