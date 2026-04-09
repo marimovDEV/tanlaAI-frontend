@@ -94,7 +94,7 @@ const DiscountsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 pb-24 space-y-8">
+    <div className="p-4 sm:p-6 pb-24 space-y-8">
       <div className="bg-error/5 p-8 rounded-[40px] text-center space-y-3 relative overflow-hidden border border-error/10">
         <div className="absolute top-0 right-0 p-4 text-error/10">
           <Percent size={80} />

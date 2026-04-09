@@ -81,12 +81,12 @@ const MainLayout: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <main className="pt-16 pb-24">
+      <main className="pt-16 pb-24 min-h-[calc(100vh-4rem)]">
         <Outlet />
       </main>
 
       {/* Footer Navigation */}
-      <footer className="fixed bottom-0 w-full z-50 rounded-t-2xl bg-background/80 backdrop-blur-md shadow-[0_-12px_40px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 pb-safe px-4">
+      <footer className="fixed bottom-0 w-full z-50 rounded-t-2xl bg-background/80 backdrop-blur-md shadow-[0_-12px_40px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 pb-[env(safe-area-inset-bottom,0)] px-4">
         {navItems.map((item) => (
           <NavLink
             key={item.to}

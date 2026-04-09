@@ -39,7 +39,7 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 pb-20 space-y-8">
+    <div className="p-4 sm:p-6 pb-20 space-y-8">
       {/* Profile Header */}
       <div className="flex items-center gap-6">
         <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden bg-surface-variant flex items-center justify-center">

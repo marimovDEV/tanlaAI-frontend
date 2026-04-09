@@ -110,7 +110,7 @@ const ProductDetailPage: React.FC = () => {
   const telegramHref = buildTelegramLink(company?.telegram_link);
 
   return (
-    <div className="px-6 pt-2 pb-10">
+    <div className="px-4 sm:px-6 pt-2 pb-10">
       <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-surface-variant mb-6 shadow-sm">
         <img 
           src={product.image || 'https://via.placeholder.com/800'} 

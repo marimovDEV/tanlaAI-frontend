@@ -27,9 +27,11 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     };
 
-    if (webApp?.initData) {
+    if (webApp) {
       webApp.ready();
       webApp.expand();
+      webApp.setHeaderColor('#f9f9f9');
+      webApp.setBackgroundColor('#f9f9f9');
     }
 
     void authenticate().finally(() => setReady(true));
