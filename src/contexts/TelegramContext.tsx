@@ -1,0 +1,49 @@
+import React, { useEffect, useState } from 'react';
+import apiClient from '../api/client';
+import { TelegramContext } from './telegram-context';
+
+const browserFallbackUser: TelegramWebAppUser = {
+  id: 123456789,
+  first_name: 'Test',
+  last_name: 'User',
+  username: 'testuser',
+};
+
+export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [webApp] = useState<TelegramWebApp | null>(() => window.Telegram?.WebApp ?? null);
+  const [user] = useState<TelegramWebAppUser | null>(() => webApp?.initDataUnsafe?.user ?? browserFallbackUser);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const authenticate = async () => {
+      try {
+        if (webApp?.initData) {
+          await apiClient.post('/auth/telegram/', { initData: webApp.initData });
+        } else {
+          await apiClient.get('/auth/telegram/');
+        }
+      } catch (err) {
+        console.error('Authentication failed:', err);
+      }
+    };
+
+    if (webApp?.initData) {
+      webApp.ready();
+      webApp.expand();
+    }
+
+    void authenticate().finally(() => setReady(true));
+  }, [webApp]);
+
+  const haptic = (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft' = 'light') => {
+    if (webApp?.HapticFeedback) {
+      webApp.HapticFeedback.impactOccurred(style);
+    }
+  };
+
+  return (
+    <TelegramContext.Provider value={{ webApp, user, ready, haptic }}>
+      {children}
+    </TelegramContext.Provider>
+  );
+};

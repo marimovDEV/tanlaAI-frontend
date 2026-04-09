@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-manrope: "Manrope", sans-serif;
+  --color-primary: #006193;
+  --color-secondary: #007BB9;
+  --color-background: #f9f9f9;
+  --color-surface: #ffffff;
+  --color-surface-variant: #eeeeee;
+  --color-on-surface: #1a1c1c;
+  --color-outline: #8e9191;
+  --color-error: #ba1a1a;
+}
+
+:root {
+  font-family: 'Manrope', sans-serif;
+  background-color: #f9f9f9;
+  color: #1a1c1c;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  width: 100%;
+}
+
+.main-button-gradient {
+  background: linear-gradient(135deg, #006193 0%, #007BB9 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
