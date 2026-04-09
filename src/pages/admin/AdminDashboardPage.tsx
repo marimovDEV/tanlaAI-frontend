@@ -24,8 +24,8 @@ const STAT_CARDS = [
   { key: 'user_count', label: 'Users', icon: Users, color: 'bg-amber-500', link: '/adminka/users' },
   { key: 'banner_count', label: 'Banners', icon: Image, color: 'bg-pink-500', link: '/adminka/banners' },
   { key: 'active_promotions', label: 'Promotions', icon: Tag, color: 'bg-red-500', link: '/adminka/promotions' },
-  { key: 'lead_count', label: 'Leads', icon: TrendingUp, color: 'bg-teal-500', link: '/adminka/products' },
-  { key: 'ai_result_count', label: 'AI Results', icon: Eye, color: 'bg-indigo-500', link: '/adminka/products' },
+  { key: 'lead_count', label: 'Leads', icon: TrendingUp, color: 'bg-teal-500', link: '/adminka/leads' },
+  { key: 'ai_result_count', label: 'AI Results', icon: Eye, color: 'bg-indigo-500', link: '/adminka/ai-results' },
 ] as const;
 
 export default function AdminDashboardPage() {

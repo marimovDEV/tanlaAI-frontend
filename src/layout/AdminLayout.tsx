@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, FolderTree, Tag, Building2, Users, Image,
-  Settings, LogOut, Menu, X, ChevronRight,
+  Settings, LogOut, Menu, X, ChevronRight, TrendingUp, Eye,
 } from 'lucide-react';
 import apiClient from '../api/client';
 
@@ -16,6 +16,8 @@ const NAV_ITEMS = [
   { to: '/adminka/companies', icon: Building2, label: 'Companies' },
   { to: '/adminka/users', icon: Users, label: 'Users' },
   { to: '/adminka/banners', icon: Image, label: 'Banners' },
+  { to: '/adminka/leads', icon: TrendingUp, label: 'Leads' },
+  { to: '/adminka/ai-results', icon: Eye, label: 'AI Results' },
   { to: '/adminka/system', icon: Settings, label: 'System' },
 ];
 

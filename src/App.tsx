@@ -29,6 +29,8 @@ import AdminPromotionsPage from './pages/admin/AdminPromotionsPage';
 import AdminCompaniesPage from './pages/admin/AdminCompaniesPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminBannersPage from './pages/admin/AdminBannersPage';
+import AdminLeadsPage from './pages/admin/AdminLeadsPage';
+import AdminAIResultsPage from './pages/admin/AdminAIResultsPage';
 
 function App() {
   return (
@@ -45,6 +47,8 @@ function App() {
             <Route path="companies" element={<AdminCompaniesPage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="banners" element={<AdminBannersPage />} />
+            <Route path="leads" element={<AdminLeadsPage />} />
+            <Route path="ai-results" element={<AdminAIResultsPage />} />
             <Route path="system" element={<AdminSystemPage />} />
           </Route>
 

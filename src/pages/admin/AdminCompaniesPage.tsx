@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Search, Pencil, Trash2, Building2 } from 'lucide-react';
+import { Search, Pencil, Trash2, Building2, X } from 'lucide-react';
 import apiClient from '../../api/client';
 
 type Company = {
   id: number;
   name: string;
+  description: string;
   location: string;
   logo: string | null;
   is_active: boolean;
@@ -13,6 +14,8 @@ type Company = {
   owner_username: string;
   product_count: number;
   created_at: string;
+  telegram_link?: string;
+  instagram_link?: string;
 };
 
 const MEDIA_BASE = import.meta.env.VITE_BACKEND_ORIGIN || '';
@@ -21,6 +24,17 @@ export default function AdminCompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Edit Form state
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<Company | null>(null);
+  const [formName, setFormName] = useState('');
+  const [formDesc, setFormDesc] = useState('');
+  const [formLoc, setFormLoc] = useState('');
+  const [formTg, setFormTg] = useState('');
+  const [formIg, setFormIg] = useState('');
+  const [formLogo, setFormLogo] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const fetchCompanies = useCallback(async (q = '') => {
     setLoading(true);
@@ -40,6 +54,40 @@ export default function AdminCompaniesPage() {
     const t = setTimeout(() => fetchCompanies(search), 400);
     return () => clearTimeout(t);
   }, [search, fetchCompanies]);
+
+  const openEdit = (c: Company) => {
+    setEditing(c);
+    setFormName(c.name);
+    setFormDesc(c.description || '');
+    setFormLoc(c.location || '');
+    setFormTg(c.telegram_link || '');
+    setFormIg(c.instagram_link || '');
+    setFormLogo(null);
+    setShowForm(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editing || !formName.trim()) return;
+    setSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append('name', formName.trim());
+      fd.append('description', formDesc.trim());
+      fd.append('location', formLoc.trim());
+      fd.append('telegram_link', formTg.trim());
+      fd.append('instagram_link', formIg.trim());
+      if (formLogo) fd.append('logo', formLogo);
+
+      const { data } = await apiClient.patch(`/admin/companies/${editing.id}/`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      
+      setCompanies((prev) => prev.map((c) => (c.id === editing.id ? { ...c, ...data } : c)));
+      setShowForm(false);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const toggleActive = async (id: number) => {
     try {
@@ -174,6 +222,13 @@ export default function AdminCompaniesPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
+                          onClick={() => openEdit(c)}
+                          className="p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
+                          title="Tahrirlash"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
                           onClick={() => handleDelete(c.id)}
                           className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                           title="O'chirish"
@@ -189,6 +244,82 @@ export default function AdminCompaniesPage() {
           </table>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/40 z-[60] flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-800">Kompaniyani tahrirlash</h2>
+              <button onClick={() => setShowForm(false)} className="p-1 hover:bg-slate-100 rounded-lg">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Kompaniya nomi</label>
+                <input
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Tavsifi</label>
+                <textarea
+                  value={formDesc}
+                  onChange={(e) => setFormDesc(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 min-h-[80px]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Manzili</label>
+                <input
+                  value={formLoc}
+                  onChange={(e) => setFormLoc(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Telegram Link</label>
+                  <input
+                    value={formTg}
+                    onChange={(e) => setFormTg(e.target.value)}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    placeholder="https://t.me/..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Instagram Link</label>
+                  <input
+                    value={formIg}
+                    onChange={(e) => setFormIg(e.target.value)}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    placeholder="https://instagram.com/..."
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Logo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFormLogo(e.target.files?.[0] ?? null)}
+                  className="w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 file:font-semibold file:text-sm hover:file:bg-slate-200"
+                />
+              </div>
+              <button
+                onClick={handleEditSubmit}
+                disabled={saving || !formName.trim()}
+                className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl py-3 text-sm transition-colors shadow-lg shadow-sky-600/20 disabled:opacity-50"
+              >
+                {saving ? 'Saqlanmoqda...' : "O'zgarishlarni saqlash"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
