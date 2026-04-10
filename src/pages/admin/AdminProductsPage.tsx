@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Search, Trash2, AlertCircle, Package, Plus, Pencil, X } from 'lucide-react';
+import { Search, Trash2, AlertCircle, Package, Plus, Pencil, X, Eye } from 'lucide-react';
 import apiClient from '../../api/client';
 
 type Product = {
@@ -14,6 +14,8 @@ type Product = {
   owner_details: { first_name: string; last_name: string } | null;
   company_details: { name: string } | null;
   company: number | null;
+  original_image: string | null;
+  image_no_bg: string | null;
 };
 
 type Category = { id: number; name: string };
@@ -33,6 +35,7 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [saving, setSaving] = useState(false);
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
 
   // Form fields
   const [formName, setFormName] = useState('');
@@ -250,6 +253,13 @@ export default function AdminProductsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
+                          onClick={() => setViewingProduct(p)}
+                          className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                          title="Ko'rish"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
                           onClick={() => openEdit(p)}
                           className="p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
                           title="Tahrirlash"
@@ -273,6 +283,79 @@ export default function AdminProductsPage() {
           </table>
         </div>
       </div>
+
+      {/* View Product Modal */}
+      {viewingProduct && (
+        <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setViewingProduct(null)}>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl p-8 space-y-6 overflow-y-auto max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">{viewingProduct.name}</h2>
+                <p className="text-slate-500 text-sm">Visual verification for AI results</p>
+              </div>
+              <button onClick={() => setViewingProduct(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Original Image */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Asl rasm (Original)</span>
+                </div>
+                <div className="aspect-square rounded-2xl bg-slate-100 overflow-hidden border border-slate-200">
+                  {viewingProduct.original_image || viewingProduct.image ? (
+                    <img 
+                      src={((viewingProduct.original_image || viewingProduct.image) ?? '').startsWith('http') ? (viewingProduct.original_image || viewingProduct.image) ?? '' : `${MEDIA_BASE}${viewingProduct.original_image || viewingProduct.image}`}
+                      className="w-full h-full object-contain"
+                      alt="Original"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300">Rasm yo'q</div>
+                  )}
+                </div>
+              </div>
+
+              {/* AI Image */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-sky-500">AI ishlov bergan (No Background)</span>
+                  {statusBadge(viewingProduct.ai_status)}
+                </div>
+                <div className="aspect-square rounded-2xl bg-[#f8f9fa] overflow-hidden border border-emerald-100 relative">
+                  {viewingProduct.image_no_bg ? (
+                    <img 
+                      src={viewingProduct.image_no_bg.startsWith('http') ? viewingProduct.image_no_bg : `${MEDIA_BASE}${viewingProduct.image_no_bg}`}
+                      className="w-full h-full object-contain relative z-10"
+                      alt="Processed"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300">Hali ishlov berilmagan</div>
+                  )}
+                  {/* Checkerboard pattern for transparency indication */}
+                  <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 0)', backgroundSize: '10px 10px' }} />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <h4 className="text-sm font-bold text-slate-700 mb-1">Mahsulot ma'lumotlari:</h4>
+              <p className="text-sm text-slate-600 line-clamp-2">{viewingProduct.description || "Tavsif mavjud emas."}</p>
+              <div className="flex gap-4 mt-3">
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase font-bold">Kategoriya</p>
+                  <p className="text-xs font-semibold text-slate-700">{viewingProduct.category_name}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase font-bold">Narxi</p>
+                  <p className="text-xs font-semibold text-sky-600">{viewingProduct.price ? Number(viewingProduct.price).toLocaleString() : '—'} CYM</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Product Form Modal */}
       {showForm && (
