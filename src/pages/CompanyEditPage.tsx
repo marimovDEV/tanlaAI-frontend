@@ -65,7 +65,7 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 const CompanyEditPage: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { haptic } = useTelegram();
+  const { haptic, refreshProfile } = useTelegram();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -133,6 +133,7 @@ const CompanyEditPage: React.FC = () => {
         : apiClient.post('/companies/my/', data);
 
       await request;
+      await refreshProfile();
       setCompanyExists(true);
       haptic('heavy');
       navigate('/creator');

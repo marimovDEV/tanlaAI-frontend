@@ -9,7 +9,7 @@ import { cn } from '../utils/cn';
 const ProfilePage: React.FC = () => {
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user: tgUser, haptic } = useTelegram();
+  const { user: tgUser, haptic, profile } = useTelegram();
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -65,7 +65,9 @@ const ProfilePage: React.FC = () => {
         </div>
         <div className="bg-white p-5 rounded-3xl border border-outline/5 shadow-sm">
           <p className="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Holat</p>
-          <p className="text-sm font-black text-primary uppercase">Xaridor</p>
+          <p className="text-sm font-black text-primary uppercase">
+            {profile?.role === 'COMPANY' ? 'Ishlab chiqaruvchi' : 'Xaridor'}
+          </p>
         </div>
       </div>
 

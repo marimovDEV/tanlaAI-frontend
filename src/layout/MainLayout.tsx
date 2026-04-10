@@ -10,7 +10,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const MainLayout: React.FC = () => {
-  const { haptic } = useTelegram();
+  const { haptic, profile } = useTelegram();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const navItems = [
@@ -58,7 +58,7 @@ const MainLayout: React.FC = () => {
             to="/creator" 
             className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-2xl text-xs font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
           >
-            <Building2 size={18} /> Studio Dashboard
+            <Building2 size={18} /> {profile?.has_company ? "Studiya" : "Studio Dashboard"}
           </NavLink>
         </div>
       </aside>
@@ -105,7 +105,7 @@ const MainLayout: React.FC = () => {
                 to="/creator" 
                 className="hidden md:flex lg:hidden items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow-md shadow-primary/20 hover:bg-primary/90 transition-all"
               >
-                <Building2 size={16} /> Studio
+                <Building2 size={16} /> {profile?.has_company ? "Studiya" : "Studio"}
               </NavLink>
             </div>
           </div>
@@ -121,7 +121,7 @@ const MainLayout: React.FC = () => {
         >
           <div className="p-6 flex flex-col gap-4 text-left">
             <NavLink 
-              to="/company/create" 
+              to={profile?.has_company ? "/creator" : "/company/create"} 
               onClick={() => setIsMenuOpen(false)}
               className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-outline/5 active:scale-[0.98] transition-all"
             >
@@ -129,8 +129,12 @@ const MainLayout: React.FC = () => {
                 <Building2 size={24} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-left">Kompaniya yaratish</h4>
-                <p className="text-[10px] text-outline font-medium text-left">Studiyangizni ro'yxatdan o'tkazing</p>
+                <h4 className="text-sm font-bold text-left">
+                  {profile?.has_company ? "Mening kompaniyam" : "Kompaniya yaratish"}
+                </h4>
+                <p className="text-[10px] text-outline font-medium text-left">
+                  {profile?.has_company ? "Studiyangizni boshqaring" : "Studiyangizni ro'yxatdan o'tkazing"}
+                </p>
               </div>
             </NavLink>
 

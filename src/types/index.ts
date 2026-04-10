@@ -36,6 +36,8 @@ export interface TelegramUser {
   last_name?: string;
   username?: string;
   photo_url?: string;
+  role: 'USER' | 'COMPANY';
+  has_company: boolean;
 }
 
 export type LeadType = 'call' | 'telegram' | 'measurement';

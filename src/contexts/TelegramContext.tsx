@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import { TelegramContext } from './telegram-context';
+import { TelegramUser } from '../types';
 
 const browserFallbackUser: TelegramWebAppUser = {
   id: 123456789,
@@ -12,20 +13,29 @@ const browserFallbackUser: TelegramWebAppUser = {
 export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [webApp] = useState<TelegramWebApp | null>(() => window.Telegram?.WebApp ?? null);
   const [user] = useState<TelegramWebAppUser | null>(() => webApp?.initDataUnsafe?.user ?? browserFallbackUser);
+  const [profile, setProfile] = useState<TelegramUser | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const authenticate = async () => {
-      try {
-        if (webApp?.initData) {
-          await apiClient.post('/auth/telegram/', { initData: webApp.initData });
-        } else {
-          await apiClient.get('/auth/telegram/');
-        }
-      } catch (err) {
-        console.error('Authentication failed:', err);
+  const authenticate = async () => {
+    try {
+      let response;
+      if (webApp?.initData) {
+        response = await apiClient.post('/auth/telegram/', { initData: webApp.initData });
+      } else {
+        response = await apiClient.get('/auth/telegram/');
       }
-    };
+      if (response.data && response.data.user) {
+        setProfile(response.data.user);
+      }
+    } catch (err) {
+      console.error('Authentication failed:', err);
+    }
+  };
+
+  const refreshProfile = async () => {
+    await authenticate();
+  };
 
     if (webApp) {
       webApp.ready();
@@ -49,7 +59,7 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   return (
-    <TelegramContext.Provider value={{ webApp, user, ready, haptic }}>
+    <TelegramContext.Provider value={{ webApp, user, profile, ready, haptic, refreshProfile }}>
       {children}
     </TelegramContext.Provider>
   );
