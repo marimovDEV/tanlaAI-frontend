@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { Search, Trash2, AlertCircle, Package, Plus, Pencil, X, Eye, RefreshCw } from 'lucide-react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { Search, Trash2, AlertCircle, Package, Plus, Pencil, X, Eye, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '../../api/client';
 
 type Product = {
@@ -37,6 +38,8 @@ export default function AdminProductsPage() {
   const [saving, setSaving] = useState(false);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [reprocessing, setReprocessing] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const pollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Form fields
   const [formName, setFormName] = useState('');
@@ -140,21 +143,53 @@ export default function AdminProductsPage() {
     setReprocessing(id);
     try {
       await apiClient.post(`/admin/products/${id}/reprocess_ai/`);
-      // Update local state to show processing
       setProducts(prev => prev.map(p => p.id === id ? { ...p, ai_status: 'processing' } : p));
       if (viewingProduct?.id === id) {
         setViewingProduct({ ...viewingProduct, ai_status: 'processing' });
       }
-      
-      // Poll for update after a few seconds
-      setTimeout(() => fetchProducts(search), 10000);
+      showToast("Qayta ishlash boshlandi...");
+      startPolling(id);
     } catch (err) {
       console.error("Reprocess failed", err);
-      alert("Qayta ishlashni ishga tushirib bo'lmadi");
+      showToast("Xatolik yuz berdi", "error");
     } finally {
       setReprocessing(null);
     }
   };
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const startPolling = (id: number) => {
+    if (pollInterval.current) clearInterval(pollInterval.current);
+    pollInterval.current = setInterval(async () => {
+      try {
+        const { data } = await apiClient.get(`/admin/products/${id}/`);
+        if (data.ai_status !== 'processing') {
+          if (pollInterval.current) clearInterval(pollInterval.current);
+          
+          setProducts(prev => prev.map(p => p.id === id ? data : p));
+          if (viewingProduct?.id === id) {
+            setViewingProduct(data);
+          }
+          
+          if (data.ai_status === 'completed') {
+            showToast("Tayyor! AI natijasi yangilandi.");
+          } else if (data.ai_status === 'error') {
+            showToast("AI ishlashida xatolik yuz berdi", "error");
+          }
+        }
+      } catch (e) {
+        if (pollInterval.current) clearInterval(pollInterval.current);
+      }
+    }, 3000);
+  };
+
+  useEffect(() => {
+    return () => { if (pollInterval.current) clearInterval(pollInterval.current); };
+  }, []);
 
   const statusBadge = (s: string) => {
     const map: Record<string, { bg: string; text: string; label: string }> = {
@@ -365,6 +400,15 @@ export default function AdminProductsPage() {
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-300">Hali ishlov berilmagan</div>
                   )}
+                  
+                  {/* Loading Overlay */}
+                  {viewingProduct.ai_status === 'processing' && (
+                    <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3">
+                      <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin" />
+                      <p className="text-sky-700 text-xs font-bold animate-pulse">AI ishlov bermoqda...</p>
+                    </div>
+                  )}
+
                   {/* Checkerboard pattern for transparency indication */}
                   <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 0)', backgroundSize: '10px 10px' }} />
                 </div>
@@ -388,6 +432,23 @@ export default function AdminProductsPage() {
           </div>
         </div>
       )}
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-3 rounded-2xl shadow-2xl border ${
+              toast.type === 'success' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-red-600 border-red-500 text-white'
+            }`}
+          >
+            {toast.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+            <span className="text-sm font-bold">{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Product Form Modal */}
       {showForm && (
