@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import { TelegramContext } from './telegram-context';
-import { TelegramUser } from '../types';
+import type { TelegramUser } from '../types';
 
 const browserFallbackUser: TelegramWebAppUser = {
   id: 123456789,
@@ -15,8 +15,6 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [user] = useState<TelegramWebAppUser | null>(() => webApp?.initDataUnsafe?.user ?? browserFallbackUser);
   const [profile, setProfile] = useState<TelegramUser | null>(null);
   const [ready, setReady] = useState(false);
-
-  useEffect(() => {
   const authenticate = async () => {
     try {
       let response;
@@ -37,6 +35,7 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     await authenticate();
   };
 
+  useEffect(() => {
     if (webApp) {
       webApp.ready();
       webApp.expand();

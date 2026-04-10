@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-import { TelegramUser } from '../types';
+import type { TelegramUser } from '../types';
 
 export interface TelegramContextType {
   webApp: TelegramWebApp | null;
