@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Search, Trash2, AlertCircle, Package, Plus, Pencil, X, Eye } from 'lucide-react';
+import { Search, Trash2, AlertCircle, Package, Plus, Pencil, X, Eye, RefreshCw } from 'lucide-react';
 import apiClient from '../../api/client';
 
 type Product = {
@@ -36,6 +36,7 @@ export default function AdminProductsPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [saving, setSaving] = useState(false);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [reprocessing, setReprocessing] = useState<number | null>(null);
 
   // Form fields
   const [formName, setFormName] = useState('');
@@ -132,6 +133,26 @@ export default function AdminProductsPage() {
       setProducts((p) => p.filter((x) => x.id !== id));
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const handleReprocess = async (id: number) => {
+    setReprocessing(id);
+    try {
+      await apiClient.post(`/admin/products/${id}/reprocess_ai/`);
+      // Update local state to show processing
+      setProducts(prev => prev.map(p => p.id === id ? { ...p, ai_status: 'processing' } : p));
+      if (viewingProduct?.id === id) {
+        setViewingProduct({ ...viewingProduct, ai_status: 'processing' });
+      }
+      
+      // Poll for update after a few seconds
+      setTimeout(() => fetchProducts(search), 10000);
+    } catch (err) {
+      console.error("Reprocess failed", err);
+      alert("Qayta ishlashni ishga tushirib bo'lmadi");
+    } finally {
+      setReprocessing(null);
     }
   };
 
@@ -293,9 +314,20 @@ export default function AdminProductsPage() {
                 <h2 className="text-xl font-bold text-slate-800">{viewingProduct.name}</h2>
                 <p className="text-slate-500 text-sm">Visual verification for AI results</p>
               </div>
-              <button onClick={() => setViewingProduct(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                <X size={24} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => handleReprocess(viewingProduct.id)}
+                  disabled={reprocessing === viewingProduct.id}
+                  className="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-600 hover:bg-sky-100 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                  title="Yangilash"
+                >
+                  <RefreshCw size={18} className={reprocessing === viewingProduct.id ? 'animate-spin' : ''} />
+                  Qayta ishlash
+                </button>
+                <button onClick={() => setViewingProduct(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
