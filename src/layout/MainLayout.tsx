@@ -162,7 +162,7 @@ const MainLayout: React.FC = () => {
         </main>
 
         {/* Footer Navigation (Mobile Only) */}
-        <footer className="fixed bottom-0 w-full z-50 rounded-t-2xl bg-background/80 backdrop-blur-md shadow-[0_-12px_40px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 pb-[env(safe-area-inset-bottom,0)] px-4 md:hidden">
+        <footer className="fixed bottom-0 left-0 w-full z-[9999] rounded-t-2xl bg-background/80 backdrop-blur-md shadow-[0_-12px_40px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 pb-[env(safe-area-inset-bottom,0)] px-4 md:hidden">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
