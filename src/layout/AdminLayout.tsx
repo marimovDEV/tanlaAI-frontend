@@ -132,7 +132,7 @@ export default function AdminLayout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0 bg-[#f8f9fa]">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 h-16 bg-white border-b border-slate-200/80 flex items-center px-4 lg:px-8 gap-4 shadow-sm">
+        <header className="sticky top-0 z-30 pt-[var(--sat)] min-h-[calc(4rem+var(--sat))] bg-white border-b border-slate-200/80 flex items-center px-4 lg:px-8 gap-4 shadow-sm">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 hover:bg-slate-100 rounded-lg"

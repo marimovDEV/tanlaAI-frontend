@@ -66,7 +66,7 @@ const MainLayout: React.FC = () => {
       {/* Mobile/Tablet View (sm, md) */}
       <div className="flex-1 flex flex-col min-w-0 lg:pl-[280px]">
         {/* Header (Mobile & Tablet only) */}
-        <nav className="fixed top-0 w-full lg:hidden z-[60] bg-background/80 backdrop-blur-md border-b border-outline/5 h-16">
+        <nav className="fixed top-0 w-full lg:hidden z-[60] bg-background/80 backdrop-blur-md border-b border-outline/5 pt-[var(--sat)] min-h-[calc(4rem+var(--sat))]">
           <div className="h-full flex items-center justify-between px-4">
             <div className="flex items-center gap-4">
               <button 
@@ -112,10 +112,13 @@ const MainLayout: React.FC = () => {
         </nav>
 
         {/* Sliding Menu (Mobile only) */}
-        <div className={cn(
-          "fixed top-16 left-0 w-full z-[55] bg-surface border-b border-outline/10 shadow-xl transform transition-all duration-300 ease-out md:hidden",
-          isMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
-        )}>
+        <div 
+          className={cn(
+            "fixed left-0 w-full z-[55] bg-surface border-b border-outline/10 shadow-xl transform transition-all duration-300 ease-out md:hidden",
+            isMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
+          )}
+          style={{ top: 'calc(4rem + var(--sat))' }}
+        >
           <div className="p-6 flex flex-col gap-4 text-left">
             <NavLink 
               to="/company/create" 
@@ -148,7 +151,7 @@ const MainLayout: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <main className="pt-2 sm:pt-4 md:pt-16 lg:pt-8 pb-24 min-h-screen">
+        <main className="pt-[calc(4rem+var(--sat)+0.5rem)] sm:pt-[calc(4rem+var(--sat)+1rem)] md:pt-16 lg:pt-8 pb-24 min-h-screen px-safe">
           <div className="max-w-screen-2xl mx-auto w-full">
             <Outlet />
           </div>
