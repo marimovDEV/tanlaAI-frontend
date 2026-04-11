@@ -23,7 +23,7 @@ const DiscountsPage: React.FC = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await apiClient.get<ApiListResponse<Company> | Company[]>('/companies/');
+        const response = await apiClient.get<ApiListResponse<Company> | Company[]>('companies/');
         setCompanies(Array.isArray(response.data) ? response.data : response.data.results);
       } catch (error) {
         console.error('Error fetching companies:', error);
@@ -70,7 +70,7 @@ const DiscountsPage: React.FC = () => {
           params.set('company', company);
         }
 
-        const response = await apiClient.get<ApiListResponse<Product> | Product[]>(`/products/?${params.toString()}`);
+        const response = await apiClient.get<ApiListResponse<Product> | Product[]>(`products/?${params.toString()}`);
         setProducts(Array.isArray(response.data) ? response.data : response.data.results);
       } catch (error) {
         console.error('Error fetching discounted products:', error);
@@ -159,7 +159,7 @@ const DiscountsPage: React.FC = () => {
               product={product} 
               onToggleWishlist={async (id) => {
                 try {
-                  await apiClient.post(`/products/${id}/toggle_wishlist/`);
+                  await apiClient.post(`products/${id}/toggle_wishlist/`);
                   setProducts(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
                 } catch (e) {
                   console.error(e);

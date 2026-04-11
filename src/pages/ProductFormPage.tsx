@@ -126,7 +126,7 @@ const ProductFormPage: React.FC = () => {
       setLoading(true);
       try {
         const [catsRes, prodRes] = await Promise.all([
-          apiClient.get('/categories/'),
+          apiClient.get('categories/'),
           isEdit ? apiClient.get(`/products/${id}/`) : Promise.resolve(null)
         ]);
         
@@ -225,7 +225,7 @@ const ProductFormPage: React.FC = () => {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       } else {
-        await apiClient.post('/products/', data, {
+        await apiClient.post('products/', data, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       }

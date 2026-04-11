@@ -77,7 +77,7 @@ const CompanyEditPage: React.FC = () => {
   useEffect(() => {
     const fetchCompany = async () => {
       try {
-        const response = await apiClient.get('/companies/my/');
+        const response = await apiClient.get('companies/my/');
         setFormData(normalizeCompany(response.data));
         setPreview(response.data.logo ?? null);
         setCompanyExists(true);
@@ -129,8 +129,8 @@ const CompanyEditPage: React.FC = () => {
 
     try {
       const request = companyExists
-        ? apiClient.patch('/companies/my/', data)
-        : apiClient.post('/companies/my/', data);
+        ? apiClient.patch('companies/my/', data)
+        : apiClient.post('companies/my/', data);
 
       await request;
       await refreshProfile();

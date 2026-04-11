@@ -39,7 +39,7 @@ export default function AdminCompaniesPage() {
   const fetchCompanies = useCallback(async (q = '') => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get('/admin/companies/', { params: q ? { search: q } : {} });
+      const { data } = await apiClient.get('admin/companies/', { params: q ? { search: q } : {} });
       setCompanies(data.results ?? data);
     } finally {
       setLoading(false);

@@ -61,8 +61,12 @@ const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted 
         )}
 
         {hasSale && (
-          <div className="absolute bottom-3 left-3 px-2 py-1 bg-error rounded-lg text-white text-[9px] font-black uppercase tracking-widest shadow-sm">
-            Sale
+          <div className="absolute bottom-3 left-3 px-2.5 py-1 bg-error rounded-lg text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-error/20 flex items-center gap-1.5 animate-in zoom-in-50 duration-500">
+            {product.price && product.discount_price ? (
+              <span>-{Math.round((1 - Number(product.discount_price) / Number(product.price)) * 100)}%</span>
+            ) : (
+              <span>Sale</span>
+            )}
           </div>
         )}
       </div>

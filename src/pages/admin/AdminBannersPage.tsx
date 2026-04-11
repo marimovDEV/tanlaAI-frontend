@@ -29,7 +29,7 @@ export default function AdminBannersPage() {
   const fetchBanners = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get('/admin/banners/');
+      const { data } = await apiClient.get('admin/banners/');
       setBanners(data.results ?? data);
     } finally {
       setLoading(false);
@@ -75,7 +75,7 @@ export default function AdminBannersPage() {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
-        await apiClient.post('/admin/banners/', fd, {
+        await apiClient.post('admin/banners/', fd, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       }

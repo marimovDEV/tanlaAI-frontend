@@ -22,7 +22,7 @@ export default function AdminUsersPage() {
   const fetchUsers = useCallback(async (q = '') => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get('/admin/users/', { params: q ? { search: q } : {} });
+      const { data } = await apiClient.get('admin/users/', { params: q ? { search: q } : {} });
       setUsers(data.results ?? data);
     } finally {
       setLoading(false);

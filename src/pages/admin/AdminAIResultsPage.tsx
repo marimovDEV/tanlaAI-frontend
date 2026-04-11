@@ -21,7 +21,7 @@ export default function AdminAIResultsPage() {
   const fetchResults = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get('/admin/ai-results/');
+      const { data } = await apiClient.get('admin/ai-results/');
       setResults(data.results ?? data);
     } finally {
       setLoading(false);

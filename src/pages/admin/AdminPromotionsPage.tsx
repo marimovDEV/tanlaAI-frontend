@@ -23,7 +23,7 @@ export default function AdminPromotionsPage() {
   const fetchPromos = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get('/admin/promotions/');
+      const { data } = await apiClient.get('admin/promotions/');
       setPromos(data.results ?? data);
     } finally {
       setLoading(false);

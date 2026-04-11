@@ -23,7 +23,7 @@ export default function AdminCategoriesPage() {
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get('/admin/categories/');
+      const { data } = await apiClient.get('admin/categories/');
       setCategories(data.results ?? data);
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ export default function AdminCategoriesPage() {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
-        await apiClient.post('/admin/categories/', fd, {
+        await apiClient.post('admin/categories/', fd, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       }

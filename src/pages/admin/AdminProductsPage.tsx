@@ -57,7 +57,7 @@ export default function AdminProductsPage() {
   const fetchProducts = useCallback(async (q = '') => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get('/admin/products/', { params: q ? { search: q } : {} });
+      const { data } = await apiClient.get('admin/products/', { params: q ? { search: q } : {} });
       const results = data.results ?? data;
       setProducts(results);
     } finally {
@@ -67,8 +67,8 @@ export default function AdminProductsPage() {
 
   const fetchDependencies = async () => {
     const [catRes, compRes] = await Promise.all([
-      apiClient.get('/admin/categories/'),
-      apiClient.get('/admin/companies/'),
+      apiClient.get('admin/categories/'),
+      apiClient.get('admin/companies/'),
     ]);
     setCategories(catRes.data.results ?? catRes.data);
     setCompanies(compRes.data.results ?? compRes.data);
@@ -123,7 +123,7 @@ export default function AdminProductsPage() {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
-        await apiClient.post('/admin/products/', fd, {
+        await apiClient.post('admin/products/', fd, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       }

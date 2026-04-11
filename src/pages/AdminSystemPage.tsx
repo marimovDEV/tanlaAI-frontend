@@ -22,7 +22,7 @@ export default function AdminSystemPage() {
   const saveToken = async () => {
     setLoading(true);
     try {
-      await apiClient.post('/admin/system-settings/', { telegram_bot_token: token });
+      await apiClient.post('admin/system-settings/', { telegram_bot_token: token });
       setOutput('Token saqlandi.');
     } catch (e: any) {
       setOutput(e?.response?.data?.message || 'Tokenni saqlashda xatolik.');
@@ -35,7 +35,7 @@ export default function AdminSystemPage() {
     setLoading(true);
     setOutput(`Running: ${action}...`);
     try {
-      const { data } = await apiClient.post('/admin/run-action/', { action });
+      const { data } = await apiClient.post('admin/run-action/', { action });
       setOutput(
         [
           `status: ${data.status}`,

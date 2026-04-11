@@ -15,7 +15,7 @@ export default function AdminLoginPage() {
     setError('');
     setLoading(true);
     try {
-      const { data } = await apiClient.post('/admin/login/', { username, password });
+      const { data } = await apiClient.post('admin/login/', { username, password });
       if (data.token) {
         localStorage.setItem('admin_token', data.token);
       }

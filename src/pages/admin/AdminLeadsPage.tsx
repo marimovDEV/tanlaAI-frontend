@@ -22,7 +22,7 @@ export default function AdminLeadsPage() {
   const fetchLeads = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get('/admin/leads/', {
+      const { data } = await apiClient.get('admin/leads/', {
         params: filter !== 'all' ? { status: filter } : {},
       });
       setLeads(data.results ?? data);

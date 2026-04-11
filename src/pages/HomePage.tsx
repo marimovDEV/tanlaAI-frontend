@@ -20,9 +20,9 @@ const HomePage: React.FC = () => {
     const fetchHomeData = async () => {
       try {
         const [bannersRes, categoriesRes, productsRes] = await Promise.all([
-          apiClient.get('/banners/'),
-          apiClient.get('/categories/'),
-          apiClient.get('/products/'),
+          apiClient.get('banners/'),
+          apiClient.get('categories/'),
+          apiClient.get('products/'),
         ]);
 
         setBanners(bannersRes.data.results || bannersRes.data);

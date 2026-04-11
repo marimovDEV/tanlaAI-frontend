@@ -52,7 +52,7 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiClient.get('/admin/dashboard/')
+    apiClient.get('admin/dashboard/')
       .then(({ data }) => setData(data))
       .catch(err => console.error("Dashboard fetch error:", err))
       .finally(() => setLoading(false));
