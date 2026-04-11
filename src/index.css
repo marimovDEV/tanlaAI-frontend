@@ -2,14 +2,15 @@
 
 @theme {
   --font-manrope: "Manrope", sans-serif;
-  --color-primary: #006193;
-  --color-secondary: #007BB9;
-  --color-background: #f9f9f9;
+  --color-primary: #2563eb;
+  --color-secondary: #3b82f6;
+  --color-background: #f8fafc;
   --color-surface: #ffffff;
-  --color-surface-variant: #eeeeee;
-  --color-on-surface: #1a1c1c;
-  --color-outline: #8e9191;
-  --color-error: #ba1a1a;
+  --color-surface-variant: #f1f5f9;
+  --color-on-surface: #0f172a;
+  --color-outline: #94a3b8;
+  --color-error: #ef4444;
+  --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
 }
 
 :root {

@@ -68,18 +68,23 @@ const MainLayout: React.FC = () => {
         {/* Header (Mobile & Tablet only) */}
         <nav className="fixed top-0 w-full lg:hidden z-[60] bg-background/80 backdrop-blur-md border-b border-outline/5 pt-[var(--sat)] min-h-[calc(4rem+var(--sat))]">
           <div className="h-full flex items-center justify-between px-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button 
                 onClick={() => {
                   setIsMenuOpen(!isMenuOpen);
                   haptic('light');
                 }}
-                className="p-2 hover:bg-surface-variant rounded-full transition-colors md:hidden"
+                className="p-2 hover:bg-slate-50 rounded-xl transition-colors md:hidden"
               >
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                {isMenuOpen ? <X size={24} className="text-slate-900" /> : <Menu size={24} className="text-slate-900" />}
               </button>
-              <div className="font-bold tracking-tight text-xl text-primary md:text-2xl">
-                TanlaAI
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                  <Store size={18} className="text-white" />
+                </div>
+                <div className="font-extrabold tracking-tight text-xl text-slate-900 md:text-2xl">
+                  TanlaAI
+                </div>
               </div>
             </div>
             
@@ -162,25 +167,30 @@ const MainLayout: React.FC = () => {
         </main>
 
         {/* Footer Navigation (Mobile Only) */}
-        <footer className="fixed bottom-0 left-0 w-full z-[9999] rounded-t-2xl bg-background/80 backdrop-blur-md shadow-[0_-12px_40px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 pb-[env(safe-area-inset-bottom,0)] px-4 md:hidden">
+        <footer className="fixed bottom-0 left-0 w-full z-[9999] bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] flex justify-around items-center h-[72px] pb-[env(safe-area-inset-bottom,0)] px-6 md:hidden">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               onClick={() => haptic('light')}
-              className="flex flex-col items-center justify-center transition-all duration-200 active:scale-95"
+              className="flex flex-col items-center justify-center transition-all duration-300 relative"
             >
               {({ isActive: isLinkActive }) => (
-                <>
-                  <div className={cn(
-                    "flex flex-col items-center justify-center transition-all duration-200",
-                    isLinkActive ? cn("text-primary", item.className && item.className) : "text-outline",
-                    isLinkActive && "after:content-[''] after:w-1 after:h-1 after:bg-current after:rounded-full after:mt-1"
+                <div className={cn(
+                  "flex flex-col items-center justify-center transition-all duration-300",
+                  isLinkActive ? cn("text-primary active:scale-90") : "text-slate-300 group-active:scale-95",
+                )}>
+                  <item.icon size={22} strokeWidth={isLinkActive ? 3 : 2} className="transition-all" />
+                  <span className={cn(
+                    "text-[10px] font-black uppercase tracking-widest mt-1.5 transition-all",
+                    isLinkActive ? "opacity-100 scale-100" : "opacity-0 scale-75"
                   )}>
-                    <item.icon size={24} strokeWidth={isLinkActive ? 2.5 : 2} />
-                    <span className="text-[10px] font-bold uppercase tracking-wider mt-1">{item.label}</span>
-                  </div>
-                </>
+                    {item.label}
+                  </span>
+                  {isLinkActive && (
+                    <div className="absolute -top-1 w-1 h-1 bg-primary rounded-full animate-pulse" />
+                  )}
+                </div>
               )}
             </NavLink>
           ))}

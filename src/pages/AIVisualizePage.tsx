@@ -265,9 +265,9 @@ const AIVisualizePage: React.FC = () => {
 
       {status === 'done' && resultImage && (
         <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-          <div className="bg-white rounded-[40px] aspect-[4/5] shadow-2xl relative overflow-hidden border-4 border-white">
+          <div className="bg-white rounded-[40px] aspect-[4/5] shadow-2xl relative overflow-hidden border-4 border-white ring-1 ring-slate-100">
             <img src={resultImage} alt="Result" className="w-full h-full object-cover" />
-            <div className="absolute top-4 right-4 bg-green-500 text-white p-2 rounded-full shadow-lg">
+            <div className="absolute top-6 right-6 bg-green-500 text-white p-2.5 rounded-full shadow-lg animate-bounce">
               <CheckCircle2 size={24} />
             </div>
           </div>
@@ -281,15 +281,15 @@ const AIVisualizePage: React.FC = () => {
                 setResultImage(null);
                 setError(null);
               }}
-              className="flex items-center justify-center gap-2 py-4 bg-white rounded-2xl border border-outline/10 text-sm font-bold active:scale-95 transition-all"
+              className="flex items-center justify-center gap-2 py-4 bg-slate-50 text-slate-900 rounded-2xl border border-slate-200 text-sm font-black active:scale-95 transition-all hover:bg-slate-100"
             >
               <RefreshCcw size={18} />
-              Yana urinib ko'rish
+              Qayta urinish
             </button>
             <button
               type="button"
               onClick={() => resultImage && window.open(resultImage, '_blank', 'noopener,noreferrer')}
-              className="flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-2xl text-sm font-bold active:scale-95 transition-all"
+              className="flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-2xl text-sm font-black active:scale-95 transition-all shadow-lg shadow-primary/25 hover:bg-primary/90"
             >
               <Download size={18} />
               Rasmni saqlash
@@ -313,9 +313,9 @@ const AIVisualizePage: React.FC = () => {
 
               window.open(`https://t.me/share/url?url=${encodeURIComponent(resultImage)}`, '_blank', 'noopener,noreferrer');
             }}
-            className="w-full flex items-center justify-center gap-3 py-5 bg-secondary text-white rounded-[24px] font-bold active:scale-95 transition-all shadow-lg"
+            className="w-full flex items-center justify-center gap-3 py-5 bg-white text-primary border-2 border-primary rounded-[24px] font-black active:scale-95 transition-all hover:bg-primary/5 shadow-sm"
           >
-            <Share2 size={20} />
+            <Share2 size={22} />
             Do'stlar bilan ulashish
           </button>
         </div>

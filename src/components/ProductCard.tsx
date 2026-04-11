@@ -30,21 +30,23 @@ const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted 
     : formatPrice(product.discount_price, ' / м²');
 
   return (
-    <div className="bg-white rounded-3xl overflow-hidden border border-outline/5 shadow-sm group active:scale-[0.98] transition-all flex flex-col h-full">
-      <div className="relative aspect-[3/4] bg-surface-variant">
-        <NavLink to={`/product/${product.id}`} className="block w-full h-full flex items-center justify-center">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-premium transition-all duration-300 group active:scale-[0.98] flex flex-col h-full border border-slate-100">
+      <div className="relative aspect-[3/4] bg-[#f5f5f7] overflow-hidden">
+        <NavLink to={`/product/${product.id}`} className="block w-full h-full">
           <img 
             src={product.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' font-weight='bold' fill='%2394a3b8' text-anchor='middle' dominant-baseline='middle'%3EProduct%3C/text%3E%3C/svg%3E"} 
             alt={product.name} 
-            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110"
           />
         </NavLink>
+        
         {product.ai_status === 'processing' && (
-          <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center gap-2 border border-white/20 z-10 animate-pulse">
-            <RefreshCcw size={12} className="text-white animate-spin" />
-            <span className="text-[10px] text-white font-bold tracking-wider uppercase">SI...</span>
+          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center gap-2 border border-blue-100 z-10 shadow-sm">
+            <RefreshCcw size={10} className="text-primary animate-spin" />
+            <span className="text-[9px] text-primary font-black uppercase tracking-tighter">AI Processing</span>
           </div>
         )}
+
         {onToggleWishlist && (
           <button 
             onClick={(e) => {
@@ -52,37 +54,36 @@ const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted 
               onToggleWishlist(product.id);
               haptic('soft');
             }}
-            className="absolute top-3 right-3 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform"
+            className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm active:scale-90 transition-all border border-slate-100"
           >
-            <Heart size={20} className={isWishlisted ? 'fill-error text-error' : 'text-outline'} />
+            <Heart size={16} className={isWishlisted ? 'fill-error text-error' : 'text-slate-300'} />
           </button>
         )}
-        {product.is_on_sale && (
-          <div className="absolute top-3 left-3 px-3 py-1 bg-error rounded-full text-white text-[10px] font-bold uppercase tracking-wider">
+
+        {hasSale && (
+          <div className="absolute bottom-3 left-3 px-2 py-1 bg-error rounded-lg text-white text-[9px] font-black uppercase tracking-widest shadow-sm">
             Sale
           </div>
         )}
       </div>
 
-      <div className="p-4 flex flex-col flex-grow">
-        <NavLink to={`/product/${product.id}`}>
-          <h4 className="text-sm font-bold text-on-surface truncate">{product.name}</h4>
-          <p className="text-[10px] text-outline font-medium mb-2">{product.category_name}</p>
+      <div className="p-3.5 flex flex-col flex-grow">
+        <NavLink to={`/product/${product.id}`} className="block mb-1">
+          <h4 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h4>
+          <p className="text-[11px] text-slate-400 font-medium">{product.category_name || "Eshik"}</p>
         </NavLink>
 
-        <div className="mt-auto flex items-center justify-between">
-          <div className="flex flex-col">
-            {hasSale && basePrice && salePrice ? (
-              <>
-                <span className="text-xs text-outline line-through">{basePrice}</span>
-                <span className="text-sm font-extrabold text-error">{salePrice}</span>
-              </>
-            ) : basePrice ? (
-              <span className="text-sm font-extrabold text-primary">{basePrice}</span>
-            ) : (
-              <span className="text-sm font-extrabold text-outline">So'rov bo'yicha</span>
-            )}
-          </div>
+        <div className="mt-auto pt-2">
+          {hasSale && basePrice && salePrice ? (
+            <div className="flex flex-col">
+              <span className="text-[10px] text-slate-400 line-through leading-none mb-0.5">{basePrice}</span>
+              <span className="text-sm font-black text-error leading-none">{salePrice}</span>
+            </div>
+          ) : basePrice ? (
+            <span className="text-sm font-black text-primary leading-none">{basePrice}</span>
+          ) : (
+            <span className="text-sm font-black text-slate-300 leading-none">Kelishilgan</span>
+          )}
         </div>
       </div>
     </div>

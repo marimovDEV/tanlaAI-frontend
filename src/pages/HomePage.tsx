@@ -56,35 +56,39 @@ const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6">
-      {/* Search Bar (Static for now) */}
-      <div className="mb-6">
-        <div className="relative">
+    <div className="p-5 sm:p-8 max-w-screen-xl mx-auto">
+      {/* Search Bar - Premium Style */}
+      <div className="mb-8">
+        <div 
+          className="relative group transition-all"
+          onClick={() => {
+            haptic('light');
+            navigate('/search');
+          }}
+        >
           <input 
             type="text" 
             placeholder="Mahsulotlarni qidiring..." 
-            className="w-full h-14 bg-white rounded-2xl border-none shadow-sm pl-12 pr-6 text-sm focus:ring-2 focus:ring-primary/20"
+            className="w-full h-14 bg-white rounded-2xl border border-slate-100 shadow-sm pl-12 pr-6 text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer group-hover:border-slate-200 group-hover:shadow-md"
             readOnly
-            onClick={() => {
-              haptic('light');
-              navigate('/search');
-            }}
           />
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-outline">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors">
+            <Search size={20} />
           </div>
         </div>
       </div>
 
-      {banners.length > 0 && <BannerCarousel banners={banners} />}
+      {banners.length > 0 && (
+        <div className="mb-10">
+          <BannerCarousel banners={banners} />
+        </div>
+      )}
 
-      <section className="mb-8">
-        <div className="flex items-center justify-between mb-4 px-1">
-          <h2 className="font-extrabold text-lg text-on-surface">Kategoriyalar</h2>
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-5 px-1">
+          <h2 className="font-black text-xl text-slate-900 tracking-tight">Kategoriyalar</h2>
           <button
-            className="text-xs font-bold text-primary translate-y-0.5"
+            className="text-xs font-black text-primary uppercase tracking-widest px-3 py-1 bg-blue-50 rounded-lg active:scale-95 transition-all"
             onClick={() => {
               haptic('light');
               navigate('/search');
@@ -97,10 +101,10 @@ const HomePage: React.FC = () => {
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-4 px-1">
-          <h2 className="font-extrabold text-lg text-on-surface">So'nggi mahsulotlar</h2>
+        <div className="flex items-center justify-between mb-5 px-1">
+          <h2 className="font-black text-xl text-slate-900 tracking-tight">So'nggi mahsulotlar</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {products.map((product) => (
             <ProductCard 
               key={product.id} 
