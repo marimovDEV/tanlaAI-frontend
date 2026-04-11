@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { 
   Sparkles, Trash2, ShoppingCart, 
-  ChevronLeft, Eye, Clock, 
-  AlertCircle, Package, Loader2,
-  CheckCircle2
+  ChevronLeft, Clock, 
+  Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -61,7 +60,7 @@ const VisualizationsPage: React.FC = () => {
   };
 
   const handleConvertToLead = async (id: number) => {
-    haptic('success');
+    haptic('medium');
     setConversionLoading(id);
     try {
       await apiClient.post(`/ai-results/${id}/convert-to-lead/`);
