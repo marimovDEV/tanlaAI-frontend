@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { 
   TrendingUp, CheckCircle2, Clock, Trash2, 
   Phone, Ruler, Filter, ChevronDown, 
-  ExternalLink, User, Package, Calendar,
+  User, Package, Calendar,
   MessageCircle, Loader2, Check, XCircle,
   AlertCircle
 } from 'lucide-react';
@@ -145,7 +145,6 @@ export default function AdminLeadsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {leads.map((lead) => {
             const status = STATUS_CONFIG[lead.status] || STATUS_CONFIG.new;
-            const StatusIcon = status.icon;
 
             return (
               <div
