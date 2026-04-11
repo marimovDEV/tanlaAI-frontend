@@ -244,8 +244,8 @@ export default function AdminDashboardPage() {
                         </span>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="col-span-2 py-8 text-center text-slate-400 font-medium">Ma'lumot topilmadi</div>
               )}
