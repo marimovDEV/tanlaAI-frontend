@@ -212,8 +212,7 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {data.recent_activity.products.length > 0 ? (
                 data.recent_activity.products.map((p) => {
-                  const origin = import.meta.env.VITE_BACKEND_ORIGIN || 'https://tanla-ai-backend.onrender.com';
-                  const imageUrl = p.image ? (p.image.startsWith('http') ? p.image : `${origin}${p.image}`) : null;
+                  const imageUrl = p.image; // Now guaranteed to be absolute from backend context
 
                   return (
                     <div key={p.id} className="flex items-center gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-white hover:shadow-lg transition-all duration-300">
