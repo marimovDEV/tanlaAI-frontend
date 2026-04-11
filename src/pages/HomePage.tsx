@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard';
 import apiClient from '../api/client';
 import type { Banner, Category, Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
+import { Search } from 'lucide-react';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
