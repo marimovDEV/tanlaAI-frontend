@@ -12,6 +12,7 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [onSaleProducts, setOnSaleProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { haptic } = useTelegram();
