@@ -139,33 +139,34 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           
-          <div className="h-[280px] w-full relative min-h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={8}
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={1500}
-                >
-                  {chartData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="transparent" />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    borderRadius: '20px', 
-                    border: 'none', 
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.12)',
-                    padding: '12px 16px'
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none translate-y-[-10px]">
+          {/* Fixed Chart Container */}
+          <div className="h-[280px] w-full flex items-center justify-center relative bg-slate-50/30 rounded-[32px] overflow-hidden">
+            <PieChart width={320} height={280}>
+              <Pie
+                data={chartData}
+                innerRadius={70}
+                outerRadius={95}
+                paddingAngle={8}
+                dataKey="value"
+                animationBegin={0}
+                animationDuration={1000}
+                cx="50%"
+                cy="50%"
+              >
+                {chartData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="transparent" />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{ 
+                  borderRadius: '24px', 
+                  border: 'none', 
+                  boxShadow: '0 25px 50px rgba(0,0,0,0.15)',
+                  padding: '12px 16px'
+                }}
+              />
+            </PieChart>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none translate-y-[-5px]">
               <span className="text-4xl font-black text-slate-900 tracking-tighter">{data.ai_performance.success_rate || 100}%</span>
               <span className="text-[10px] text-emerald-500 font-black uppercase tracking-[0.2em] mt-1">Success</span>
             </div>
@@ -196,7 +197,7 @@ export default function AdminDashboardPage() {
         {/* Content & Actions */}
         <div className="lg:col-span-2 space-y-8">
           {/* Recent Products */}
-          <div className="bg-white p-8 rounded-[40px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60">
+          <div className="bg-white p-8 rounded-[40px] shadow-[0_8_30px_rgb(0,0,0,0.04)] border border-slate-100/60">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center">
@@ -210,19 +211,25 @@ export default function AdminDashboardPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {data.recent_activity.products.length > 0 ? (
-                data.recent_activity.products.map((p) => (
-                  <div key={p.id} className="flex items-center gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-white hover:shadow-lg transition-all duration-300">
-                    <div className="w-14 h-14 bg-white rounded-xl overflow-hidden border border-slate-100 p-1 flex-shrink-0 relative group-hover:scale-105 transition-transform duration-500">
-                      {p.image ? (
-                        <img 
-                          src={p.image.startsWith('http') ? p.image : `${import.meta.env.VITE_BACKEND_ORIGIN || ''}${p.image}`} 
-                          className="w-full h-full object-contain"
-                          alt={p.name}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/100?text=Door';
-                          }}
-                        />
-                      ) : (
+                data.recent_activity.products.map((p) => {
+                  // Robust URL generation with hardcoded fallback for production
+                  const origin = import.meta.env.VITE_BACKEND_ORIGIN || 'https://tanla-ai-backend.onrender.com';
+                  const imageUrl = p.image ? (p.image.startsWith('http') ? p.image : `${origin}${p.image}`) : null;
+
+                  return (
+                    <div key={p.id} className="flex items-center gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-white hover:shadow-lg transition-all duration-300">
+                      <div className="w-14 h-14 bg-white rounded-xl overflow-hidden border border-slate-100 p-1 flex-shrink-0 relative group-hover:scale-105 transition-transform duration-500">
+                        {imageUrl ? (
+                          <img 
+                            src={imageUrl} 
+                            className="w-full h-full object-contain"
+                            alt={p.name}
+                            onError={(e) => {
+                              // Use a generic SVG placeholder if all else fails
+                              (e.target as HTMLImageElement).src = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YxZjVmOSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjY2JkNWUxIiBmb250LXNpemU9IjEwIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=`;
+                            }}
+                          />
+                        ) : (
                         <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300"><Image size={20} /></div>
                       )}
                     </div>
