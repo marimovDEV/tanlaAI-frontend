@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Tag, Package } from 'lucide-react';
+import { Tag, Package, Trash2, Edit3, Plus, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import apiClient from '../../api/client';
+import { cn } from '../../utils/cn';
 
 type Promotion = {
   id: number;
@@ -9,12 +11,11 @@ type Promotion = {
   price: string | null;
   discount_price: string | null;
   image: string | null;
+  image_no_bg: string | null;
   is_on_sale: boolean;
   sale_end_date: string | null;
   company_details: { name: string } | null;
 };
-
-const MEDIA_BASE = import.meta.env.VITE_BACKEND_ORIGIN || '';
 
 export default function AdminPromotionsPage() {
   const [promos, setPromos] = useState<Promotion[]>([]);
@@ -25,6 +26,8 @@ export default function AdminPromotionsPage() {
     try {
       const { data } = await apiClient.get('admin/promotions/');
       setPromos(data.results ?? data);
+    } catch (error) {
+      console.error('Error fetching promos:', error);
     } finally {
       setLoading(false);
     }
@@ -34,101 +37,138 @@ export default function AdminPromotionsPage() {
     fetchPromos();
   }, [fetchPromos]);
 
+  const handleStopSale = async (id: number) => {
+    if (!window.confirm('Haqiqatan ham bu mahsulotni aksiyadan olib tashlamoqchimisiz?')) return;
+    try {
+      await apiClient.patch(`admin/promotions/${id}/`, { is_on_sale: false });
+      setPromos(prev => prev.filter(p => p.id !== id));
+    } catch (error) {
+      console.error('Error stopping sale:', error);
+      alert("Aksiyani to'xtatishda xatolik yuz berdi");
+    }
+  };
+
+  const formatPrice = (price: string | number | null) => {
+    if (!price) return '—';
+    return new Intl.NumberFormat('uz-UZ').format(Number(price)) + " сум";
+  };
+
+  const getStatus = (expiry: string | null) => {
+    if (!expiry) return { label: 'Active', color: 'bg-green-100 text-green-700' };
+    const isExpired = new Date(expiry) < new Date();
+    return isExpired 
+      ? { label: 'Expired', color: 'bg-red-100 text-red-700' } 
+      : { label: 'Active', color: 'bg-green-100 text-green-700' };
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Promotions</h1>
-          <p className="text-sm text-slate-500">Manage active discounts and seasonal offers</p>
+    <div className="space-y-8 pb-12">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">E'lon qilingan aksiyalar</h1>
+          <p className="text-slate-500 font-medium">Barcha chegirmali mahsulotlarni boshqarish va monitoring qilish</p>
         </div>
-        <span className="flex items-center gap-2 text-sm font-semibold text-sky-700 bg-sky-100 px-4 py-2 rounded-xl">
-          <Tag size={16} /> {promos.length} Active Promotions
-        </span>
+        <Link 
+          to="/adminka/products" 
+          className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-1 active:scale-95"
+        >
+          <Plus size={20} />
+          Yangi aksiya qo'shish
+        </Link>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Image</th>
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Product</th>
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Pricing</th>
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Expires</th>
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Company</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-16">
-                    <div className="w-6 h-6 border-4 border-sky-600 border-t-transparent rounded-full animate-spin mx-auto" />
-                  </td>
-                </tr>
-              ) : promos.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-16">
-                    <Tag size={48} className="mx-auto text-slate-200 mb-3" />
-                    <p className="text-slate-500 text-sm">No active promotions at the moment.</p>
-                    <p className="text-xs text-sky-600 mt-1 font-semibold uppercase">
-                      Manage products to start a sale
-                    </p>
-                  </td>
-                </tr>
-              ) : (
-                promos.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-4 py-3">
-                      {p.image ? (
-                        <img
-                          src={p.image.startsWith('http') ? p.image : `${MEDIA_BASE}${p.image}`}
-                          alt={p.name}
-                          className="w-12 h-12 rounded-lg object-cover bg-slate-100"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center">
-                          <Package size={20} className="text-slate-300" />
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm font-semibold text-slate-800">{p.name}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm">
-                        {p.discount_price ? (
-                          <>
-                            <span className="line-through text-slate-400 text-xs mr-2">
-                              {Number(p.price).toLocaleString()}
-                            </span>
-                            <span className="font-bold text-red-600">
-                              {Number(p.discount_price).toLocaleString()} сум
-                            </span>
-                          </>
-                        ) : (
-                          <span className="font-semibold text-slate-700">
-                            {p.price ? `${Number(p.price).toLocaleString()} сум` : '—'}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-500">
-                      {p.sale_end_date
-                        ? new Date(p.sale_end_date).toLocaleDateString()
-                        : 'No expiry'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-600">
-                      {p.company_details?.name || '—'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white rounded-[32px] p-4 space-y-4 animate-pulse border border-slate-100">
+              <div className="aspect-square bg-slate-100 rounded-2xl" />
+              <div className="h-4 bg-slate-100 rounded w-2/3" />
+              <div className="h-3 bg-slate-50 rounded w-1/2" />
+            </div>
+          ))}
         </div>
-      </div>
+      ) : promos.length === 0 ? (
+        <div className="bg-white rounded-[40px] border border-slate-100 p-20 text-center space-y-4 shadow-sm">
+          <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300">
+            <Tag size={48} />
+          </div>
+          <div className="max-w-xs mx-auto space-y-2">
+            <h3 className="text-xl font-bold text-slate-900">Hozircha aksiyalar yo'q</h3>
+            <p className="text-slate-500 text-sm">Yangi chegirma yaratish uchun mahsulotlar ro'yxatidan foydalaning.</p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {promos.map((p) => {
+            const status = getStatus(p.sale_end_date);
+            return (
+              <div key={p.id} className="group bg-white rounded-[32px] p-4 border border-slate-100 hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 flex flex-col">
+                {/* Image Container */}
+                <div className="relative aspect-square rounded-2xl bg-slate-50 overflow-hidden mb-4 border border-slate-100/50">
+                  <img
+                    src={p.image_no_bg || p.image || "/placeholder-product.png"}
+                    alt={p.name}
+                    className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className={cn("absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm", status.color)}>
+                    {status.label}
+                  </div>
+                  <div className="absolute bottom-3 right-3 flex gap-2 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                    <Link 
+                      to={`/adminka/products/edit/${p.id}`}
+                      className="p-2 bg-white rounded-xl text-slate-600 hover:text-primary shadow-lg border border-slate-100 transition-colors"
+                    >
+                      <Edit3 size={18} />
+                    </Link>
+                    <button 
+                      onClick={() => handleStopSale(p.id)}
+                      className="p-2 bg-white rounded-xl text-slate-600 hover:text-error shadow-lg border border-slate-100 transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="font-bold text-slate-900 line-clamp-1">{p.name}</h3>
+                    <div className="flex items-center gap-1.5 text-slate-400 mt-1">
+                      <Package size={12} />
+                      <span className="text-[11px] font-medium">{p.company_details?.name || 'Mustaqil usta'}</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-2xl p-3 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Asosiy narx</span>
+                      <span className="text-xs text-slate-400 line-through font-medium">{formatPrice(p.price)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-error font-black uppercase tracking-wider">Aksiya narxi</span>
+                      <span className="text-sm font-black text-error">{formatPrice(p.discount_price)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] px-1">
+                    <div className="flex items-center gap-1.5 text-slate-500">
+                      <Calendar size={12} className="text-slate-400" />
+                      <span>{p.sale_end_date ? new Date(p.sale_end_date).toLocaleDateString() : 'Muddatsiz'}</span>
+                    </div>
+                    {p.sale_end_date && !status.label.includes('Expired') && (
+                      <div className="flex items-center gap-1 text-sky-600 font-bold">
+                        <Clock size={12} />
+                        <span>Qolmoqda</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
