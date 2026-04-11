@@ -507,7 +507,7 @@ export default function AdminProductsPage() {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sky-600">SI Natijasi (SAM Mask)</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sky-600">SI Natijasi (HD Isolation)</span>
                   {statusBadge(viewingProduct)}
                 </div>
                 <div className="aspect-[3/4] rounded-[32px] bg-[#f8f9fa] border-4 border-white shadow-xl overflow-hidden relative border-dashed border-sky-100">
