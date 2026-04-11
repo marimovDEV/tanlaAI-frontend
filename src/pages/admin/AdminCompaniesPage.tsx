@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { 
-  Search, Pencil, Trash2, Building2, 
+  Search, Trash2, Building2, 
   X, ExternalLink, Calendar, Package, 
   CheckCircle2, AlertCircle, MapPin, 
   Settings2, Plus, ArrowRight
