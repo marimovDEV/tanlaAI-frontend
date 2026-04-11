@@ -139,28 +139,35 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           
-          <div className="h-[280px] w-full relative">
+          <div className="h-[280px] w-full relative min-h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={chartData}
-                  innerRadius={80}
-                  outerRadius={110}
-                  paddingAngle={10}
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={8}
                   dataKey="value"
+                  animationBegin={0}
+                  animationDuration={1500}
                 >
                   {chartData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="transparent" />
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}
+                  contentStyle={{ 
+                    borderRadius: '20px', 
+                    border: 'none', 
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.12)',
+                    padding: '12px 16px'
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-5xl font-black text-slate-900 tracking-tighter">{data.ai_performance.success_rate || 100}%</span>
-              <span className="text-[11px] text-emerald-500 font-black uppercase tracking-[0.2em] mt-1">Success</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none translate-y-[-10px]">
+              <span className="text-4xl font-black text-slate-900 tracking-tighter">{data.ai_performance.success_rate || 100}%</span>
+              <span className="text-[10px] text-emerald-500 font-black uppercase tracking-[0.2em] mt-1">Success</span>
             </div>
           </div>
 
@@ -205,9 +212,16 @@ export default function AdminDashboardPage() {
               {data.recent_activity.products.length > 0 ? (
                 data.recent_activity.products.map((p) => (
                   <div key={p.id} className="flex items-center gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-white hover:shadow-lg transition-all duration-300">
-                    <div className="w-14 h-14 bg-white rounded-xl overflow-hidden border border-slate-100 p-1 flex-shrink-0">
+                    <div className="w-14 h-14 bg-white rounded-xl overflow-hidden border border-slate-100 p-1 flex-shrink-0 relative group-hover:scale-105 transition-transform duration-500">
                       {p.image ? (
-                        <img src={p.image.startsWith('http') ? p.image : `${import.meta.env.VITE_BACKEND_ORIGIN || ''}${p.image}`} className="w-full h-full object-contain" />
+                        <img 
+                          src={p.image.startsWith('http') ? p.image : `${import.meta.env.VITE_BACKEND_ORIGIN || ''}${p.image}`} 
+                          className="w-full h-full object-contain"
+                          alt={p.name}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/100?text=Door';
+                          }}
+                        />
                       ) : (
                         <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300"><Image size={20} /></div>
                       )}
