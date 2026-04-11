@@ -4,7 +4,7 @@ import {
   Package, Users, Image,
   TrendingUp, Eye, Plus, RefreshCw, 
   CheckCircle2, Clock, MousePointer2, ChevronRight,
-  ShieldAlert, Activity
+  ShieldAlert, Activity, Building2, FolderTree
 } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import apiClient from '../../api/client';
@@ -75,6 +75,8 @@ export default function AdminDashboardPage() {
 
   const stats = [
     { label: 'Mahsulotlar', value: data.counts.product_count, icon: Package, color: 'text-sky-600', bg: 'bg-sky-50' },
+    { label: 'Kompaniyalar', value: data.counts.company_count, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Kategoriyalar', value: data.counts.category_count, icon: FolderTree, color: 'text-indigo-600', bg: 'bg-indigo-50' },
     { label: 'Foydalanuvchilar', value: data.counts.user_count, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
     { label: 'AI Natijalar', value: data.counts.ai_result_count, icon: Eye, color: 'text-indigo-600', bg: 'bg-indigo-50' },
     { label: 'AI Xatoliklar', value: data.counts.ai_error_count, icon: ShieldAlert, color: 'text-red-600', bg: 'bg-red-50' },

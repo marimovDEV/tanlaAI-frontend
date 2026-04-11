@@ -69,7 +69,7 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full w-[280px] bg-white border-r border-slate-200/60
+          fixed top-0 left-0 z-50 h-screen w-[280px] bg-white border-r border-slate-200/60
           flex flex-col transition-transform duration-300 ease-in-out
           lg:translate-x-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}

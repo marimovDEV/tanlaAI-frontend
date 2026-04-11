@@ -17,20 +17,31 @@ const MEDIA_BASE = import.meta.env.VITE_BACKEND_ORIGIN || '';
 export default function AdminAIResultsPage() {
   const [results, setResults] = useState<AIResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
 
-  const fetchResults = useCallback(async () => {
-    setLoading(true);
+  const fetchResults = useCallback(async (isLoadMore = false) => {
+    if (isLoadMore) setLoadingMore(true);
+    else setLoading(true);
+
     try {
-      const { data } = await apiClient.get('admin/ai-results/');
-      setResults(data.results ?? data);
+      const url = isLoadMore && nextUrl ? nextUrl : 'admin/ai-results/';
+      const { data } = await apiClient.get(url);
+      
+      const newResults = data.results ?? data;
+      setResults(prev => isLoadMore ? [...prev, ...newResults] : newResults);
+      setNextUrl(data.next || null);
+    } catch (err) {
+      console.error('Error fetching AI results:', err);
     } finally {
-      setLoading(false);
+      if (isLoadMore) setLoadingMore(false);
+      else setLoading(false);
     }
-  }, []);
+  }, [nextUrl]);
 
   useEffect(() => {
     fetchResults();
-  }, [fetchResults]);
+  }, []); // Initial load only
 
   return (
     <div className="space-y-6">
@@ -107,6 +118,22 @@ export default function AdminAIResultsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {nextUrl && (
+        <div className="flex justify-center pt-8 pb-12">
+          <button
+            onClick={() => fetchResults(true)}
+            disabled={loadingMore}
+            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-8 py-3 rounded-2xl font-bold hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+          >
+            {loadingMore ? (
+              <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+            ) : (
+              'Yana yuklash'
+            )}
+          </button>
         </div>
       )}
     </div>
