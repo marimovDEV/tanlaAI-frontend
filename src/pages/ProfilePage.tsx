@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, User, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { Heart, User, Settings, LogOut, ChevronRight, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import type { ApiListResponse, Product, WishlistItem } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
@@ -7,6 +8,7 @@ import ProductCard from '../components/ProductCard';
 import { cn } from '../utils/cn';
 
 const ProfilePage: React.FC = () => {
+  const navigate = useNavigate();
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { user: tgUser, haptic, profile } = useTelegram();
@@ -114,18 +116,22 @@ const ProfilePage: React.FC = () => {
       {/* Menu Options */}
       <div className="space-y-3">
         {[
+          { icon: Sparkles, label: 'Mening vizualizatsiyalarim', path: '/visualizations', iconColor: 'bg-indigo-50 text-indigo-600' },
           { icon: Settings, label: 'Sozlamalar' },
           { icon: LogOut, label: 'Dasturdan chiqish', className: 'text-error' }
         ].map((item, idx) => (
           <button 
             key={idx}
             className="w-full flex items-center justify-between p-5 bg-white rounded-2xl border border-outline/5 active:scale-[0.98] transition-all"
-            onClick={() => haptic('light')}
+            onClick={() => {
+              if (item.path) navigate(item.path);
+              haptic('light');
+            }}
           >
             <div className="flex items-center gap-4">
               <div className={cn(
                 "w-10 h-10 rounded-xl flex items-center justify-center",
-                item.className ? "bg-error/10 text-error" : "bg-primary/5 text-primary"
+                item.iconColor || (item.className ? "bg-error/10 text-error" : "bg-primary/5 text-primary")
               )}>
                 <item.icon size={20} />
               </div>

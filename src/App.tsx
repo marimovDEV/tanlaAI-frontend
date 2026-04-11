@@ -10,6 +10,7 @@ import DiscountsPage from './pages/DiscountsPage';
 import ProfilePage from './pages/ProfilePage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import AIVisualizePage from './pages/AIVisualizePage';
+import VisualizationsPage from './pages/VisualizationsPage';
 import CompanyCreatePage from './pages/CompanyCreatePage';
 import ProductCreatePage from './pages/ProductCreatePage';
 import CreatorDashboard from './pages/CreatorDashboard';
@@ -63,6 +64,7 @@ function App() {
             <Route path="/leaders" element={<LeadersPage />} />
             <Route path="/discounts" element={<DiscountsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/visualizations" element={<VisualizationsPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
             <Route path="/product/:id/visualize" element={<AIVisualizePage />} />
