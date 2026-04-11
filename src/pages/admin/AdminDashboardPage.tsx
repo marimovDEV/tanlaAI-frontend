@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Package, FolderTree, Building2, Users, Image, Tag,
-  TrendingUp, Eye, ArrowUpRight, Plus, RefreshCw, AlertCircle, 
-  CheckCircle2, Clock, MousePointer2, ChevronRight, BarChart3,
+  Package, Users, Image,
+  TrendingUp, Eye, Plus, RefreshCw, 
+  CheckCircle2, Clock, MousePointer2, ChevronRight,
   ShieldAlert, Activity
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
