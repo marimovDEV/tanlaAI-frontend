@@ -212,7 +212,6 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {data.recent_activity.products.length > 0 ? (
                 data.recent_activity.products.map((p) => {
-                  // Robust URL generation with hardcoded fallback for production
                   const origin = import.meta.env.VITE_BACKEND_ORIGIN || 'https://tanla-ai-backend.onrender.com';
                   const imageUrl = p.image ? (p.image.startsWith('http') ? p.image : `${origin}${p.image}`) : null;
 
@@ -225,23 +224,23 @@ export default function AdminDashboardPage() {
                             className="w-full h-full object-contain"
                             alt={p.name}
                             onError={(e) => {
-                              // Use a generic SVG placeholder if all else fails
                               (e.target as HTMLImageElement).src = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YxZjVmOSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjY2JkNWUxIiBmb250LXNpemU9IjEwIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=`;
                             }}
                           />
                         ) : (
-                        <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300"><Image size={20} /></div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-slate-800 line-clamp-1">{p.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={cn(
-                          "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
-                          p.ai_status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
-                        )}>
-                          {p.ai_status}
-                        </span>
+                          <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300"><Image size={20} /></div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-black text-slate-800 line-clamp-1">{p.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={cn(
+                            "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
+                            p.ai_status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                          )}>
+                            {p.ai_status}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
