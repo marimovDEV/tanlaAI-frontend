@@ -4,13 +4,13 @@ import {
   Phone, Ruler, Filter, ChevronDown, 
   User, Package, Calendar,
   MessageCircle, Loader2, Check, XCircle,
-  AlertCircle
+  AlertCircle, Sparkles
 } from 'lucide-react';
 import apiClient from '../../api/client';
 
 type Lead = {
   id: number;
-  lead_type: 'call' | 'telegram' | 'measurement';
+  lead_type: 'call' | 'telegram' | 'measurement' | 'visualize';
   status: 'new' | 'contacted' | 'active' | 'converted' | 'rejected' | 'closed';
   message: string;
   phone: string;
@@ -20,6 +20,7 @@ type Lead = {
   user_name: string;
   product_name: string;
   product_image: string | null;
+  ai_result_image: string | null;
   company_name: string | null;
 };
 
@@ -82,6 +83,7 @@ export default function AdminLeadsPage() {
     switch (type) {
       case 'call': return <Phone size={14} className="text-secondary" />;
       case 'measurement': return <Ruler size={14} className="text-primary" />;
+      case 'visualize': return <Sparkles size={14} className="text-amber-500" />;
       default: return <MessageCircle size={14} className="text-sky-500" />;
     }
   };
@@ -156,7 +158,9 @@ export default function AdminLeadsPage() {
 
                 {/* Product/Visual Section */}
                 <div className="w-full sm:w-32 h-40 sm:h-auto rounded-2xl bg-slate-50 overflow-hidden relative group-hover:shadow-lg transition-all border border-slate-200/50 shrink-0">
-                  {lead.product_image ? (
+                  {lead.ai_result_image ? (
+                    <img src={lead.ai_result_image} alt="AI Result" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  ) : lead.product_image ? (
                     <img src={lead.product_image} alt={lead.product_name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-300">
@@ -164,6 +168,11 @@ export default function AdminLeadsPage() {
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {lead.ai_result_image && (
+                    <div className="absolute top-2 right-2 bg-amber-500 text-white p-1 rounded-md shadow-lg">
+                      <Sparkles size={12} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Info Section */}

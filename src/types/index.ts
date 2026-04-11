@@ -82,18 +82,25 @@ export interface WishlistItem {
   product_details: Product;
 }
 
+export type LeadType = 'call' | 'telegram' | 'measurement' | 'visualize';
+
 export interface LeadRequest {
   id: number;
   user: number;
   product: number;
   company?: number | null;
+  ai_result?: number | null;
   lead_type: LeadType;
   message: string;
   phone: string;
+  status: string;
+  price_info: string;
   created_at: string;
   is_processed: boolean;
   product_name?: string;
+  product_image?: string;
   user_details?: TelegramUser;
+  ai_result_details?: AIResult;
 }
 
 export interface AIResult {
