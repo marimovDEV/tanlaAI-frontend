@@ -86,7 +86,7 @@ export default function AdminLayout() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-8 px-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 py-8 px-4 space-y-1.5 overflow-y-auto">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
@@ -94,16 +94,25 @@ export default function AdminLayout() {
               end={item.end}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[13px] font-bold transition-all duration-300 group
+                `flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[13px] font-black transition-all duration-300 group relative overflow-hidden
                 ${
                   isActive
-                    ? 'bg-[#0067a5] text-white shadow-xl shadow-blue-900/20'
+                    ? 'bg-[#0067a5] text-white shadow-[0_10px_20px_rgba(0,103,165,0.25)]'
                     : 'text-slate-500 hover:bg-slate-50 hover:text-[#0067a5]'
                 }`
               }
             >
-              <item.icon size={20} className={sidebarOpen ? '' : 'transition-transform group-hover:scale-110'} />
-              <span>{item.label}</span>
+              <item.icon size={20} className="relative z-10 transition-transform group-hover:scale-110" />
+              <span className="relative z-10">{item.label}</span>
+              {/* Active indicator bar */}
+              <NavLink 
+                to={item.to} 
+                end={item.end}
+                className={({ isActive }) => 
+                  cn("absolute left-0 top-0 bottom-0 w-1.5 bg-sky-300 transition-transform duration-500", 
+                  isActive ? "translate-x-0" : "-translate-x-full")
+                }
+              />
             </NavLink>
           ))}
         </nav>
