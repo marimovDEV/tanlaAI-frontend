@@ -107,7 +107,7 @@ export default function AdminBannersPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("Bu bannerni o'chirmoqchimisiz?")) return;
     try {
-      await apiClient.delete(`/admin/banners/${id}//`);
+      await apiClient.delete(`/admin/banners/${id}/`);
       setBanners((b) => b.filter((x) => x.id !== id));
     } catch (err) {
       console.error('Error deleting banner:', err);
