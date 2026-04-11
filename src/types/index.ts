@@ -40,7 +40,6 @@ export interface TelegramUser {
   has_company: boolean;
 }
 
-export type LeadType = 'call' | 'telegram' | 'measurement';
 
 export interface Product {
   id: number;
