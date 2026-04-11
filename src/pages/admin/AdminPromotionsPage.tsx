@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Tag, Package, Trash2, Edit3, Plus, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { Tag, Package, Trash2, Edit3, Plus, Calendar, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
