@@ -17,7 +17,7 @@ const MainLayout: React.FC = () => {
     { to: '/', icon: Store, label: "Do'kon" },
     { to: '/search', icon: Search, label: 'Qidiruv' },
     { to: '/leaders', icon: ListOrdered, label: 'Liderlar' },
-    { to: '/discounts', icon: Percent, label: 'Chegirmalar', className: 'text-error' },
+    { to: '/discounts', icon: Percent, label: 'Aksiyalar', className: 'text-error' },
     { to: '/profile', icon: User, label: 'Profil' },
   ];
 

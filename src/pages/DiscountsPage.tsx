@@ -113,7 +113,7 @@ const DiscountsPage: React.FC = () => {
             type="text"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Chegirmadagi mahsulotlarni qidiring..."
+            placeholder="Aksiyadagi mahsulotlarni qidiring..."
             className="w-full rounded-2xl bg-white border border-outline/10 py-4 pl-11 pr-4 text-sm font-medium outline-none focus:ring-2 focus:ring-error/10"
           />
         </div>
@@ -172,7 +172,7 @@ const DiscountsPage: React.FC = () => {
       ) : (
         <div className="py-20 text-center text-outline">
           <Percent size={48} className="mx-auto mb-4 opacity-10" />
-          <p className="text-sm font-medium">Ayni vaqtda chegirmali mahsulotlar mavjud emas.</p>
+          <p className="text-sm font-medium">Ayni vaqtda faol aksiyalar mavjud emas.</p>
         </div>
       )}
     </div>

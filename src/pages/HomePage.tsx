@@ -12,22 +12,24 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [onSaleProducts, setOnSaleProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { haptic } = useTelegram();
 
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        const [bannersRes, categoriesRes, productsRes] = await Promise.all([
+        const [bannersRes, categoriesRes, productsRes, onSaleRes] = await Promise.all([
           apiClient.get('banners/'),
           apiClient.get('categories/'),
           apiClient.get('products/'),
+          apiClient.get('products/?is_on_sale=true'),
         ]);
 
         setBanners(bannersRes.data.results || bannersRes.data);
         setCategories(categoriesRes.data.results || categoriesRes.data);
         setProducts(productsRes.data.results || productsRes.data);
+        setOnSaleProducts(onSaleRes.data.results || onSaleRes.data);
       } catch (error) {
         console.error('Error fetching home data:', error);
       } finally {
@@ -85,6 +87,45 @@ const HomePage: React.FC = () => {
         </div>
       )}
 
+      {/* Aksiyalar Section - New */}
+      {onSaleProducts.length > 0 && (
+        <section className="mb-10 animate-in fade-in slide-in-from-right-4 duration-700">
+          <div className="flex items-center justify-between mb-5 px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-6 bg-error rounded-full" />
+              <h2 className="font-black text-xl text-slate-900 tracking-tight">Hafta aksiyalari</h2>
+            </div>
+            <button
+              className="text-xs font-black text-error uppercase tracking-widest px-3 py-1 bg-red-50 rounded-lg active:scale-95 transition-all"
+              onClick={() => {
+                haptic('light');
+                navigate('/discounts');
+              }}
+            >
+              Barchasi
+            </button>
+          </div>
+          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-1 px-1">
+            {onSaleProducts.map((product) => (
+              <div key={product.id} className="w-[180px] flex-shrink-0">
+                <ProductCard 
+                  product={product} 
+                  onToggleWishlist={async (id) => {
+                    try {
+                      await apiClient.post(`products/${id}/toggle_wishlist/`);
+                      setOnSaleProducts(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }} 
+                  isWishlisted={product.is_wishlisted}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="mb-10">
         <div className="flex items-center justify-between mb-5 px-1">
           <h2 className="font-black text-xl text-slate-900 tracking-tight">Kategoriyalar</h2>
@@ -112,7 +153,7 @@ const HomePage: React.FC = () => {
               product={product} 
               onToggleWishlist={async (id) => {
                 try {
-                  await apiClient.post(`/products/${id}/toggle_wishlist/`);
+                  await apiClient.post(`products/${id}/toggle_wishlist/`);
                   setProducts(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
                 } catch (e) {
                   console.error(e);
