@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { isAxiosError } from 'axios';
 import { useParams } from 'react-router-dom';
-import { Camera, Sparkles, CheckCircle2, AlertCircle, RefreshCcw, Download, Share2, Ruler } from 'lucide-react';
+import { Camera, Sparkles, CheckCircle2, AlertCircle, RefreshCcw, Download, Share2, Ruler, Phone } from 'lucide-react';
 import apiClient from '../api/client';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
+import LeadForm from '../components/LeadForm';
 
 interface AIUploadResponse {
   status: 'ok' | 'error' | 'processing' | 'preparing';
@@ -29,6 +30,8 @@ const AIVisualizePage: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'done' | 'error'>('idle');
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [leadType, setLeadType] = useState<'call' | 'measurement'>('call');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollTimeoutRef = useRef<number | null>(null);
   const { haptic } = useTelegram();
@@ -272,7 +275,42 @@ const AIVisualizePage: React.FC = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <button 
+              onClick={() => {
+                setLeadType('call');
+                setShowLeadForm(true);
+                haptic('medium');
+              }}
+              className="w-full flex items-center justify-center gap-3 py-5 bg-primary text-white rounded-[24px] font-black shadow-lg shadow-primary/25 active:scale-95 transition-all text-lg"
+            >
+              <Phone size={22} fill="white" />
+              Sotib olish / Bog'lanish
+            </button>
+            <div className="grid grid-cols-2 gap-3">
+              <button 
+                onClick={() => {
+                  setLeadType('measurement');
+                  setShowLeadForm(true);
+                  haptic('medium');
+                }}
+                className="flex items-center justify-center gap-2 py-4 bg-white text-primary border-2 border-primary rounded-2xl text-sm font-black active:scale-95 transition-all"
+              >
+                <Ruler size={18} />
+                O'lchashni buyurtma
+              </button>
+              <button
+                type="button"
+                onClick={() => resultImage && window.open(resultImage, '_blank', 'noopener,noreferrer')}
+                className="flex items-center justify-center gap-2 py-4 bg-slate-100 text-slate-800 rounded-2xl text-sm font-black active:scale-95 transition-all"
+              >
+                <Download size={18} />
+                Saqlash
+              </button>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
             <button 
               onClick={() => {
                 setStatus('idle');
@@ -281,45 +319,42 @@ const AIVisualizePage: React.FC = () => {
                 setResultImage(null);
                 setError(null);
               }}
-              className="flex items-center justify-center gap-2 py-4 bg-slate-50 text-slate-900 rounded-2xl border border-slate-200 text-sm font-black active:scale-95 transition-all hover:bg-slate-100"
+              className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-50 text-slate-900 rounded-2xl border border-slate-200 text-sm font-black active:scale-95 transition-all hover:bg-slate-100"
             >
-              <RefreshCcw size={18} />
-              Qayta urinish
+              <RefreshCcw size={14} />
+              Boshidan
             </button>
             <button
               type="button"
-              onClick={() => resultImage && window.open(resultImage, '_blank', 'noopener,noreferrer')}
-              className="flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-2xl text-sm font-black active:scale-95 transition-all shadow-lg shadow-primary/25 hover:bg-primary/90"
+              onClick={async () => {
+                if (!resultImage) return;
+                if (navigator.share) {
+                  await navigator.share({
+                    title: product?.name ?? 'TanlaAI vizualizatsiyasi',
+                    url: resultImage,
+                  });
+                  return;
+                }
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(resultImage)}`, '_blank', 'noopener,noreferrer');
+              }}
+              className="flex-1 flex items-center justify-center gap-2 py-4 bg-white text-primary rounded-2xl border border-primary/20 text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
             >
-              <Download size={18} />
-              Rasmni saqlash
+              <Share2 size={14} />
+              Ulashish
             </button>
           </div>
-          
-          <button
-            type="button"
-            onClick={async () => {
-              if (!resultImage) {
-                return;
-              }
-
-              if (navigator.share) {
-                await navigator.share({
-                  title: product?.name ?? 'TanlaAI vizualizatsiyasi',
-                  url: resultImage,
-                });
-                return;
-              }
-
-              window.open(`https://t.me/share/url?url=${encodeURIComponent(resultImage)}`, '_blank', 'noopener,noreferrer');
-            }}
-            className="w-full flex items-center justify-center gap-3 py-5 bg-white text-primary border-2 border-primary rounded-[24px] font-black active:scale-95 transition-all hover:bg-primary/5 shadow-sm"
-          >
-            <Share2 size={22} />
-            Do'stlar bilan ulashish
-          </button>
         </div>
       )}
+
+      {showLeadForm && product && (
+        <LeadForm 
+          productId={product.id} 
+          leadType={leadType} 
+          initialPriceInfo={inputHeight && inputWidth ? `${inputHeight}x${inputWidth} sm o'lchamda SI vizualizatsiya` : "SI vizualizatsiyasi"}
+          onClose={() => setShowLeadForm(false)} 
+        />
+      )}
+
 
       {status === 'error' && (
         <div className="bg-white rounded-[40px] aspect-[4/5] flex flex-col items-center justify-center p-10 text-center shadow-sm">

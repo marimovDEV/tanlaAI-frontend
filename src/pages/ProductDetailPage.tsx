@@ -313,6 +313,7 @@ const ProductDetailPage: React.FC = () => {
         <LeadForm 
           productId={product.id} 
           leadType={leadType} 
+          initialPriceInfo={product.price_per_m2 ? `${calcHeight}x${calcWidth} sm o'lchamda ${calculatePrice().toLocaleString()} so'm deb hisoblandi` : ""}
           onClose={() => setShowLeadForm(false)} 
         />
       )}
