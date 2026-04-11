@@ -73,7 +73,7 @@ export default function AdminLayout() {
         className={`
           fixed top-0 left-0 z-50 h-full w-[280px] bg-white border-r border-slate-200/60
           flex flex-col transition-transform duration-300 ease-in-out
-          lg:translate-x-0 lg:static lg:z-auto
+          lg:translate-x-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
@@ -130,7 +130,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen min-w-0 bg-[#f8f9fa]">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 bg-[#f8f9fa] lg:pl-[280px]">
         {/* Top bar */}
         <header className="sticky top-0 z-30 pt-[var(--sat)] min-h-[calc(4rem+var(--sat))] bg-white border-b border-slate-200/80 flex items-center px-4 lg:px-8 gap-4 shadow-sm">
           <button

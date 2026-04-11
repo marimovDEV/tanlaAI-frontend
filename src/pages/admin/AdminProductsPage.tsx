@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Search, Trash2, AlertCircle, Package, Plus, Pencil, X, Eye, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '../../api/client';
+import { cn } from '../../utils/cn';
 
 type Product = {
   id: number;
@@ -12,6 +13,7 @@ type Product = {
   category: number | null;
   category_name: string;
   ai_status: string;
+  ai_error: string | null;
   owner_details: { first_name: string; last_name: string } | null;
   company_details: { name: string } | null;
   company: number | null;
@@ -29,6 +31,9 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<number | null>(null);
+  
+  // Selection
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   // Form state
   const [showForm, setShowForm] = useState(false);
@@ -53,7 +58,8 @@ export default function AdminProductsPage() {
     setLoading(true);
     try {
       const { data } = await apiClient.get('/admin/products/', { params: q ? { search: q } : {} });
-      setProducts(data.results ?? data);
+      const results = data.results ?? data;
+      setProducts(results);
     } finally {
       setLoading(false);
     }
@@ -132,10 +138,41 @@ export default function AdminProductsPage() {
     if (!confirm("Bu mahsulotni o'chirmoqchimisiz?")) return;
     setDeleting(id);
     try {
-      await apiClient.delete(`/admin/products/${id}/`);
+      await apiClient.delete(`/admin/products/${id}//`);
       setProducts((p) => p.filter((x) => x.id !== id));
+      setSelectedIds(prev => prev.filter(x => x !== id));
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`${selectedIds.length} ta mahsulotni o'chirmoqchimisiz?`)) return;
+    setLoading(true);
+    try {
+      await Promise.all(selectedIds.map(id => apiClient.delete(`/admin/products/${id}//`)));
+      fetchProducts(search);
+      setSelectedIds([]);
+      showToast("Mahsulotlar o'chirildi.");
+    } catch (e) {
+      showToast("Ba'zi mahsulotlarni o'chirishda xatolik yuz berdi", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkReprocess = async () => {
+    if (!confirm(`${selectedIds.length} ta mahsulotni SI orqali qayta ishlamoqchimisiz?`)) return;
+    setLoading(true);
+    try {
+      await Promise.all(selectedIds.map(id => apiClient.post(`/admin/products/${id}/reprocess_ai/`)));
+      fetchProducts(search);
+      setSelectedIds([]);
+      showToast("SI qayta ishlash boshlandi.");
+    } catch (e) {
+      showToast("Xatolik yuz berdi", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -143,9 +180,9 @@ export default function AdminProductsPage() {
     setReprocessing(id);
     try {
       await apiClient.post(`/admin/products/${id}/reprocess_ai/`);
-      setProducts(prev => prev.map(p => p.id === id ? { ...p, ai_status: 'processing' } : p));
+      setProducts(prev => prev.map(p => p.id === id ? { ...p, ai_status: 'processing', ai_error: null } : p));
       if (viewingProduct?.id === id) {
-        setViewingProduct({ ...viewingProduct, ai_status: 'processing' });
+        setViewingProduct({ ...viewingProduct, ai_status: 'processing', ai_error: null });
       }
       showToast("Qayta ishlash boshlandi...");
       startPolling(id);
@@ -191,19 +228,42 @@ export default function AdminProductsPage() {
     return () => { if (pollInterval.current) clearInterval(pollInterval.current); };
   }, []);
 
-  const statusBadge = (s: string) => {
+  const toggleSelectAll = () => {
+    if (selectedIds.length === products.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(products.map(p => p.id));
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const statusBadge = (p: Product) => {
+    const s = p.ai_status;
     const map: Record<string, { bg: string; text: string; label: string }> = {
-      completed: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'AI Ready' },
-      processing: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Processing' },
-      error: { bg: 'bg-red-100', text: 'text-red-700', label: 'AI Failed' },
+      completed: { bg: 'bg-[#d1fae5]', text: 'text-[#065f46]', label: 'AI Ready' },
+      processing: { bg: 'bg-[#fef3c7]', text: 'text-[#92400e]', label: 'Processing' },
+      error: { bg: 'bg-[#fee2e2]', text: 'text-[#991b1b]', label: 'AI Failed' },
       none: { bg: 'bg-slate-100', text: 'text-slate-500', label: 'No AI' },
     };
     const c = map[s] || map.none;
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${c.bg} ${c.text}`}>
-        {s === 'error' && <AlertCircle size={12} />}
-        {c.label}
-      </span>
+      <div className="flex flex-col gap-1 items-start">
+        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${c.bg} ${c.text}`}>
+          {s === 'error' && <AlertCircle size={10} />}
+          {c.label}
+        </span>
+        {p.ai_error && (
+          <button 
+            onClick={() => alert(p.ai_error)}
+            className="text-[9px] text-red-400 hover:text-red-600 underline font-bold"
+          >
+            Xatolikni ko'rish
+          </button>
+        )}
+      </div>
     );
   };
 
@@ -212,123 +272,186 @@ export default function AdminProductsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Products</h1>
-          <p className="text-sm text-slate-500">Manage your digital boutique catalog</p>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Products Catalog</h1>
+          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Barcha mahsulotlar ro'yxati</p>
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-72">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="Mahsulotlarni qidiring..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-500/10 shadow-sm transition-all"
             />
           </div>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-sky-600/20 whitespace-nowrap"
+            className="flex items-center gap-2 bg-[#0067a5] hover:bg-[#005a91] text-white px-6 py-3 rounded-2xl text-sm font-bold transition-all shadow-xl shadow-blue-900/10 whitespace-nowrap active:scale-95"
           >
-            <Plus size={18} /> New Product
+            <Plus size={18} /> Yangi Qo'shish
           </button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      {/* Bulk Actions Bar */}
+      <AnimatePresence>
+        {selectedIds.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex items-center justify-between bg-slate-900 text-white px-6 py-4 rounded-3xl shadow-2xl"
+          >
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-bold">{selectedIds.length} ta tanlandi</span>
+              <div className="h-4 w-px bg-white/20" />
+              <button 
+                onClick={handleBulkReprocess}
+                className="flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold transition-all"
+              >
+                <RefreshCw size={14} /> SI Qayta Ishlash
+              </button>
+            </div>
+            <button 
+              onClick={handleBulkDelete}
+              className="flex items-center gap-2 px-6 py-2 bg-red-500 hover:bg-red-600 rounded-xl text-xs font-black transition-all shadow-lg shadow-red-500/20"
+            >
+              <Trash2 size={14} /> Tanlanganlarni O'chirish
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Table Container */}
+      <div className="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Image</th>
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Product Details</th>
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Price</th>
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Category</th>
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Status</th>
-                <th className="text-left text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Creator</th>
-                <th className="text-right text-[11px] uppercase tracking-wider text-slate-500 font-semibold px-4 py-3">Actions</th>
+              <tr className="bg-slate-50/50 border-b border-slate-100">
+                <th className="px-6 py-4 text-left w-10">
+                  <input 
+                    type="checkbox" 
+                    checked={selectedIds.length === products.length && products.length > 0}
+                    onChange={toggleSelectAll}
+                    className="w-5 h-5 rounded-lg border-slate-200 text-[#0067a5] focus:ring-sky-500/20"
+                  />
+                </th>
+                <th className="text-left text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black px-4 py-4">Mahsulot</th>
+                <th className="text-left text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black px-4 py-4">Narxi</th>
+                <th className="text-left text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black px-4 py-4">Kategoriya</th>
+                <th className="text-left text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black px-4 py-4">SI Holati</th>
+                <th className="text-left text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black px-4 py-4">Egasi</th>
+                <th className="text-right text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black px-6 py-4">Amallar</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {loading ? (
+              {loading && products.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-16">
-                    <div className="w-6 h-6 border-4 border-sky-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                  <td colSpan={7} className="text-center py-24">
+                    <div className="w-10 h-10 border-4 border-[#0067a5] border-t-transparent rounded-full animate-spin mx-auto" />
+                    <p className="text-slate-400 text-xs font-bold mt-4 animate-pulse">Ma'lumotlar yuklanmoqda...</p>
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-16">
-                    <Package size={40} className="mx-auto text-slate-300 mb-2" />
-                    <p className="text-slate-500 text-sm">Mahsulot topilmadi</p>
+                  <td colSpan={7} className="text-center py-24">
+                    <Package size={48} className="mx-auto text-slate-200 mb-4" />
+                    <p className="text-slate-500 text-sm font-bold">Mahsulotlar topilmadi</p>
+                    <p className="text-slate-400 text-xs mt-1">Yangi mahsulot qo'shib ko'ring</p>
                   </td>
                 </tr>
               ) : (
                 products.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-4 py-3">
-                      {p.image ? (
-                        <img
-                          src={p.image.startsWith('http') ? p.image : `${MEDIA_BASE}${p.image}`}
-                          alt={p.name}
-                          className="w-12 h-12 rounded-lg object-cover bg-slate-100"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center">
-                          <Package size={20} className="text-slate-300" />
+                  <tr key={p.id} className={cn(
+                    "group transition-all hover:bg-slate-50/50",
+                    selectedIds.includes(p.id) ? "bg-sky-50/30" : ""
+                  )}>
+                    <td className="px-6 py-4">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIds.includes(p.id)}
+                        onChange={() => toggleSelect(p.id)}
+                        className="w-5 h-5 rounded-lg border-slate-200 text-[#0067a5] focus:ring-sky-500/20"
+                      />
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-[80px] h-[110px] rounded-2xl bg-[#f5f5f7] border border-slate-100 flex items-center justify-center p-1.5 flex-shrink-0 shadow-sm overflow-hidden group-hover:shadow-md transition-all">
+                          {p.image ? (
+                            <img
+                              src={p.image.startsWith('http') ? p.image : `${MEDIA_BASE}${p.image}`}
+                              alt={p.name}
+                              className="w-full h-full object-contain mix-blend-multiply"
+                            />
+                          ) : (
+                            <Package size={24} className="text-slate-200" />
+                          )}
                         </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm font-semibold text-slate-800 truncate max-w-[200px]">{p.name}</p>
-                      <p className="text-xs text-slate-400 truncate max-w-[200px]">{p.description?.slice(0, 60)}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-semibold text-slate-700">
-                        {p.price ? `${Number(p.price).toLocaleString()}` : 'None'}
-                      </span>
-                      <p className="text-[10px] font-bold text-sky-600">CYM</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="inline-block px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-semibold text-slate-600 uppercase">
-                        {p.category_name || '—'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">{statusBadge(p.ai_status)}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-[10px] font-bold">
-                          {p.owner_details?.first_name?.charAt(0) || '?'}
+                        <div className="min-w-0">
+                          <p className="text-sm font-black text-slate-800 truncate mb-1">{p.name}</p>
+                          <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight line-clamp-2 max-w-[200px] leading-relaxed">
+                            {p.description || "Tavsif yo'q"}
+                          </p>
                         </div>
-                        <span className="text-xs text-slate-600">
-                          {p.owner_details?.first_name || 'Unknown'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-slate-700">
+                          {p.price ? Number(p.price).toLocaleString() : '—'}
+                        </span>
+                        <span className="text-[10px] font-black text-[#0067a5] uppercase tracking-widest mt-0.5">CYM</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="px-3 py-1 bg-slate-100 rounded-lg text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                        {p.category_name || 'ESHIK'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">{statusBadge(p)}</td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-sky-50 text-[#0067a5] flex items-center justify-center text-[11px] font-black shadow-sm ring-1 ring-sky-100">
+                          {p.owner_details?.first_name?.charAt(0) || 'P'}
+                        </div>
+                        <span className="text-xs font-bold text-slate-600 truncate max-w-[100px]">
+                          {p.owner_details?.first_name || 'Platform'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all">
+                        <button
+                          onClick={() => handleReprocess(p.id)}
+                          disabled={reprocessing === p.id}
+                          className="p-2.5 text-amber-500 hover:bg-amber-50 rounded-xl transition-all disabled:opacity-30"
+                          title="SI Qayta Ishlash"
+                        >
+                          <RefreshCw size={18} className={reprocessing === p.id ? 'animate-spin' : ''} />
+                        </button>
                         <button
                           onClick={() => setViewingProduct(p)}
-                          className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                          className="p-2.5 text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all"
                           title="Ko'rish"
                         >
-                          <Eye size={16} />
+                          <Eye size={18} />
                         </button>
                         <button
                           onClick={() => openEdit(p)}
-                          className="p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
+                          className="p-2.5 text-sky-600 hover:bg-sky-50 rounded-xl transition-all"
                           title="Tahrirlash"
                         >
-                          <Pencil size={16} />
+                          <Pencil size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(p.id)}
                           disabled={deleting === p.id}
-                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                          className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all disabled:opacity-30"
                           title="O'chirish"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </td>
@@ -342,92 +465,97 @@ export default function AdminProductsPage() {
 
       {/* View Product Modal */}
       {viewingProduct && (
-        <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setViewingProduct(null)}>
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl p-8 space-y-6 overflow-y-auto max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/80 z-[70] flex items-center justify-center p-4 backdrop-blur-xl" onClick={() => setViewingProduct(null)}>
+          <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-5xl p-10 space-y-10 overflow-y-auto max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-800">{viewingProduct.name}</h2>
-                <p className="text-slate-500 text-sm">Visual verification for AI results</p>
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight">{viewingProduct.name}</h2>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="px-3 py-1 bg-slate-100 rounded-lg text-[10px] font-black text-slate-500 uppercase tracking-widest">{viewingProduct.category_name}</span>
+                  <div className="w-1 h-1 bg-slate-300 rounded-full" />
+                  <span className="text-sm font-bold text-[#0067a5]">{Number(viewingProduct.price || 0).toLocaleString()} CYM</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button 
                   onClick={() => handleReprocess(viewingProduct.id)}
                   disabled={reprocessing === viewingProduct.id}
-                  className="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-600 hover:bg-sky-100 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
-                  title="Yangilash"
+                  className="flex items-center gap-3 px-6 py-3.5 bg-sky-50 text-[#0067a5] hover:bg-sky-100 rounded-2xl text-sm font-black transition-all disabled:opacity-50 shadow-sm"
                 >
-                  <RefreshCw size={18} className={reprocessing === viewingProduct.id ? 'animate-spin' : ''} />
-                  Qayta ishlash
+                  <RefreshCw size={20} className={reprocessing === viewingProduct.id ? 'animate-spin' : ''} />
+                  Yangilash
                 </button>
-                <button onClick={() => setViewingProduct(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                  <X size={24} />
+                <button onClick={() => setViewingProduct(null)} className="w-14 h-14 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-full flex items-center justify-center transition-all">
+                  <X size={28} />
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Original Image */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Asl rasm (Original)</span>
-                </div>
-                <div className="aspect-square rounded-2xl bg-slate-100 overflow-hidden border border-slate-200">
-                  {viewingProduct.original_image || viewingProduct.image ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div className="space-y-4">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Original Holati</span>
+                <div className="aspect-[3/4] rounded-[32px] bg-[#f5f5f7] border-4 border-white shadow-xl overflow-hidden group relative">
+                  {(viewingProduct.original_image || viewingProduct.image) && (
                     <img 
                       src={((viewingProduct.original_image || viewingProduct.image) ?? '').startsWith('http') ? (viewingProduct.original_image || viewingProduct.image) ?? '' : `${MEDIA_BASE}${viewingProduct.original_image || viewingProduct.image}`}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-contain mix-blend-multiply"
                       alt="Original"
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-300">Rasm yo'q</div>
                   )}
                 </div>
               </div>
 
-              {/* AI Image */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-sky-500">AI ishlov bergan (No Background)</span>
-                  {statusBadge(viewingProduct.ai_status)}
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sky-600">SI Natijasi (SAM Mask)</span>
+                  {statusBadge(viewingProduct)}
                 </div>
-                <div className="aspect-square rounded-2xl bg-[#f8f9fa] overflow-hidden border border-emerald-100 relative">
+                <div className="aspect-[3/4] rounded-[32px] bg-[#f8f9fa] border-4 border-white shadow-xl overflow-hidden relative border-dashed border-sky-100">
                   {viewingProduct.image_no_bg ? (
                     <img 
                       src={viewingProduct.image_no_bg.startsWith('http') ? viewingProduct.image_no_bg : `${MEDIA_BASE}${viewingProduct.image_no_bg}`}
                       className="w-full h-full object-contain relative z-10"
                       alt="Processed"
                     />
+                  ) : viewingProduct.ai_status === 'error' ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-red-400 p-8 text-center bg-red-50/20">
+                      <AlertCircle size={48} className="mb-4" />
+                      <p className="font-black text-sm uppercase tracking-widest mb-2">SI Xatoga Uchradi</p>
+                      <p className="text-xs font-medium leading-relaxed opacity-70 mb-6">{viewingProduct.ai_error || "Noma'lum texnik xatolik"}</p>
+                      <button 
+                        onClick={() => handleReprocess(viewingProduct.id)}
+                        className="px-6 py-2.5 bg-red-500 text-white rounded-xl text-xs font-black shadow-lg shadow-red-500/20 active:scale-95 transition-all"
+                      >
+                        Qayta Urinish
+                      </button>
+                    </div>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-300">Hali ishlov berilmagan</div>
-                  )}
-                  
-                  {/* Loading Overlay */}
-                  {viewingProduct.ai_status === 'processing' && (
-                    <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3">
-                      <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin" />
-                      <p className="text-sky-700 text-xs font-bold animate-pulse">AI ishlov bermoqda...</p>
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-4">
+                      <Package size={48} />
+                      <p className="font-bold text-xs">Hali ishlov berilmagan</p>
                     </div>
                   )}
-
-                  {/* Checkerboard pattern for transparency indication */}
-                  <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 0)', backgroundSize: '10px 10px' }} />
+                  
+                  {viewingProduct.ai_status === 'processing' && (
+                    <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-md flex flex-col items-center justify-center gap-6">
+                      <div className="w-16 h-16 border-[6px] border-[#0067a5] border-t-transparent rounded-full animate-spin" />
+                      <div className="text-center">
+                        <p className="text-slate-900 text-sm font-black uppercase tracking-[0.2em] mb-1">AI Ishlov bermoqda</p>
+                        <p className="text-slate-400 text-[10px] font-bold">Kuting, natija yaqin...</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#000 2px, transparent 0)', backgroundSize: '12px 12px' }} />
                 </div>
               </div>
             </div>
 
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <h4 className="text-sm font-bold text-slate-700 mb-1">Mahsulot ma'lumotlari:</h4>
-              <p className="text-sm text-slate-600 line-clamp-2">{viewingProduct.description || "Tavsif mavjud emas."}</p>
-              <div className="flex gap-4 mt-3">
-                <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-bold">Kategoriya</p>
-                  <p className="text-xs font-semibold text-slate-700">{viewingProduct.category_name}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-bold">Narxi</p>
-                  <p className="text-xs font-semibold text-sky-600">{viewingProduct.price ? Number(viewingProduct.price).toLocaleString() : '—'} CYM</p>
-                </div>
-              </div>
+            <div className="bg-[#f8f9fa] p-8 rounded-[32px] border border-slate-100">
+              <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-[#0067a5] rounded-full" />
+                Tavsif va Meta
+              </h4>
+              <p className="text-sm text-slate-500 font-medium leading-relaxed">{viewingProduct.description || "Ushbu mahsulot uchun batafsil tavsif kiritilmagan."}</p>
             </div>
           </div>
         </div>
@@ -440,15 +568,21 @@ export default function AdminProductsPage() {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-3 rounded-2xl shadow-2xl border ${
-              toast.type === 'success' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-red-600 border-red-500 text-white'
-            }`}
+            className={cn(
+              "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-4 px-8 py-4 rounded-[24px] shadow-2xl border-2",
+              toast.type === 'success' ? 'bg-emerald-900 border-emerald-800 text-white' : 'bg-red-900 border-red-800 text-white'
+            )}
           >
-            {toast.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-            <span className="text-sm font-bold">{toast.message}</span>
+            {toast.type === 'success' ? (
+              <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center"><CheckCircle2 size={18} className="text-white" /></div>
+            ) : (
+              <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center"><AlertCircle size={18} className="text-white" /></div>
+            )}
+            <span className="text-sm font-black tracking-tight">{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
+
 
       {/* Product Form Modal */}
       {showForm && (
