@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, FolderTree, Tag, Building2, Users, Image, Settings, LogOut, Menu, TrendingUp, Eye } from 'lucide-react';
+import { LayoutDashboard, Package, FolderTree, Tag, Building2, Users, Image, Settings, LogOut, Menu, TrendingUp, Eye, FlaskConical as Beaker } from 'lucide-react';
 import apiClient from '../api/client';
 import { cn } from '../utils/cn';
 
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { to: '/adminka/banners', icon: Image, label: 'Banners' },
   { to: '/adminka/leads', icon: TrendingUp, label: 'Leads' },
   { to: '/adminka/ai-results', icon: Eye, label: 'AI Results' },
+  { to: '/adminka/ai-lab', icon: Beaker, label: 'AI Lab' },
   { to: '/adminka/system', icon: Settings, label: 'System' },
 ];
 
