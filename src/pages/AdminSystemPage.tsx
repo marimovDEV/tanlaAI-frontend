@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Settings, Bot, Image as ImageIcon, Crosshair, 
+  Settings, Bot, Crosshair, 
   Users, Terminal, Save, RefreshCcw, Check, 
-  AlertCircle, ChevronRight, Globe, Cpu
+  AlertCircle, ChevronRight
 } from 'lucide-react';
 import apiClient from '../api/client';
 import { cn } from '../utils/cn';

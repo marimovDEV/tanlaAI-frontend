@@ -14,10 +14,42 @@ interface AIUploadResponse {
   limit?: number;
 }
 
+interface RoomAnalysisSummary {
+  door_found: boolean;
+  geometry_source: string;
+  detection_method: string;
+  wall_angle: number;
+  design_dna: string;
+  preserve_elements: string[];
+  lighting: {
+    direction: string;
+    warmth: string;
+    intensity: number;
+  };
+}
+
+interface GenerationMeta {
+  engine?: string;
+  model?: string;
+  mode?: string;
+  product_description?: string;
+  response_text?: string;
+}
+
+interface PipelineMeta {
+  version?: string;
+  room_analysis_engine?: string;
+  image_edit_engine?: string;
+}
+
 interface AIPollResponse {
   status: 'done' | 'error' | 'processing' | 'pending';
   image_url?: string;
   message?: string;
+  analysis?: RoomAnalysisSummary;
+  generation_prompt?: string;
+  generation_meta?: GenerationMeta;
+  pipeline?: PipelineMeta;
 }
 
 const AIVisualizePage: React.FC = () => {
@@ -30,6 +62,10 @@ const AIVisualizePage: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'done' | 'error'>('idle');
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<RoomAnalysisSummary | null>(null);
+  const [generationPrompt, setGenerationPrompt] = useState<string | null>(null);
+  const [generationMeta, setGenerationMeta] = useState<GenerationMeta | null>(null);
+  const [pipelineMeta, setPipelineMeta] = useState<PipelineMeta | null>(null);
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [leadType, setLeadType] = useState<'call' | 'measurement'>('call');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,6 +78,10 @@ const AIVisualizePage: React.FC = () => {
         const response = await apiClient.get<AIPollResponse>(`/products/${productId}/ai-generate/result/`);
         if (response.data.status === 'done') {
           setResultImage(response.data.image_url ?? null);
+          setAnalysis(response.data.analysis ?? null);
+          setGenerationPrompt(response.data.generation_prompt ?? null);
+          setGenerationMeta(response.data.generation_meta ?? null);
+          setPipelineMeta(response.data.pipeline ?? null);
           setStatus('done');
           haptic('heavy');
         } else if (response.data.status === 'error') {
@@ -91,6 +131,10 @@ const AIVisualizePage: React.FC = () => {
       setPreview(URL.createObjectURL(file));
       setStatus('idle');
       setError(null);
+      setAnalysis(null);
+      setGenerationPrompt(null);
+      setGenerationMeta(null);
+      setPipelineMeta(null);
       haptic('light');
     }
   };
@@ -310,6 +354,74 @@ const AIVisualizePage: React.FC = () => {
             </div>
           </div>
 
+          {(analysis || generationPrompt) && (
+            <div className="space-y-4">
+              {analysis && (
+                <div className="bg-white rounded-[28px] border border-outline/10 p-5 space-y-4 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">AI tahlili</p>
+                      <h3 className="text-lg font-extrabold text-on-surface mt-1">Xona konteksti chiqarildi</h3>
+                    </div>
+                    {pipelineMeta?.image_edit_engine && (
+                      <span className="rounded-full bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">
+                        {pipelineMeta.image_edit_engine}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-on-surface/80">{analysis.design_dna}</p>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="rounded-2xl bg-surface-variant px-4 py-3">
+                      <p className="text-outline font-black uppercase tracking-wider">Rakurs</p>
+                      <p className="mt-1 font-bold text-on-surface">{analysis.wall_angle}°</p>
+                    </div>
+                    <div className="rounded-2xl bg-surface-variant px-4 py-3">
+                      <p className="text-outline font-black uppercase tracking-wider">Aniqlash</p>
+                      <p className="mt-1 font-bold text-on-surface">{analysis.detection_method}</p>
+                    </div>
+                    <div className="rounded-2xl bg-surface-variant px-4 py-3">
+                      <p className="text-outline font-black uppercase tracking-wider">Yorug'lik</p>
+                      <p className="mt-1 font-bold text-on-surface">{analysis.lighting.direction}, {analysis.lighting.warmth}</p>
+                    </div>
+                    <div className="rounded-2xl bg-surface-variant px-4 py-3">
+                      <p className="text-outline font-black uppercase tracking-wider">Intensivlik</p>
+                      <p className="mt-1 font-bold text-on-surface">{analysis.lighting.intensity}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-outline">Saqlangan elementlar</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {analysis.preserve_elements.map((item) => (
+                        <span key={item} className="rounded-full bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-primary">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {generationPrompt && (
+                <div className="bg-slate-950 text-white rounded-[28px] p-5 shadow-sm">
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">Nano Banana prompt</p>
+                      <h3 className="text-lg font-extrabold mt-1">Yuborilgan instruction</h3>
+                    </div>
+                    {generationMeta?.model && (
+                      <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200">
+                        {generationMeta.model}
+                      </span>
+                    )}
+                  </div>
+                  <pre className="whitespace-pre-wrap text-xs leading-6 text-slate-200 font-mono max-h-72 overflow-auto">
+                    {generationPrompt}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex gap-3">
             <button 
               onClick={() => {
@@ -318,6 +430,10 @@ const AIVisualizePage: React.FC = () => {
                 setImage(null);
                 setResultImage(null);
                 setError(null);
+                setAnalysis(null);
+                setGenerationPrompt(null);
+                setGenerationMeta(null);
+                setPipelineMeta(null);
               }}
               className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-50 text-slate-900 rounded-2xl border border-slate-200 text-sm font-black active:scale-95 transition-all hover:bg-slate-100"
             >
