@@ -362,7 +362,7 @@ export default function AdminAILabPage() {
                             <div key={t.id} className="flex items-center gap-4 group cursor-pointer" onClick={() => setActiveTab('history')}>
                                 <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden">
                                      {t.result_image ? (
-                                         <img src={`${MEDIA_BASE}/media/${t.result_image}`} className="w-full h-full object-cover" alt="Run" />
+                                         <img src={t.result_image.startsWith('http') ? t.result_image : `${MEDIA_BASE}/media/${t.result_image}`} className="w-full h-full object-cover" alt="Run" />
                                      ) : (
                                          <div className="w-full h-full flex items-center justify-center text-slate-300"><Clock size={16} /></div>
                                      )}
@@ -404,7 +404,7 @@ export default function AdminAILabPage() {
                         <div key={t.id} className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-xl transition-all hover:-translate-y-1">
                             <div className="aspect-video relative overflow-hidden bg-slate-50">
                                 {t.result_image ? (
-                                    <img src={`${MEDIA_BASE}/media/${t.result_image}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Result" />
+                                    <img src={t.result_image.startsWith('http') ? t.result_image : `${MEDIA_BASE}/media/${t.result_image}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Result" />
                                 ) : (
                                     <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-4">
                                         <Clock size={32} />
@@ -449,7 +449,7 @@ export default function AdminAILabPage() {
                                         <span className="text-[9px] text-slate-300 font-bold uppercase tracking-widest">{new Date(t.created_at).toLocaleDateString()}</span>
                                     </div>
                                     <a 
-                                      href={`${MEDIA_BASE}/media/${t.result_image}`} 
+                                      href={t.result_image?.startsWith('http') ? t.result_image : `${MEDIA_BASE}/media/${t.result_image}`} 
                                       target="_blank" 
                                       rel="noopener noreferrer"
                                       className="w-10 h-10 bg-slate-100 hover:bg-sky-50 text-slate-400 hover:text-sky-600 rounded-xl flex items-center justify-center transition-all"
