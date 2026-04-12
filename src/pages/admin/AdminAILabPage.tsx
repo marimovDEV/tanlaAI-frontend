@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { Search, FlaskConical as Beaker, Upload, Send, Trash2, ChevronRight, Image as ImageIcon, CheckCircle2, AlertCircle, Info, Clock, ExternalLink } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { Search, FlaskConical as Beaker, Upload, Send, Trash2, ChevronRight, Image as ImageIcon, CheckCircle2, AlertCircle, Info, Clock, ExternalLink, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
