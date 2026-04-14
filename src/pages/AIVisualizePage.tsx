@@ -12,6 +12,7 @@ interface AIUploadResponse {
   message?: string;
   code?: string;
   limit?: number;
+  request_id?: string;
 }
 
 interface RoomAnalysisSummary {
@@ -68,14 +69,18 @@ const AIVisualizePage: React.FC = () => {
   const [pipelineMeta, setPipelineMeta] = useState<PipelineMeta | null>(null);
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [leadType, setLeadType] = useState<'call' | 'measurement'>('call');
+  const [, setCurrentRequestId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollTimeoutRef = useRef<number | null>(null);
+  const retryTimeoutRef = useRef<number | null>(null);
   const { haptic } = useTelegram();
 
-  const startPolling = React.useCallback((productId: number) => {
+  const startPolling = React.useCallback((productId: number, requestId?: string) => {
     const poll = async () => {
       try {
-        const response = await apiClient.get<AIPollResponse>(`/products/${productId}/ai-generate/result/`);
+        const response = await apiClient.get<AIPollResponse>(`/products/${productId}/ai-generate/result/`, {
+          params: requestId ? { request_id: requestId } : undefined,
+        });
         if (response.data.status === 'done') {
           setResultImage(response.data.image_url ?? null);
           setAnalysis(response.data.analysis ?? null);
@@ -121,6 +126,9 @@ const AIVisualizePage: React.FC = () => {
       if (pollTimeoutRef.current) {
         window.clearTimeout(pollTimeoutRef.current);
       }
+      if (retryTimeoutRef.current) {
+        window.clearTimeout(retryTimeoutRef.current);
+      }
     };
   }, [id, startPolling]);
 
@@ -135,6 +143,7 @@ const AIVisualizePage: React.FC = () => {
       setGenerationPrompt(null);
       setGenerationMeta(null);
       setPipelineMeta(null);
+      setCurrentRequestId(null);
       haptic('light');
     }
   };
@@ -158,14 +167,17 @@ const AIVisualizePage: React.FC = () => {
       const response = await apiClient.post<AIUploadResponse>(`/products/${product.id}/ai-generate/`, formData);
 
       if (response.data.status === 'ok' || response.data.status === 'processing') {
+        setCurrentRequestId(response.data.request_id ?? null);
         setStatus('processing');
         setError(null);
-        startPolling(product.id);
+        startPolling(product.id, response.data.request_id);
       } else if (response.data.status === 'preparing') {
         setStatus('processing');
         setError('Mahsulot tayyorlanmoqda (SI fonni o\'chirmoqda)...');
         // Retry after 5 seconds
-        setTimeout(() => handleUpload(), 5000);
+        retryTimeoutRef.current = window.setTimeout(() => {
+          void handleUpload();
+        }, 5000);
       } else {
         setStatus('error');
         setError(response.data.message || 'Server error');
@@ -442,6 +454,7 @@ const AIVisualizePage: React.FC = () => {
                 setGenerationPrompt(null);
                 setGenerationMeta(null);
                 setPipelineMeta(null);
+                setCurrentRequestId(null);
               }}
               className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-50 text-slate-900 rounded-2xl border border-slate-200 text-sm font-black active:scale-95 transition-all hover:bg-slate-100"
             >

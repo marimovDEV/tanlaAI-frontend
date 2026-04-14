@@ -270,12 +270,12 @@ export default function AdminAILabPage() {
                   </div>
                 </div>
 
-                {/* Step 3: Prompt Editor */}
+                {/* Step 3: Test Notes */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-black text-slate-800 flex items-center gap-3">
                       <span className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">3</span>
-                      Prompt (Ixtiyoriy)
+                      Test Eslatmasi (Ixtiyoriy)
                     </h3>
                     <div className="flex items-center gap-2 group cursor-help">
                         <Info size={14} className="text-slate-300 group-hover:text-sky-500 transition-colors" />
@@ -286,11 +286,11 @@ export default function AdminAILabPage() {
                   <textarea 
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Masalan: Change the door color to match the wall style..."
+                    placeholder="Masalan: ochilish chap tomonga siljib ketdi yoki pastki shadow kuchsiz..."
                     className="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-[24px] text-sm font-medium focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all placeholder:text-slate-300"
                   />
                   <p className="text-[10px] text-slate-400 font-medium px-2 leading-relaxed">
-                    * Bo'sh qoldirsangiz, tizim avtomatik eng maqbul promptni tayyorlaydi. Custom prompt yozsangiz, AI faqat sizning ko'rsatmangiz bo'yicha ishlaydi.
+                    * Bu maydon kreativ prompt emas. Pipeline xona va eshik dizaynini lock qiladi; bu yerga faqat debug note yoki kuzatuv yozuvi saqlanadi.
                   </p>
                 </div>
 
@@ -428,6 +428,11 @@ export default function AdminAILabPage() {
                                     <div className="min-w-0">
                                         <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Eshik</p>
                                         <p className="text-sm font-black text-slate-800 truncate">{t.door_details.name}</p>
+                                        {t.metadata?.pipeline?.detection_method && (
+                                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
+                                            Locked scene · {String(t.metadata.pipeline.detection_method)}
+                                          </p>
+                                        )}
                                     </div>
                                     <div className="w-10 h-14 bg-slate-50 rounded-lg flex-shrink-0 border border-slate-100 p-1 flex items-center justify-center">
                                          <img src={t.door_details.image?.startsWith('http') ? t.door_details.image : `${MEDIA_BASE}${t.door_details.image}`} className="max-w-full max-h-full object-contain mix-blend-multiply" alt="Door" />
@@ -436,7 +441,7 @@ export default function AdminAILabPage() {
 
                                 {t.prompt && (
                                     <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Prompt</p>
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Test Note</p>
                                         <p className="text-[11px] text-slate-600 font-medium italic line-clamp-2">"{t.prompt}"</p>
                                     </div>
                                 )}
@@ -444,7 +449,7 @@ export default function AdminAILabPage() {
                                 <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] font-black px-2 py-0.5 bg-sky-100 text-sky-700 rounded-md">
-                                            {t.metadata?.pipeline?.version || 'v45'}
+                                            {t.metadata?.pipeline?.final_result === 'ai_masked_refine' ? 'AI refine' : 'OpenCV lock'}
                                         </span>
                                         <span className="text-[9px] text-slate-300 font-bold uppercase tracking-widest">{new Date(t.created_at).toLocaleDateString()}</span>
                                     </div>
