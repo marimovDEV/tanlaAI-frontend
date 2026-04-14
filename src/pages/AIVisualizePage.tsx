@@ -196,12 +196,19 @@ const AIVisualizePage: React.FC = () => {
 
       {product && (
         <div className="flex items-center gap-4 bg-white rounded-[28px] border border-outline/10 p-4 shadow-sm">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden bg-surface-variant flex-shrink-0">
-            {product.image ? (
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-outline/30">
-                <Sparkles size={20} />
+          <div className="flex -space-x-3 flex-shrink-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-surface-variant ring-2 ring-white z-10 relative shadow-sm">
+              {product.image ? (
+                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-outline/30">
+                  <Sparkles size={20} />
+                </div>
+              )}
+            </div>
+            {preview && (
+              <div className="w-16 h-16 rounded-2xl overflow-hidden bg-surface-variant ring-2 ring-white z-0 relative opacity-90 shadow-sm">
+                <img src={preview} alt="Room Preview" className="w-full h-full object-cover" />
               </div>
             )}
           </div>
