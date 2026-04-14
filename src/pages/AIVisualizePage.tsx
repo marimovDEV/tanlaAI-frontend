@@ -195,33 +195,34 @@ const AIVisualizePage: React.FC = () => {
       </div>
 
       {product && (
-        <div className="flex items-center gap-4 bg-white rounded-[28px] border border-outline/10 p-4 shadow-sm">
-          <div className="flex -space-x-3 flex-shrink-0">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-surface-variant ring-2 ring-white z-10 relative shadow-sm">
-              {product.image ? (
-                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-outline/30">
-                  <Sparkles size={20} />
-                </div>
-              )}
-            </div>
-            {preview && (
-              <div className="w-16 h-16 rounded-2xl overflow-hidden bg-surface-variant ring-2 ring-white z-0 relative opacity-90 shadow-sm">
-                <img src={preview} alt="Room Preview" className="w-full h-full object-cover" />
+        <div className="flex items-center gap-3 bg-white rounded-[28px] border border-outline/10 p-4 shadow-sm">
+          {/* Door image - left */}
+          <div className="w-14 h-14 rounded-2xl overflow-hidden bg-surface-variant flex-shrink-0 shadow-sm border border-outline/5">
+            {product.image ? (
+              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-outline/30">
+                <Sparkles size={18} />
               </div>
             )}
           </div>
-          <div className="min-w-0">
-            <p className="font-extrabold text-on-surface truncate">{product.name}</p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-outline mt-1">{product.category_name}</p>
+          {/* Product info - middle */}
+          <div className="min-w-0 flex-1">
+            <p className="font-extrabold text-on-surface truncate text-sm">{product.name}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-outline mt-0.5">{product.category_name}</p>
             {(product.height || product.width) && (
-              <div className="flex items-center gap-3 mt-2 text-[10px] font-bold text-primary">
+              <div className="flex items-center gap-3 mt-1.5 text-[10px] font-bold text-primary">
                 {product.height && <span>H: {product.height} sm</span>}
                 {product.width && <span>W: {product.width} sm</span>}
               </div>
             )}
           </div>
+          {/* Room image - right */}
+          {preview && (
+            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-surface-variant flex-shrink-0 shadow-sm border-2 border-primary/20">
+              <img src={preview} alt="Xona rasmi" className="w-full h-full object-cover" />
+            </div>
+          )}
         </div>
       )}
 
