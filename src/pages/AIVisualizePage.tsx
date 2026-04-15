@@ -97,7 +97,7 @@ const AIVisualizePage: React.FC = () => {
   const [, setCurrentRequestId] = useState<string | null>(null);
   const [loadingStep, setLoadingStep] = useState(0);
   const [showBeforeAfter, setShowBeforeAfter] = useState(false);
-  const [sliderPos, setSliderPos] = useState(50);
+  const [sliderPos, setSliderPos] = useState(20);
   const sliderRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -292,7 +292,7 @@ const AIVisualizePage: React.FC = () => {
     setPipelineMeta(null);
     setCurrentRequestId(null);
     setShowBeforeAfter(false);
-    setSliderPos(50);
+    setSliderPos(20);
   };
 
   const isLoading = status === "uploading" || status === "processing";
