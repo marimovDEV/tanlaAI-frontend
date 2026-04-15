@@ -54,6 +54,11 @@ interface PipelineMeta {
   version?: string;
   room_analysis_engine?: string;
   image_edit_engine?: string;
+  model?: string;
+  mode?: string;
+  detection_method?: string;
+  post_processed?: boolean;
+  annotation_box?: number[];
 }
 
 interface AIPollResponse {
@@ -66,12 +71,13 @@ interface AIPollResponse {
   pipeline?: PipelineMeta;
 }
 
-// Progress steps for loading state
+// Progress steps for loading state (reflects Gemini Direct v5 pipeline)
 const LOADING_STEPS = [
-  { label: "Rasmlar yuklanmoqda...", duration: 3000 },
-  { label: "Xona tahlil qilinmoqda...", duration: 5000 },
-  { label: "Eshik o'rnatilmoqda...", duration: 8000 },
-  { label: "Natija tayyorlanmoqda...", duration: 5000 },
+  { label: "Rasmlar yuklanmoqda...", duration: 2500 },
+  { label: "Xona va eshik o'lchami aniqlanmoqda...", duration: 5000 },
+  { label: "AI yordamida realistik o'rnatilmoqda...", duration: 10000 },
+  { label: "Yorug'lik va soya moslashtirilmoqda...", duration: 4000 },
+  { label: "Natija tayyorlanmoqda...", duration: 3000 },
 ];
 
 const AIVisualizePage: React.FC = () => {
@@ -603,16 +609,36 @@ const AIVisualizePage: React.FC = () => {
       {status === "done" && resultImage && (
         <div className="px-5 mt-5 space-y-5 animate-in fade-in zoom-in-95 duration-500">
           {/* Success badge */}
-          <div className="flex items-center justify-center gap-2 bg-green-50 border border-green-100 rounded-2xl py-3">
-            <CheckCircle2 size={18} className="text-green-500" />
-            <p className="text-sm font-bold text-green-700">
-              Vizualizatsiya tayyor!
-            </p>
-            {pipelineMeta?.image_edit_engine && (
-              <span className="text-[10px] font-black bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                {pipelineMeta.image_edit_engine}
-              </span>
-            )}
+          <div className="flex flex-col items-center gap-2 bg-green-50 border border-green-100 rounded-2xl py-3 px-4">
+            <div className="flex items-center justify-center gap-2">
+              <CheckCircle2 size={18} className="text-green-500" />
+              <p className="text-sm font-bold text-green-700">
+                Vizualizatsiya tayyor!
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              {pipelineMeta?.image_edit_engine && (
+                <span className="text-[10px] font-black bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  {pipelineMeta.image_edit_engine}
+                </span>
+              )}
+              {pipelineMeta?.model && (
+                <span className="text-[10px] font-semibold bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded-full tracking-wide">
+                  {pipelineMeta.model}
+                </span>
+              )}
+              {pipelineMeta?.post_processed && (
+                <span className="text-[10px] font-black bg-purple-500/10 text-purple-600 px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
+                  <Wand2 size={9} />
+                  Yaxshilangan
+                </span>
+              )}
+              {pipelineMeta?.detection_method && (
+                <span className="text-[10px] font-semibold bg-slate-500/10 text-slate-500 px-2 py-0.5 rounded-full tracking-wide">
+                  {pipelineMeta.detection_method}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Result image / Before-After slider */}
