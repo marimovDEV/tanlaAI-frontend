@@ -1,14 +1,27 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { isAxiosError } from 'axios';
-import { useParams } from 'react-router-dom';
-import { Camera, Sparkles, CheckCircle2, AlertCircle, RefreshCcw, Download, Share2, Ruler, Phone } from 'lucide-react';
-import apiClient from '../api/client';
-import type { Product } from '../types';
-import { useTelegram } from '../contexts/useTelegram';
-import LeadForm from '../components/LeadForm';
+import React, { useState, useEffect, useRef } from "react";
+import { isAxiosError } from "axios";
+import { useParams } from "react-router-dom";
+import {
+  Camera,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCcw,
+  Download,
+  Share2,
+  Ruler,
+  Phone,
+  ArrowLeftRight,
+  Wand2,
+  ImageIcon,
+} from "lucide-react";
+import apiClient from "../api/client";
+import type { Product } from "../types";
+import { useTelegram } from "../contexts/useTelegram";
+import LeadForm from "../components/LeadForm";
 
 interface AIUploadResponse {
-  status: 'ok' | 'error' | 'processing' | 'preparing';
+  status: "ok" | "error" | "processing" | "preparing";
   message?: string;
   code?: string;
   limit?: number;
@@ -44,7 +57,7 @@ interface PipelineMeta {
 }
 
 interface AIPollResponse {
-  status: 'done' | 'error' | 'processing' | 'pending';
+  status: "done" | "error" | "processing" | "pending";
   image_url?: string;
   message?: string;
   analysis?: RoomAnalysisSummary;
@@ -53,82 +66,130 @@ interface AIPollResponse {
   pipeline?: PipelineMeta;
 }
 
+// Progress steps for loading state
+const LOADING_STEPS = [
+  { label: "Rasmlar yuklanmoqda...", duration: 3000 },
+  { label: "Xona tahlil qilinmoqda...", duration: 5000 },
+  { label: "Eshik o'rnatilmoqda...", duration: 8000 },
+  { label: "Natija tayyorlanmoqda...", duration: 5000 },
+];
+
 const AIVisualizePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [inputHeight, setInputHeight] = useState('');
-  const [inputWidth, setInputWidth] = useState('');
-  const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'done' | 'error'>('idle');
+  const [inputHeight, setInputHeight] = useState("");
+  const [inputWidth, setInputWidth] = useState("");
+  const [status, setStatus] = useState<
+    "idle" | "uploading" | "processing" | "done" | "error"
+  >("idle");
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<RoomAnalysisSummary | null>(null);
   const [generationPrompt, setGenerationPrompt] = useState<string | null>(null);
-  const [generationMeta, setGenerationMeta] = useState<GenerationMeta | null>(null);
+  const [generationMeta, setGenerationMeta] = useState<GenerationMeta | null>(
+    null,
+  );
   const [pipelineMeta, setPipelineMeta] = useState<PipelineMeta | null>(null);
   const [showLeadForm, setShowLeadForm] = useState(false);
-  const [leadType, setLeadType] = useState<'call' | 'measurement'>('call');
+  const [leadType, setLeadType] = useState<"call" | "measurement">("call");
   const [, setCurrentRequestId] = useState<string | null>(null);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [showBeforeAfter, setShowBeforeAfter] = useState(false);
+  const [sliderPos, setSliderPos] = useState(50);
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollTimeoutRef = useRef<number | null>(null);
   const retryTimeoutRef = useRef<number | null>(null);
+  const loadingStepTimerRef = useRef<number | null>(null);
   const { haptic } = useTelegram();
 
-  const startPolling = React.useCallback((productId: number, requestId?: string) => {
-    const poll = async () => {
-      try {
-        const response = await apiClient.get<AIPollResponse>(`/products/${productId}/ai-generate/result/`, {
-          params: requestId ? { request_id: requestId } : undefined,
-        });
-        if (response.data.status === 'done') {
-          setResultImage(response.data.image_url ?? null);
-          setAnalysis(response.data.analysis ?? null);
-          setGenerationPrompt(response.data.generation_prompt ?? null);
-          setGenerationMeta(response.data.generation_meta ?? null);
-          setPipelineMeta(response.data.pipeline ?? null);
-          setStatus('done');
-          haptic('heavy');
-        } else if (response.data.status === 'error') {
-          setStatus('error');
-          setError(response.data.message || 'AI processing failed');
-        } else {
-          pollTimeoutRef.current = window.setTimeout(poll, 3000);
+  // Loading step progression
+  useEffect(() => {
+    if (status === "uploading" || status === "processing") {
+      setLoadingStep(0);
+      let currentStep = 0;
+      const advanceStep = () => {
+        currentStep++;
+        if (currentStep < LOADING_STEPS.length) {
+          setLoadingStep(currentStep);
+          loadingStepTimerRef.current = window.setTimeout(
+            advanceStep,
+            LOADING_STEPS[currentStep].duration,
+          );
         }
-      } catch (err) {
-        console.error('Polling error:', err);
-        setStatus('error');
-        setError('Connection lost while processing');
+      };
+      loadingStepTimerRef.current = window.setTimeout(
+        advanceStep,
+        LOADING_STEPS[0].duration,
+      );
+    } else {
+      if (loadingStepTimerRef.current) {
+        window.clearTimeout(loadingStepTimerRef.current);
+      }
+    }
+    return () => {
+      if (loadingStepTimerRef.current) {
+        window.clearTimeout(loadingStepTimerRef.current);
       }
     };
+  }, [status]);
 
-    void poll();
-  }, [haptic]);
+  const startPolling = React.useCallback(
+    (productId: number, requestId?: string) => {
+      const poll = async () => {
+        try {
+          const response = await apiClient.get<AIPollResponse>(
+            `/products/${productId}/ai-generate/result/`,
+            {
+              params: requestId ? { request_id: requestId } : undefined,
+            },
+          );
+          if (response.data.status === "done") {
+            setResultImage(response.data.image_url ?? null);
+            setAnalysis(response.data.analysis ?? null);
+            setGenerationPrompt(response.data.generation_prompt ?? null);
+            setGenerationMeta(response.data.generation_meta ?? null);
+            setPipelineMeta(response.data.pipeline ?? null);
+            setStatus("done");
+            haptic("heavy");
+          } else if (response.data.status === "error") {
+            setStatus("error");
+            setError(response.data.message || "AI processing failed");
+          } else {
+            pollTimeoutRef.current = window.setTimeout(poll, 3000);
+          }
+        } catch (err) {
+          console.error("Polling error:", err);
+          setStatus("error");
+          setError("Connection lost while processing");
+        }
+      };
+
+      void poll();
+    },
+    [haptic],
+  );
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const response = await apiClient.get<Product>(`/products/${id}/`);
         setProduct(response.data);
-        setInputHeight(response.data.height ?? '');
-        setInputWidth(response.data.width ?? '');
-
-        // Don't auto-trigger processing state here. 
-        // Let the user upload their room photo first.
+        setInputHeight(response.data.height ?? "");
+        setInputWidth(response.data.width ?? "");
       } catch (err) {
-        console.error('Error fetching product:', err);
+        console.error("Error fetching product:", err);
       }
     };
 
     void fetchProduct();
 
     return () => {
-      if (pollTimeoutRef.current) {
-        window.clearTimeout(pollTimeoutRef.current);
-      }
-      if (retryTimeoutRef.current) {
-        window.clearTimeout(retryTimeoutRef.current);
-      }
+      if (pollTimeoutRef.current) window.clearTimeout(pollTimeoutRef.current);
+      if (retryTimeoutRef.current) window.clearTimeout(retryTimeoutRef.current);
     };
   }, [id, startPolling]);
 
@@ -137,58 +198,59 @@ const AIVisualizePage: React.FC = () => {
     if (file) {
       setImage(file);
       setPreview(URL.createObjectURL(file));
-      setStatus('idle');
+      setStatus("idle");
       setError(null);
       setAnalysis(null);
       setGenerationPrompt(null);
       setGenerationMeta(null);
       setPipelineMeta(null);
       setCurrentRequestId(null);
-      haptic('light');
+      haptic("light");
     }
   };
 
   const handleUpload = async () => {
     if (!image || !product) return;
-
-    setStatus('uploading');
-    haptic('medium');
+    setStatus("uploading");
+    haptic("medium");
 
     const formData = new FormData();
-    formData.append('room_photo', image);
-    if (inputHeight.trim()) {
-      formData.append('height', inputHeight.trim());
-    }
-    if (inputWidth.trim()) {
-      formData.append('width', inputWidth.trim());
-    }
+    formData.append("room_photo", image);
+    if (inputHeight.trim()) formData.append("height", inputHeight.trim());
+    if (inputWidth.trim()) formData.append("width", inputWidth.trim());
 
     try {
-      const response = await apiClient.post<AIUploadResponse>(`/products/${product.id}/ai-generate/`, formData);
+      const response = await apiClient.post<AIUploadResponse>(
+        `/products/${product.id}/ai-generate/`,
+        formData,
+      );
 
-      if (response.data.status === 'ok' || response.data.status === 'processing') {
+      if (
+        response.data.status === "ok" ||
+        response.data.status === "processing"
+      ) {
         setCurrentRequestId(response.data.request_id ?? null);
-        setStatus('processing');
+        setStatus("processing");
         setError(null);
         startPolling(product.id, response.data.request_id);
-      } else if (response.data.status === 'preparing') {
-        setStatus('processing');
-        setError('Mahsulot tayyorlanmoqda (SI fonni o\'chirmoqda)...');
-        // Retry after 5 seconds
+      } else if (response.data.status === "preparing") {
+        setStatus("processing");
+        setError("Mahsulot tayyorlanmoqda...");
         retryTimeoutRef.current = window.setTimeout(() => {
           void handleUpload();
         }, 5000);
       } else {
-        setStatus('error');
-        setError(response.data.message || 'Server error');
+        setStatus("error");
+        setError(response.data.message || "Server error");
       }
     } catch (error: unknown) {
-      console.error('Upload error details:', error);
-      setStatus('error');
-      
-      let msg = 'Failed to upload image';
-      if (isAxiosError<{ message?: string, error?: string }>(error)) {
-        msg = error.response?.data?.message || error.response?.data?.error || `Server error (${error.response?.status})`;
+      setStatus("error");
+      let msg = "Rasmni yuklashda xatolik";
+      if (isAxiosError<{ message?: string; error?: string }>(error)) {
+        msg =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          `Server xatoligi (${error.response?.status})`;
       } else if (error instanceof Error) {
         msg = error.message;
       }
@@ -196,110 +258,340 @@ const AIVisualizePage: React.FC = () => {
     }
   };
 
+  // Before/After slider logic
+  const handleSliderMove = (clientX: number) => {
+    if (!sliderRef.current) return;
+    const rect = sliderRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const pct = Math.min(100, Math.max(0, (x / rect.width) * 100));
+    setSliderPos(pct);
+  };
+
+  const handleMouseDown = () => {
+    isDragging.current = true;
+  };
+  const handleMouseUp = () => {
+    isDragging.current = false;
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging.current) handleSliderMove(e.clientX);
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    handleSliderMove(e.touches[0].clientX);
+  };
+
+  const resetAll = () => {
+    setStatus("idle");
+    setPreview(null);
+    setImage(null);
+    setResultImage(null);
+    setError(null);
+    setAnalysis(null);
+    setGenerationPrompt(null);
+    setGenerationMeta(null);
+    setPipelineMeta(null);
+    setCurrentRequestId(null);
+    setShowBeforeAfter(false);
+    setSliderPos(50);
+  };
+
+  const isLoading = status === "uploading" || status === "processing";
+  const currentLoadingLabel =
+    LOADING_STEPS[loadingStep]?.label ?? "Ishlanmoqda...";
+
   return (
-    <div className="p-6 pb-24 space-y-8">
-      {/* Header Info */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-extrabold text-on-surface">Sun'iy intellekt vizualizatsiyasi</h2>
-        <p className="text-xs text-outline font-medium px-10">
-          Bo'sh xonangiz rasmini yuklang va SI uni ushbu mahsulot bilan to'ldiradi.
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-32">
+      {/* ─── HEADER ─── */}
+      <div className="px-5 pt-8 pb-4 text-center space-y-1">
+        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-3">
+          <Sparkles size={12} />
+          Gemini AI
+        </div>
+        <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">
+          Xonangizga eshikni
+          <br />
+          vizual o'rnating
+        </h1>
+        <p className="text-xs text-slate-400 font-medium pt-1">
+          Xona rasmingizni yuklang — AI eshikni o'rnatib ko'rsatadi
         </p>
       </div>
 
+      {/* ─── PRODUCT + ROOM CARDS ─── */}
       {product && (
-        <div className="flex items-center gap-3 bg-white rounded-[28px] border border-outline/10 p-4 shadow-sm">
-          {/* Door image - left */}
-          <div className="w-14 h-14 rounded-2xl overflow-hidden bg-surface-variant flex-shrink-0 shadow-sm border border-outline/5">
-            {product.image ? (
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-outline/30">
-                <Sparkles size={18} />
+        <div className="px-5 mt-2">
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="flex items-stretch">
+              {/* Door card */}
+              <div className="flex-1 flex flex-col items-center justify-center p-4 gap-2 border-r border-slate-100">
+                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                      <ImageIcon size={24} />
+                    </div>
+                  )}
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Eshik
+                  </p>
+                  <p className="text-xs font-bold text-slate-800 mt-0.5 line-clamp-2">
+                    {product.name}
+                  </p>
+                  {(product.height || product.width) && (
+                    <p className="text-[10px] text-primary font-bold mt-1">
+                      {product.height && `${product.height}×`}
+                      {product.width} sm
+                    </p>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-          {/* Product info - middle */}
-          <div className="min-w-0 flex-1">
-            <p className="font-extrabold text-on-surface truncate text-sm">{product.name}</p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-outline mt-0.5">{product.category_name}</p>
-            {(product.height || product.width) && (
-              <div className="flex items-center gap-3 mt-1.5 text-[10px] font-bold text-primary">
-                {product.height && <span>H: {product.height} sm</span>}
-                {product.width && <span>W: {product.width} sm</span>}
+
+              {/* Arrow */}
+              <div className="flex items-center justify-center w-10 flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <ArrowLeftRight size={14} className="text-primary" />
+                </div>
               </div>
-            )}
-          </div>
-          {/* Room image - right */}
-          {preview && (
-            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-surface-variant flex-shrink-0 shadow-sm border-2 border-primary/20">
-              <img src={preview} alt="Xona rasmi" className="w-full h-full object-cover" />
+
+              {/* Room card */}
+              <div
+                className="flex-1 flex flex-col items-center justify-center p-4 gap-2 cursor-pointer active:bg-primary/5 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-primary/5 border-2 border-dashed border-primary/20 flex items-center justify-center">
+                  {preview ? (
+                    <img
+                      src={preview}
+                      alt="Xona"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Camera size={28} className="text-primary/40" />
+                  )}
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Xona
+                  </p>
+                  <p className="text-xs font-bold text-primary mt-0.5">
+                    {preview ? "Rasm tanlandi ✓" : "Rasm yuklash"}
+                  </p>
+                </div>
+              </div>
             </div>
-          )}
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept="image/*"
+          />
         </div>
       )}
 
-      {status === 'idle' && (
-        <div className="space-y-6">
-          {product?.ai_status === 'processing' && (
-            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-start gap-3 text-primary animate-pulse">
-              <RefreshCcw size={20} className="shrink-0 mt-0.5 animate-spin" />
-              <div className="text-sm">
-                <b>Mahsulot tayyorlanmoqda:</b> AI fonni o‘chirmoqda. Siz o‘z rasmingizni yuklab turishingiz mumkin.
+      {/* ─── IDLE: Upload area + dimensions ─── */}
+      {status === "idle" && (
+        <div className="px-5 mt-5 space-y-4">
+          {/* Upload zone */}
+          {!preview ? (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-primary/20 bg-primary/3 rounded-[32px] aspect-[4/3] flex flex-col items-center justify-center cursor-pointer active:scale-[0.98] transition-all relative overflow-hidden group"
+            >
+              <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-lg mb-5 text-primary group-active:scale-95 transition-transform">
+                <Camera size={32} />
+              </div>
+              <p className="text-base font-bold text-slate-800">
+                Xona rasmini yuklang
+              </p>
+              <p className="text-xs text-slate-400 mt-2 px-10 text-center leading-relaxed">
+                Eshik ko'rinadigan xona rasmi eng yaxshi natija beradi
+              </p>
+              <div className="flex gap-2 mt-4 flex-wrap justify-center px-6">
+                {["JPG", "PNG", "HEIC"].map((fmt) => (
+                  <span
+                    key={fmt}
+                    className="text-[10px] font-bold bg-white/80 border border-slate-100 rounded-full px-2.5 py-1 text-slate-500"
+                  >
+                    {fmt}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="relative rounded-[32px] overflow-hidden aspect-[4/3] shadow-lg">
+              <img
+                src={preview}
+                alt="Xona rasmi"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-4 py-2 rounded-full shadow-lg active:scale-95 transition-all flex items-center gap-2"
+              >
+                <Camera size={14} />
+                O'zgartirish
+              </button>
+              <div className="absolute top-4 left-4 bg-green-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
+                <CheckCircle2 size={10} />
+                Rasm tanlandi
               </div>
             </div>
           )}
 
-          <div 
-            onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-[40px] aspect-[4/5] flex flex-col items-center justify-center cursor-pointer active:scale-[0.98] transition-all relative overflow-hidden"
-          >
-            {preview ? (
-              <img src={preview} alt="Preview" className="w-full h-full object-contain" />
-            ) : (
-              <>
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg mb-4 text-primary">
-                  <Camera size={28} />
-                </div>
-                <p className="text-sm font-bold text-primary">Rasmga oling yoki yuklang</p>
-                <p className="text-[10px] text-outline mt-1 uppercase tracking-widest font-black">Bo'sh xona rasmi yaxshiroq natija beradi</p>
-              </>
-            )}
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-              className="hidden" 
-              accept="image/*"
-            />
-          </div>
-
-          <div className="bg-white rounded-[28px] border border-outline/10 p-5 space-y-4">
-            <div className="flex items-center gap-2 text-primary">
-              <Ruler size={16} />
-              <p className="text-[10px] font-black uppercase tracking-widest">Teshik o'lchamlari</p>
-            </div>
-            <p className="text-xs text-outline">Mahsulot o'lchamiga yaqin qiymat kiriting. Ruxsat etilgan farq: ±5 sm.</p>
-            <div className="grid grid-cols-2 gap-4">
+          {/* Dimensions */}
+          <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center">
+                <Ruler size={15} className="text-primary" />
+              </div>
               <div>
-                <label className="text-[9px] font-bold text-outline uppercase tracking-wider mb-2 block ml-1">Balandlik (sm)</label>
+                <p className="text-xs font-black text-slate-800">
+                  Eshik teshigi o'lchamlari
+                </p>
+                <p className="text-[10px] text-slate-400">
+                  Ixtiyoriy — aniqlik uchun kiriting
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">
+                  Balandlik (sm)
+                </label>
                 <input
                   type="number"
                   step="any"
                   value={inputHeight}
-                  onChange={(event) => setInputHeight(event.target.value)}
-                  placeholder={product?.height ?? '200'}
-                  className="w-full bg-surface-variant border border-outline/10 rounded-xl py-3 px-4 text-sm font-bold outline-none"
+                  onChange={(e) => setInputHeight(e.target.value)}
+                  placeholder={product?.height ?? "200"}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:border-primary/50 focus:bg-white transition-colors"
                 />
               </div>
               <div>
-                <label className="text-[9px] font-bold text-outline uppercase tracking-wider mb-2 block ml-1">Kenglik (sm)</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">
+                  Kenglik (sm)
+                </label>
                 <input
                   type="number"
                   step="any"
                   value={inputWidth}
-                  onChange={(event) => setInputWidth(event.target.value)}
-                  placeholder={product?.width ?? '80'}
-                  className="w-full bg-surface-variant border border-outline/10 rounded-xl py-3 px-4 text-sm font-bold outline-none"
+                  onChange={(e) => setInputWidth(e.target.value)}
+                  placeholder={product?.width ?? "80"}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:border-primary/50 focus:bg-white transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* CTA button */}
+          {preview && (
+            <button
+              onClick={handleUpload}
+              className="w-full bg-primary text-white font-black py-5 rounded-[24px] shadow-xl shadow-primary/30 active:scale-[0.97] transition-all flex items-center justify-center gap-3 text-base animate-in fade-in slide-in-from-bottom-4 duration-300"
+            >
+              <Wand2 size={22} fill="white" />
+              AI bilan vizualizatsiya qilish
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ─── LOADING ─── */}
+      {isLoading && (
+        <div className="px-5 mt-5">
+          <div className="bg-white rounded-[40px] overflow-hidden shadow-xl border border-slate-100">
+            {/* Animated preview area */}
+            <div className="relative aspect-[4/3] bg-gradient-to-br from-primary/5 via-slate-50 to-primary/10 overflow-hidden">
+              {/* Shimmer overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" />
+
+              {/* Preview images blended */}
+              {preview && product?.image && (
+                <>
+                  <img
+                    src={preview}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover opacity-30"
+                  />
+                  <div className="absolute inset-0 backdrop-blur-sm" />
+                </>
+              )}
+
+              {/* Center icon */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                <div className="relative">
+                  <div className="w-24 h-24 border-4 border-primary/15 border-t-primary rounded-full animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-16 h-16 border-4 border-primary/10 border-b-primary/60 rounded-full animate-spin animate-reverse" />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Sparkles
+                      size={28}
+                      className="text-primary animate-pulse"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Steps */}
+            <div className="p-6 space-y-5">
+              <div>
+                <p className="text-lg font-extrabold text-slate-900">
+                  {currentLoadingLabel}
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Gemini AI ishlayapti, iltimos kuting...
+                </p>
+              </div>
+
+              {/* Step indicators */}
+              <div className="space-y-2.5">
+                {LOADING_STEPS.map((step, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div
+                      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
+                        i < loadingStep
+                          ? "bg-green-500 text-white"
+                          : i === loadingStep
+                            ? "bg-primary text-white animate-pulse"
+                            : "bg-slate-100 text-slate-300"
+                      }`}
+                    >
+                      {i < loadingStep ? (
+                        <CheckCircle2 size={12} />
+                      ) : (
+                        <span className="text-[8px] font-black">{i + 1}</span>
+                      )}
+                    </div>
+                    <span
+                      className={`text-xs font-bold transition-colors duration-300 ${
+                        i <= loadingStep ? "text-slate-700" : "text-slate-300"
+                      }`}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Progress bar */}
+              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-700"
+                  style={{
+                    width: `${((loadingStep + 1) / LOADING_STEPS.length) * 100}%`,
+                  }}
                 />
               </div>
             </div>
@@ -307,216 +599,291 @@ const AIVisualizePage: React.FC = () => {
         </div>
       )}
 
-      {(status === 'uploading' || status === 'processing') && (
-        <div className="bg-white rounded-[40px] aspect-[4/5] flex flex-col items-center justify-center p-10 text-center shadow-sm relative overflow-hidden">
-          <div className="relative mb-10">
-            <div className="w-24 h-24 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
-            <div className="absolute inset-0 flex items-center justify-center text-primary">
-              <Sparkles size={32} className="animate-pulse" />
-            </div>
+      {/* ─── RESULT ─── */}
+      {status === "done" && resultImage && (
+        <div className="px-5 mt-5 space-y-5 animate-in fade-in zoom-in-95 duration-500">
+          {/* Success badge */}
+          <div className="flex items-center justify-center gap-2 bg-green-50 border border-green-100 rounded-2xl py-3">
+            <CheckCircle2 size={18} className="text-green-500" />
+            <p className="text-sm font-bold text-green-700">
+              Vizualizatsiya tayyor!
+            </p>
+            {pipelineMeta?.image_edit_engine && (
+              <span className="text-[10px] font-black bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                {pipelineMeta.image_edit_engine}
+              </span>
+            )}
           </div>
-          <h3 className="text-xl font-extrabold text-on-surface mb-2">
-            {status === 'uploading' ? 'Bulutli serverga yuklanmoqda...' : 'SI natijani tayyorlamoqda...'}
-          </h3>
-          <p className="text-xs text-outline leading-relaxed">
-            Iltimos, ushbu oynani yopmang. Sun'iy intellekt mahsulotni aniq o'lchab, xonangizga joylashtirmoqda.
-          </p>
-          
-          <div className="absolute bottom-10 left-10 right-10 flex gap-1">
-            <div className="h-1 bg-primary/10 rounded-full flex-1 overflow-hidden">
-              <div className="h-full bg-primary animate-[shimmer_2s_infinite] w-full" />
-            </div>
-          </div>
-        </div>
-      )}
 
-      {status === 'done' && resultImage && (
-        <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-          <div className="bg-white rounded-[40px] aspect-[4/5] shadow-2xl relative overflow-hidden border-4 border-white ring-1 ring-slate-100">
-            <img src={resultImage} alt="Result" className="w-full h-full object-cover" />
-            <div className="absolute top-6 right-6 bg-green-500 text-white p-2.5 rounded-full shadow-lg animate-bounce">
-              <CheckCircle2 size={24} />
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            <button 
-              onClick={() => {
-                setLeadType('call');
-                setShowLeadForm(true);
-                haptic('medium');
-              }}
-              className="w-full flex items-center justify-center gap-3 py-5 bg-primary text-white rounded-[24px] font-black shadow-lg shadow-primary/25 active:scale-95 transition-all text-lg"
+          {/* Result image / Before-After slider */}
+          {showBeforeAfter && preview ? (
+            <div
+              ref={sliderRef}
+              className="relative rounded-[32px] overflow-hidden aspect-[4/3] cursor-col-resize shadow-2xl select-none"
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onMouseMove={handleMouseMove}
+              onTouchMove={handleTouchMove}
             >
-              <Phone size={22} fill="white" />
+              {/* After (result) — full width base */}
+              <img
+                src={resultImage}
+                alt="Natija"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+
+              {/* Before (original) — clipped */}
+              <div
+                className="absolute inset-0 overflow-hidden"
+                style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
+              >
+                <img
+                  src={preview}
+                  alt="Asl rasm"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Divider line */}
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.4)]"
+                style={{ left: `${sliderPos}%` }}
+              >
+                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center border-2 border-white/80">
+                  <ArrowLeftRight size={16} className="text-slate-700" />
+                </div>
+              </div>
+
+              {/* Labels */}
+              <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
+                Oldin
+              </div>
+              <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
+                Keyin
+              </div>
+            </div>
+          ) : (
+            <div className="relative rounded-[32px] overflow-hidden aspect-[4/3] shadow-2xl">
+              <img
+                src={resultImage}
+                alt="AI natijasi"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            </div>
+          )}
+
+          {/* Toggle before/after */}
+          {preview && (
+            <button
+              onClick={() => setShowBeforeAfter(!showBeforeAfter)}
+              className={`w-full py-3 rounded-2xl border text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.97] transition-all ${
+                showBeforeAfter
+                  ? "bg-primary/10 border-primary/20 text-primary"
+                  : "bg-white border-slate-200 text-slate-600"
+              }`}
+            >
+              <ArrowLeftRight size={16} />
+              {showBeforeAfter
+                ? "Faqat natijani ko'rish"
+                : "Oldin / Keyin solishtirish"}
+            </button>
+          )}
+
+          {/* Action buttons */}
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                setLeadType("call");
+                setShowLeadForm(true);
+                haptic("medium");
+              }}
+              className="w-full flex items-center justify-center gap-3 py-5 bg-primary text-white rounded-[24px] font-black shadow-xl shadow-primary/25 active:scale-[0.97] transition-all text-base"
+            >
+              <Phone size={20} fill="white" />
               Sotib olish / Bog'lanish
             </button>
-            <div className="grid grid-cols-2 gap-3">
-              <button 
+
+            <div className="grid grid-cols-3 gap-3">
+              <button
                 onClick={() => {
-                  setLeadType('measurement');
+                  setLeadType("measurement");
                   setShowLeadForm(true);
-                  haptic('medium');
+                  haptic("medium");
                 }}
-                className="flex items-center justify-center gap-2 py-4 bg-white text-primary border-2 border-primary rounded-2xl text-sm font-black active:scale-95 transition-all"
+                className="flex flex-col items-center justify-center gap-1.5 py-4 bg-white text-primary border-2 border-primary/20 rounded-2xl text-[10px] font-black active:scale-95 transition-all uppercase tracking-wider"
               >
                 <Ruler size={18} />
-                O'lchashni buyurtma
+                O'lchash
               </button>
+
               <button
                 type="button"
-                onClick={() => resultImage && window.open(resultImage, '_blank', 'noopener,noreferrer')}
-                className="flex items-center justify-center gap-2 py-4 bg-slate-100 text-slate-800 rounded-2xl text-sm font-black active:scale-95 transition-all"
+                onClick={() =>
+                  resultImage &&
+                  window.open(resultImage, "_blank", "noopener,noreferrer")
+                }
+                className="flex flex-col items-center justify-center gap-1.5 py-4 bg-white text-slate-700 border border-slate-200 rounded-2xl text-[10px] font-black active:scale-95 transition-all uppercase tracking-wider"
               >
                 <Download size={18} />
                 Saqlash
               </button>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!resultImage) return;
+                  if (navigator.share) {
+                    await navigator.share({
+                      title: product?.name ?? "TanlaAI vizualizatsiyasi",
+                      url: resultImage,
+                    });
+                    return;
+                  }
+                  window.open(
+                    `https://t.me/share/url?url=${encodeURIComponent(resultImage)}`,
+                    "_blank",
+                    "noopener,noreferrer",
+                  );
+                }}
+                className="flex flex-col items-center justify-center gap-1.5 py-4 bg-white text-slate-700 border border-slate-200 rounded-2xl text-[10px] font-black active:scale-95 transition-all uppercase tracking-wider"
+              >
+                <Share2 size={18} />
+                Ulashish
+              </button>
             </div>
           </div>
 
-          {(analysis || generationPrompt) && (
-            <div className="space-y-4">
-              {analysis && (
-                <div className="bg-white rounded-[28px] border border-outline/10 p-5 space-y-4 shadow-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">AI tahlili</p>
-                      <h3 className="text-lg font-extrabold text-on-surface mt-1">Xona konteksti chiqarildi</h3>
-                    </div>
-                    {pipelineMeta?.image_edit_engine && (
-                      <span className="rounded-full bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">
-                        {pipelineMeta.image_edit_engine}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-on-surface/80">{analysis.design_dna}</p>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="rounded-2xl bg-surface-variant px-4 py-3">
-                      <p className="text-outline font-black uppercase tracking-wider">Rakurs</p>
-                      <p className="mt-1 font-bold text-on-surface">{analysis.wall_angle}°</p>
-                    </div>
-                    <div className="rounded-2xl bg-surface-variant px-4 py-3">
-                      <p className="text-outline font-black uppercase tracking-wider">Aniqlash</p>
-                      <p className="mt-1 font-bold text-on-surface">{analysis.detection_method}</p>
-                    </div>
-                    <div className="rounded-2xl bg-surface-variant px-4 py-3">
-                      <p className="text-outline font-black uppercase tracking-wider">Yorug'lik</p>
-                      <p className="mt-1 font-bold text-on-surface">{analysis.lighting.direction}, {analysis.lighting.warmth}</p>
-                    </div>
-                    <div className="rounded-2xl bg-surface-variant px-4 py-3">
-                      <p className="text-outline font-black uppercase tracking-wider">Intensivlik</p>
-                      <p className="mt-1 font-bold text-on-surface">{analysis.lighting.intensity}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-outline">Saqlangan elementlar</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {analysis.preserve_elements.map((item) => (
-                        <span key={item} className="rounded-full bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-primary">
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+          {/* Analysis card */}
+          {analysis && (
+            <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary">
+                    AI tahlili
+                  </p>
+                  <h3 className="text-base font-extrabold text-slate-900 mt-0.5">
+                    Xona konteksti
+                  </h3>
                 </div>
+              </div>
+              {analysis.design_dna && (
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {analysis.design_dna}
+                </p>
               )}
-
-              {generationPrompt && (
-                <div className="bg-slate-950 text-white rounded-[28px] p-5 shadow-sm">
-                  <div className="flex items-center justify-between gap-3 mb-4">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">Nano Banana prompt</p>
-                      <h3 className="text-lg font-extrabold mt-1">Yuborilgan instruction</h3>
-                    </div>
-                    {generationMeta?.model && (
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200">
-                        {generationMeta.model}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                  <p className="text-slate-400 font-black uppercase tracking-wider text-[9px]">
+                    Rakurs
+                  </p>
+                  <p className="mt-1 font-bold text-slate-800">
+                    {analysis.wall_angle}°
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                  <p className="text-slate-400 font-black uppercase tracking-wider text-[9px]">
+                    Yorug'lik
+                  </p>
+                  <p className="mt-1 font-bold text-slate-800">
+                    {analysis.lighting.direction}
+                  </p>
+                </div>
+              </div>
+              {analysis.preserve_elements.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                    Saqlangan elementlar
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {analysis.preserve_elements.map((item) => (
+                      <span
+                        key={item}
+                        className="bg-primary/8 text-primary text-[10px] font-bold px-2.5 py-1 rounded-full"
+                      >
+                        {item}
                       </span>
-                    )}
+                    ))}
                   </div>
-                  <pre className="whitespace-pre-wrap text-xs leading-6 text-slate-200 font-mono max-h-72 overflow-auto">
-                    {generationPrompt}
-                  </pre>
                 </div>
               )}
             </div>
           )}
 
-          <div className="flex gap-3">
-            <button 
-              onClick={() => {
-                setStatus('idle');
-                setPreview(null);
-                setImage(null);
-                setResultImage(null);
-                setError(null);
-                setAnalysis(null);
-                setGenerationPrompt(null);
-                setGenerationMeta(null);
-                setPipelineMeta(null);
-                setCurrentRequestId(null);
-              }}
-              className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-50 text-slate-900 rounded-2xl border border-slate-200 text-sm font-black active:scale-95 transition-all hover:bg-slate-100"
-            >
-              <RefreshCcw size={14} />
-              Boshidan
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                if (!resultImage) return;
-                if (navigator.share) {
-                  await navigator.share({
-                    title: product?.name ?? 'TanlaAI vizualizatsiyasi',
-                    url: resultImage,
-                  });
-                  return;
-                }
-                window.open(`https://t.me/share/url?url=${encodeURIComponent(resultImage)}`, '_blank', 'noopener,noreferrer');
-              }}
-              className="flex-1 flex items-center justify-center gap-2 py-4 bg-white text-primary rounded-2xl border border-primary/20 text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
-            >
-              <Share2 size={14} />
-              Ulashish
-            </button>
-          </div>
-        </div>
-      )}
+          {/* Prompt debug card (optional) */}
+          {generationPrompt && (
+            <div className="bg-slate-900 text-white rounded-3xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-black uppercase tracking-widest text-cyan-300">
+                  AI Prompt
+                </p>
+                {generationMeta?.model && (
+                  <span className="bg-white/10 text-cyan-200 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                    {generationMeta.model}
+                  </span>
+                )}
+              </div>
+              <pre className="whitespace-pre-wrap text-xs leading-5 text-slate-300 font-mono max-h-48 overflow-auto">
+                {generationPrompt}
+              </pre>
+            </div>
+          )}
 
-      {showLeadForm && product && (
-        <LeadForm 
-          productId={product.id} 
-          leadType={leadType} 
-          initialPriceInfo={inputHeight && inputWidth ? `${inputHeight}x${inputWidth} sm o'lchamda SI vizualizatsiya` : "SI vizualizatsiyasi"}
-          onClose={() => setShowLeadForm(false)} 
-        />
-      )}
-
-
-      {status === 'error' && (
-        <div className="bg-white rounded-[40px] aspect-[4/5] flex flex-col items-center justify-center p-10 text-center shadow-sm">
-          <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mb-6">
-            <AlertCircle size={32} />
-          </div>
-          <h3 className="text-xl font-extrabold text-on-surface mb-2">Xatolik yuz berdi</h3>
-          <p className="text-xs text-outline leading-relaxed mb-8">{error || "Noma'lum xatolik yuz berdi"}</p>
-          <button 
-            onClick={() => setStatus('idle')}
-            className="px-8 py-4 bg-primary text-white rounded-2xl font-bold active:scale-95 transition-all"
+          {/* Retry button */}
+          <button
+            onClick={resetAll}
+            className="w-full flex items-center justify-center gap-2 py-4 bg-slate-50 text-slate-600 rounded-2xl border border-slate-200 text-sm font-bold active:scale-95 transition-all"
           >
-            Boshqa rasmni sinab ko'rish
+            <RefreshCcw size={15} />
+            Boshqa rasm bilan sinash
           </button>
         </div>
       )}
 
-      {status === 'idle' && preview && (
-        <button 
-          onClick={handleUpload}
-          className="w-full main-button-gradient text-white font-bold py-5 rounded-[24px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300"
-        >
-          <Sparkles size={20} fill="white" />
-          <span className="text-lg">Natijani tayyorlash</span>
-        </button>
+      {/* ─── ERROR ─── */}
+      {status === "error" && (
+        <div className="px-5 mt-5">
+          <div className="bg-white rounded-[40px] border border-red-50 shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-br from-red-50 to-orange-50 aspect-[4/3] flex flex-col items-center justify-center p-10 text-center">
+              <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-lg mb-6 text-red-400">
+                <AlertCircle size={36} />
+              </div>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">
+                Xatolik yuz berdi
+              </h3>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                {error || "Noma'lum xatolik. Qayta urinib ko'ring."}
+              </p>
+            </div>
+            <div className="p-5 space-y-3">
+              <button
+                onClick={resetAll}
+                className="w-full py-4 bg-primary text-white font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                <RefreshCcw size={16} />
+                Qayta urinish
+              </button>
+              <p className="text-center text-[10px] text-slate-400">
+                Muammo davom etsa, boshqa rasm bilan sinab ko'ring
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── LEAD FORM MODAL ─── */}
+      {showLeadForm && product && (
+        <LeadForm
+          productId={product.id}
+          leadType={leadType}
+          initialPriceInfo={
+            inputHeight && inputWidth
+              ? `${inputHeight}×${inputWidth} sm — AI vizualizatsiya`
+              : "AI vizualizatsiyasi"
+          }
+          onClose={() => setShowLeadForm(false)}
+        />
       )}
     </div>
   );
