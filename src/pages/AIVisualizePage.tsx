@@ -619,21 +619,21 @@ const AIVisualizePage: React.FC = () => {
           {showBeforeAfter && preview ? (
             <div
               ref={sliderRef}
-              className="relative rounded-[32px] overflow-hidden aspect-[4/3] cursor-col-resize shadow-2xl select-none"
+              className="relative rounded-[32px] overflow-hidden cursor-col-resize shadow-2xl select-none"
               onMouseDown={handleMouseDown}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
               onMouseMove={handleMouseMove}
               onTouchMove={handleTouchMove}
             >
-              {/* After (result) — full width base */}
+              {/* After (result) — full width base, natural size */}
               <img
                 src={resultImage}
                 alt="Natija"
-                className="absolute inset-0 w-full h-full object-cover"
+                className="w-full h-auto block"
               />
 
-              {/* Before (original) — clipped */}
+              {/* Before (original) — clipped overlay, natural size matching result */}
               <div
                 className="absolute inset-0 overflow-hidden"
                 style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
@@ -641,7 +641,7 @@ const AIVisualizePage: React.FC = () => {
                 <img
                   src={preview}
                   alt="Asl rasm"
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="w-full h-auto block"
                 />
               </div>
 
@@ -664,13 +664,13 @@ const AIVisualizePage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="relative rounded-[32px] overflow-hidden aspect-[4/3] shadow-2xl">
+            <div className="relative rounded-[32px] overflow-hidden shadow-2xl">
               <img
                 src={resultImage}
                 alt="AI natijasi"
-                className="w-full h-full object-cover"
+                className="w-full h-auto block"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
             </div>
           )}
 
