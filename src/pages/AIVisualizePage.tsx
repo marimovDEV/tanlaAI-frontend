@@ -626,14 +626,22 @@ const AIVisualizePage: React.FC = () => {
               onMouseMove={handleMouseMove}
               onTouchMove={handleTouchMove}
             >
-              {/* After (result) — full width base, natural size */}
+              {/* Ghost image: faqat container balandligini belgilash uchun (ko'rinmaydi) */}
+              <img
+                src={resultImage}
+                alt=""
+                aria-hidden="true"
+                className="w-full h-auto block opacity-0 pointer-events-none"
+              />
+
+              {/* KEYIN (AI natija) — to'liq yopadi */}
               <img
                 src={resultImage}
                 alt="Natija"
-                className="w-full h-auto block"
+                className="absolute inset-0 w-full h-full object-cover"
               />
 
-              {/* Before (original) — clipped overlay, natural size matching result */}
+              {/* OLDIN (original xona) — chapdan kesib ko'rsatadi */}
               <div
                 className="absolute inset-0 overflow-hidden"
                 style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
@@ -641,7 +649,7 @@ const AIVisualizePage: React.FC = () => {
                 <img
                   src={preview}
                   alt="Asl rasm"
-                  className="w-full h-auto block"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
               </div>
 
