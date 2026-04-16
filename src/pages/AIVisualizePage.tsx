@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { isAxiosError } from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Camera,
   Sparkles,
@@ -82,6 +82,7 @@ const LOADING_STEPS = [
 
 const AIVisualizePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -784,8 +785,10 @@ const AIVisualizePage: React.FC = () => {
                     
                     const shareUrl = `${window.location.origin}/share/${res.data.id}`;
                     
-                    if (window.Telegram?.WebApp?.openTelegramLink) {
-                      window.Telegram.WebApp.openTelegramLink(
+                    const webApp = window.Telegram?.WebApp as any;
+                    
+                    if (webApp?.openTelegramLink) {
+                      webApp.openTelegramLink(
                         `https://t.me/share/url?url=${shareUrl}&text=${encodeURIComponent(product?.name || "Eshik")}`
                       );
                     } else if (navigator.share) {
