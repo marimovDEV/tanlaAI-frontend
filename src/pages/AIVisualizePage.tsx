@@ -775,6 +775,12 @@ const AIVisualizePage: React.FC = () => {
                     const blob = await fetch(resultImage).then(r => r.blob());
                     const formData = new FormData();
                     formData.append("image", blob, `share_${Date.now()}.png`);
+                    
+                    if (preview) {
+                      const originalBlob = await fetch(preview).then(r => r.blob());
+                      formData.append("original_image", originalBlob, `original_${Date.now()}.png`);
+                    }
+
                     if (product) {
                       formData.append("product", product.id.toString());
                     }
