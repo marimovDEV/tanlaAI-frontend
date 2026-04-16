@@ -11,6 +11,7 @@ import ProfilePage from './pages/ProfilePage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import AIVisualizePage from './pages/AIVisualizePage';
 import VisualizationsPage from './pages/VisualizationsPage';
+import SharePage from './pages/SharePage';
 import CompanyCreatePage from './pages/CompanyCreatePage';
 import ProductCreatePage from './pages/ProductCreatePage';
 import CreatorDashboard from './pages/CreatorDashboard';
@@ -39,6 +40,9 @@ function App() {
     <Router>
       <TelegramProvider>
         <Routes>
+          {/* Public Top-Level Pages */}
+          <Route path="/share/:id" element={<SharePage />} />
+
           {/* Admin Panel */}
           <Route path="/adminka/login" element={<AdminLoginPage />} />
           <Route path="/adminka" element={<AdminLayout />}>

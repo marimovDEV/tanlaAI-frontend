@@ -754,10 +754,10 @@ const AIVisualizePage: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() =>
-                  resultImage &&
-                  window.open(resultImage, "_blank", "noopener,noreferrer")
-                }
+                onClick={() => {
+                  haptic("medium");
+                  navigate("/profile/visualizations");
+                }}
                 className="flex flex-col items-center justify-center gap-1.5 py-4 bg-white text-slate-700 border border-slate-200 rounded-2xl text-[10px] font-black active:scale-95 transition-all uppercase tracking-wider"
               >
                 <Download size={18} />
@@ -768,18 +768,40 @@ const AIVisualizePage: React.FC = () => {
                 type="button"
                 onClick={async () => {
                   if (!resultImage) return;
-                  if (navigator.share) {
-                    await navigator.share({
-                      title: product?.name ?? "TanlaAI vizualizatsiyasi",
-                      url: resultImage,
+                  haptic("medium");
+                  try {
+                    // Upload the blob explicitly to generate a Share URL
+                    const blob = await fetch(resultImage).then(r => r.blob());
+                    const formData = new FormData();
+                    formData.append("image", blob, `share_${Date.now()}.png`);
+                    if (product) {
+                      formData.append("product", product.id.toString());
+                    }
+                    
+                    const res = await apiClient.post("/shared-designs/", formData, {
+                      headers: { "Content-Type": "multipart/form-data" }
                     });
-                    return;
+                    
+                    const shareUrl = `${window.location.origin}/share/${res.data.id}`;
+                    
+                    if (window.Telegram?.WebApp?.openTelegramLink) {
+                      window.Telegram.WebApp.openTelegramLink(
+                        `https://t.me/share/url?url=${shareUrl}&text=${encodeURIComponent(product?.name || "Eshik")}`
+                      );
+                    } else if (navigator.share) {
+                      await navigator.share({
+                        title: product?.name ?? "TanlaAI vizualizatsiyasi",
+                        url: shareUrl,
+                      });
+                    } else {
+                        // Fallback
+                        await navigator.clipboard.writeText(shareUrl);
+                        alert("Link nusxalandi!");
+                    }
+                  } catch(e) {
+                      console.error("Share error:", e);
+                      alert("Ulashishda xatolik yuz berdi");
                   }
-                  window.open(
-                    `https://t.me/share/url?url=${encodeURIComponent(resultImage)}`,
-                    "_blank",
-                    "noopener,noreferrer",
-                  );
                 }}
                 className="flex flex-col items-center justify-center gap-1.5 py-4 bg-white text-slate-700 border border-slate-200 rounded-2xl text-[10px] font-black active:scale-95 transition-all uppercase tracking-wider"
               >
