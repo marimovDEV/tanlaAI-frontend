@@ -148,6 +148,8 @@ const SharePage: React.FC = () => {
           productId={design.product_details.id}
           onClose={() => setShowLeadForm(false)}
           leadType="call"
+          source="share"
+          sharedId={design.id}
         />
       )}
     </div>

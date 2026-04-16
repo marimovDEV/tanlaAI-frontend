@@ -17,9 +17,15 @@ const LeadersPage: React.FC = () => {
     const fetchCompanies = async () => {
       setLoading(true);
       try {
-        const suffix = query.trim() ? `?search=${encodeURIComponent(query.trim())}` : '';
-        const response = await apiClient.get<ApiListResponse<Company> | Company[]>(`/companies/${suffix}`);
-        setCompanies(Array.isArray(response.data) ? response.data : response.data.results);
+        if (query.trim()) {
+           const suffix = `?search=${encodeURIComponent(query.trim())}`;
+           const response = await apiClient.get<ApiListResponse<any> | any[]>(`/companies/${suffix}`);
+           setCompanies(Array.isArray(response.data) ? response.data : response.data.results);
+        } else {
+           // Base state shows the leaderboard !
+           const response = await apiClient.get<any[]>(`/companies/leaderboard/`);
+           setCompanies(response.data);
+        }
       } catch (error) {
         console.error('Error fetching companies:', error);
       } finally {
@@ -93,9 +99,19 @@ const LeadersPage: React.FC = () => {
             <div className="flex-1">
               <h4 className="font-extrabold text-on-surface">{company.name}</h4>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px] font-bold text-outline truncate max-w-[120px]">{company.location}</span>
-                <span className="w-1 h-1 bg-outline/20 rounded-full" />
-                <span className="text-[10px] font-bold text-primary">Tasdiqlangan do'kon</span>
+                {(company as any).converted_leads !== undefined ? (
+                  <>
+                    <span className="text-[10px] font-bold text-emerald-500">{(company as any).converted_leads} sotuv</span>
+                    <span className="w-1 h-1 bg-outline/20 rounded-full" />
+                    <span className="text-[10px] font-bold text-outline">{(company as any).total_leads} ta lead</span>
+                  </>
+                ) : (
+                  <>
+                     <span className="text-[10px] font-bold text-outline truncate max-w-[120px]">{company.location}</span>
+                     <span className="w-1 h-1 bg-outline/20 rounded-full" />
+                     <span className="text-[10px] font-bold text-primary">Tasdiqlangan do'kon</span>
+                  </>
+                )}
               </div>
             </div>
 

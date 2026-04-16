@@ -8,9 +8,11 @@ interface Props {
   onClose: () => void;
   leadType: 'call' | 'measurement';
   initialPriceInfo?: string;
+  source?: string;
+  sharedId?: string;
 }
 
-const LeadForm: React.FC<Props> = ({ productId, onClose, leadType, initialPriceInfo }) => {
+const LeadForm: React.FC<Props> = ({ productId, onClose, leadType, initialPriceInfo, source, sharedId }) => {
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,6 +31,8 @@ const LeadForm: React.FC<Props> = ({ productId, onClose, leadType, initialPriceI
         phone,
         message: message || "Siz bilan bog'lanishlarini kutmoqda.",
         price_info: initialPriceInfo || "",
+        source: source || "",
+        shared_id: sharedId || null,
       });
       setSuccess(true);
       setTimeout(onClose, 2000);
