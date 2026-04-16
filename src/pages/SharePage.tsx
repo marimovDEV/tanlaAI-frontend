@@ -4,6 +4,7 @@ import { ArrowLeft, Sparkles, Image as ImageIcon } from 'lucide-react';
 import apiClient from '../api/client';
 import LeadForm from '../components/LeadForm';
 import { useTelegram } from '../contexts/useTelegram';
+import ImageSlider from '../components/ImageSlider';
 
 interface SharedDesign {
   id: string;
@@ -18,56 +19,7 @@ interface SharedDesign {
   } | null;
 }
 
-const ImageSlider: React.FC<{ before: string; after: string }> = ({ before, after }) => {
-  const [sliderPos, setSliderPos] = useState(50);
-  const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const pos = ((x - rect.left) / rect.width) * 100;
-    setSliderPos(Math.min(Math.max(pos, 0), 100));
-  };
-
-  return (
-    <div 
-      ref={containerRef}
-      className="relative w-full h-[70vh] rounded-3xl overflow-hidden cursor-ew-resize select-none border border-white/10"
-      onMouseMove={handleMove}
-      onTouchMove={handleMove}
-    >
-      <img src={after} className="absolute inset-0 w-full h-full object-cover" alt="After" />
-      <div 
-        className="absolute inset-0 w-full h-full overflow-hidden"
-        style={{ width: `${sliderPos}%` }}
-      >
-        <img src={before} className="absolute inset-0 w-full h-full object-cover max-w-none" style={{ width: containerRef.current?.offsetWidth }} alt="Before" />
-      </div>
-      
-      {/* Slider Line */}
-      <div 
-        className="absolute inset-y-0 w-1 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] z-20"
-        style={{ left: `${sliderPos}%` }}
-      >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-xl border-4 border-black/10">
-          <div className="flex gap-1">
-            <div className="w-0.5 h-3 bg-slate-300 rounded-full" />
-            <div className="w-0.5 h-3 bg-slate-300 rounded-full" />
-          </div>
-        </div>
-      </div>
-
-      {/* Labels */}
-      <div className="absolute bottom-4 left-4 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest z-30">
-        Oldin
-      </div>
-      <div className="absolute bottom-4 right-4 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest z-30">
-        Keyin
-      </div>
-    </div>
-  );
-};
 
 const SharePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -140,7 +92,11 @@ const SharePage: React.FC = () => {
       {/* Content Area */}
       <div className="px-5 pt-28 pb-40">
         {design.original_image ? (
-          <ImageSlider before={design.original_image} after={design.image} />
+          <ImageSlider 
+            before={design.original_image} 
+            after={design.image} 
+            className="h-[70vh]"
+          />
         ) : (
           <div className="w-full h-[70vh] rounded-3xl overflow-hidden shadow-2xl border border-white/10">
             <img

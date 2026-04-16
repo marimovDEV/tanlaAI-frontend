@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Eye, Clock, User, Package, ExternalLink } from 'lucide-react';
 import apiClient from '../../api/client';
+import ImageSlider from '../../components/ImageSlider';
 
 type AIResult = {
   id: number;
@@ -75,14 +76,24 @@ export default function AdminAIResultsPage() {
             >
               {/* Image Comparison / Main Result */}
               <div className="relative aspect-[4/3] bg-slate-900 overflow-hidden">
-                <img
-                  src={r.image.startsWith('http') ? r.image : `${MEDIA_BASE}${r.image}`}
-                  alt={r.product_name}
-                  className="w-full h-full object-contain"
-                />
+                {r.input_image ? (
+                  <ImageSlider 
+                    before={r.input_image.startsWith('http') ? r.input_image : `${MEDIA_BASE}${r.input_image}`}
+                    after={r.image.startsWith('http') ? r.image : `${MEDIA_BASE}${r.image}`}
+                    beforeLabel="Eski"
+                    afterLabel="Yangi"
+                    aspectRatio="aspect-square sm:aspect-[4/3]"
+                  />
+                ) : (
+                  <img
+                    src={r.image.startsWith('http') ? r.image : `${MEDIA_BASE}${r.image}`}
+                    alt={r.product_name}
+                    className="w-full h-full object-contain"
+                  />
+                )}
                 
                 {/* User/Product Float Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 z-40 pointer-events-none">
                    <div className="flex items-center gap-2 text-white">
                       <Package size={14} className="text-sky-400" />
                       <span className="text-xs font-bold truncate">{r.product_name}</span>
