@@ -84,7 +84,7 @@ const SharePage: React.FC = () => {
         <div className="flex bg-white/10 backdrop-blur-2xl rounded-2xl px-5 py-2.5 items-center gap-3 border border-white/10">
           <Sparkles size={16} className="text-amber-400 fill-amber-400" />
           <span className="text-[11px] font-black text-white tracking-[0.2em] uppercase">
-            TanlaAI Premium
+            Tanla Premium
           </span>
         </div>
       </div>
@@ -137,7 +137,7 @@ const SharePage: React.FC = () => {
                     : "Narxlanmagan"}
                 </p>
                 <span className="w-1 h-1 bg-slate-300 rounded-full" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TanlaAI Narxi</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tanla Narxi</span>
               </div>
               <div className="flex gap-2">
                 <button
@@ -162,7 +162,7 @@ const SharePage: React.FC = () => {
               onClick={() => { haptic('medium'); navigate('/'); }}
               className="w-full bg-primary text-white py-3 rounded-2xl text-sm font-bold active:scale-95 transition-transform"
             >
-              TanlaAI ga o'tish
+              Tanla ga o'tish
             </button>
           </div>
         )}

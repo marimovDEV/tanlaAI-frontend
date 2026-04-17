@@ -799,7 +799,7 @@ const AIVisualizePage: React.FC = () => {
                       );
                     } else if (navigator.share) {
                       await navigator.share({
-                        title: product?.name ?? "TanlaAI vizualizatsiyasi",
+                        title: product?.name ?? "Tanla vizualizatsiyasi",
                         url: shareUrl,
                       });
                     } else {

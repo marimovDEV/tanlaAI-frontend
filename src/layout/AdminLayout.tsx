@@ -78,7 +78,7 @@ export default function AdminLayout() {
       >
         {/* Brand */}
         <div className="px-8 py-8 flex flex-col justify-center border-b border-slate-50">
-          <h1 className="text-2xl font-black tracking-tight text-[#0067a5]">TanlaAI</h1>
+          <h1 className="text-2xl font-black tracking-tight text-[#0067a5]">Tanla</h1>
           <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mt-1">
             Admin Panel
           </p>

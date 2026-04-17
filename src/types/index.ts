@@ -15,9 +15,13 @@ export interface Company {
   id: number;
   name: string;
   description: string;
+  phone?: string;
   location: string;
+  latitude?: number;
+  longitude?: number;
   telegram_link?: string;
   instagram_link?: string;
+  youtube_link?: string;
   logo?: string;
   is_currently_active: boolean;
   is_active?: boolean;

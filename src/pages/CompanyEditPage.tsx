@@ -8,7 +8,10 @@ import {
   Save, 
   X, 
   Camera,
-  Share2 as Instagram
+  Share2 as Instagram,
+  Phone,
+  Youtube,
+  AlertCircle,
 } from 'lucide-react';
 import apiClient from '../api/client';
 import type { Company } from '../types';
@@ -21,17 +24,21 @@ interface CompanyFormData extends Partial<Company> {
 const emptyCompanyForm: CompanyFormData = {
   name: '',
   description: '',
+  phone: '',
   location: '',
   telegram_link: '',
   instagram_link: '',
+  youtube_link: '',
 };
 
 const normalizeCompany = (company: Company): CompanyFormData => ({
   name: company.name ?? '',
   description: company.description ?? '',
+  phone: company.phone ?? '',
   location: company.location ?? '',
   telegram_link: company.telegram_link ?? '',
   instagram_link: company.instagram_link ?? '',
+  youtube_link: company.youtube_link ?? '',
 });
 
 const getErrorMessage = (error: unknown, fallback: string) => {
@@ -62,6 +69,13 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
+// Validation helpers
+const isValidPhone = (phone: string) => /^\+998\d{9}$/.test(phone.replace(/\s/g, ''));
+const isValidUrl = (url: string) => {
+  if (!url) return true; // empty is ok for optional
+  try { new URL(url); return true; } catch { return false; }
+};
+
 const CompanyEditPage: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +86,7 @@ const CompanyEditPage: React.FC = () => {
   const [companyExists, setCompanyExists] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState<CompanyFormData>(emptyCompanyForm);
 
   useEffect(() => {
@@ -99,6 +114,10 @@ const CompanyEditPage: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear field error on change
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => { const n = { ...prev }; delete n[name]; return n; });
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,11 +129,49 @@ const CompanyEditPage: React.FC = () => {
     }
   };
 
+  const validate = (): boolean => {
+    const errors: Record<string, string> = {};
+    
+    if (!formData.name?.trim()) errors.name = "Brend nomini kiriting";
+    if (!formData.location?.trim()) errors.location = "Manzilni kiriting";
+    
+    if (!formData.phone?.trim()) {
+      errors.phone = "Telefon raqam majburiy";
+    } else if (!isValidPhone(formData.phone)) {
+      errors.phone = "Format: +998XXXXXXXXX";
+    }
+    
+    if (!formData.telegram_link?.trim()) {
+      errors.telegram_link = "Telegram link majburiy";
+    } else if (!formData.telegram_link.startsWith('@') && !formData.telegram_link.startsWith('https://t.me/')) {
+      errors.telegram_link = "@username yoki https://t.me/username";
+    }
+    
+    if (!formData.instagram_link?.trim()) {
+      errors.instagram_link = "Instagram link majburiy";
+    } else if (!formData.instagram_link.startsWith('@') && !formData.instagram_link.includes('instagram.com')) {
+      errors.instagram_link = "@username yoki instagram.com link";
+    }
+    
+    if (formData.youtube_link?.trim() && !isValidUrl(formData.youtube_link) && !formData.youtube_link.includes('youtube.com') && !formData.youtube_link.includes('youtu.be')) {
+      errors.youtube_link = "YouTube link noto'g'ri";
+    }
+    
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    haptic('medium');
+    
+    if (!validate()) {
+      haptic('error' as any);
+      return;
+    }
+    
     setSubmitting(true);
     setErrorMessage(null);
-    haptic('medium');
 
     const data = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
@@ -139,12 +196,50 @@ const CompanyEditPage: React.FC = () => {
       navigate('/creator');
     } catch (err) {
       console.error('Error saving company:', err);
-      setErrorMessage(getErrorMessage(err, "Studiya profilini saqlashning imkoni bo‘lmadi."));
+      setErrorMessage(getErrorMessage(err, "Studiya profilini saqlashning imkoni bo'lmadi."));
       setSubmitting(false);
     }
   };
 
   if (loading) return <div className="p-6">Studiya ma'lumotlari yuklanmoqda...</div>;
+
+  const renderField = (
+    name: string,
+    label: string,
+    hint: string,
+    icon: React.ReactNode,
+    placeholder: string,
+    required: boolean = true,
+    type: string = 'text'
+  ) => (
+    <div className="relative">
+      <label className="text-[10px] font-black uppercase tracking-widest text-outline ml-1 mb-1.5 block">
+        {label} {required && <span className="text-red-400">*</span>}
+      </label>
+      <p className="text-[11px] text-slate-400 ml-1 mb-2">{hint}</p>
+      <div className="relative">
+        <div className="absolute left-5 top-1/2 -translate-y-1/2">{icon}</div>
+        <input
+          name={name}
+          type={type}
+          value={(formData as any)[name] || ''}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+          required={required}
+          className={`w-full bg-white border rounded-2xl py-4 pl-14 pr-5 text-on-surface font-bold outline-none focus:ring-2 transition-all ${
+            fieldErrors[name]
+              ? 'border-red-300 focus:ring-red-100'
+              : 'border-outline/5 focus:ring-primary/10'
+          }`}
+        />
+      </div>
+      {fieldErrors[name] && (
+        <p className="flex items-center gap-1.5 text-red-500 text-xs font-semibold mt-1.5 ml-1">
+          <AlertCircle size={12} /> {fieldErrors[name]}
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <div className="p-6 pb-24 animate-in fade-in duration-300">
@@ -162,6 +257,7 @@ const CompanyEditPage: React.FC = () => {
           </div>
         )}
 
+        {/* Logo */}
         <div className="flex flex-col items-center">
           <div 
             onClick={() => fileInputRef.current?.click()}
@@ -182,37 +278,62 @@ const CompanyEditPage: React.FC = () => {
           <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
         </div>
 
+        {/* Asosiy ma'lumotlar */}
         <div className="space-y-5">
-          <div className="relative">
-            <label className="text-[10px] font-black uppercase tracking-widest text-outline ml-1 mb-2 block">Brend nomi</label>
-            <div className="relative">
-              <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} />
-              <input name="name" value={formData.name} onChange={handleInputChange} placeholder="Artisan Studio" required className="w-full bg-white border border-outline/5 rounded-2xl py-4 pl-14 pr-5 text-on-surface font-bold outline-none focus:ring-2 focus:ring-primary/10 transition-all" />
-            </div>
-          </div>
-          <div className="relative">
-            <label className="text-[10px] font-black uppercase tracking-widest text-outline ml-1 mb-2 block">Manzil</label>
-            <div className="relative">
-              <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} />
-              <input name="location" value={formData.location} onChange={handleInputChange} placeholder="Shahar, Tuman" required className="w-full bg-white border border-outline/5 rounded-2xl py-4 pl-14 pr-5 text-on-surface font-bold outline-none focus:ring-2 focus:ring-primary/10 transition-all" />
-            </div>
-          </div>
+          <h4 className="text-[10px] font-black uppercase tracking-widest text-outline ml-1 flex items-center gap-2">
+            <Building2 size={14} className="text-primary" /> Asosiy ma'lumotlar
+          </h4>
+          
+          {renderField(
+            'name', 'Brend nomi', "Kompaniya yoki do'kon nomi",
+            <Building2 className="text-primary" size={20} />,
+            'Artisan Studio'
+          )}
+          
+          {renderField(
+            'phone', 'Telefon raqam', 'Mijozlar siz bilan bog\'lanadi',
+            <Phone className="text-green-500" size={20} />,
+            '+998901234567',
+            true, 'tel'
+          )}
+          
+          {renderField(
+            'location', 'Manzil', 'Google Maps link yoki matnli manzil',
+            <MapPin className="text-primary" size={20} />,
+            'Toshkent, Chilonzor tumani, 7-mavze'
+          )}
+          
           <div>
-            <label className="text-[10px] font-black uppercase tracking-widest text-outline ml-1 mb-2 block">Faoliyatimiz haqida</label>
-            <textarea name="description" value={formData.description} onChange={handleInputChange} rows={4} placeholder="Mijozlarga sizning noyob yondashuvingiz haqida aytib bering..." className="w-full bg-white border border-outline/5 rounded-2xl py-4 px-5 text-on-surface font-medium outline-none focus:ring-2 focus:ring-primary/10 transition-all" />
+            <label className="text-[10px] font-black uppercase tracking-widest text-outline ml-1 mb-1.5 block">Faoliyatimiz haqida</label>
+            <p className="text-[11px] text-slate-400 ml-1 mb-2">Mijozlarga sizning noyob yondashuvingiz haqida aytib bering</p>
+            <textarea name="description" value={formData.description} onChange={handleInputChange} rows={3} placeholder="Biz premium eshiklar ishlab chiqaramiz..." className="w-full bg-white border border-outline/5 rounded-2xl py-4 px-5 text-on-surface font-medium outline-none focus:ring-2 focus:ring-primary/10 transition-all" />
           </div>
         </div>
 
+        {/* Ijtimoiy tarmoqlar */}
         <div className="space-y-5">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-outline ml-1">Ijtimoiy tarmoqlar</h4>
-          <div className="relative">
-            <MessageCircle className="absolute left-5 top-1/2 -translate-y-1/2 text-[#229ED9]" size={20} />
-            <input name="telegram_link" value={formData.telegram_link} onChange={handleInputChange} placeholder="@username" className="w-full bg-white border border-outline/5 rounded-2xl py-4 pl-14 pr-5 text-on-surface font-bold outline-none" />
-          </div>
-          <div className="relative">
-            <Instagram className="absolute left-5 top-1/2 -translate-y-1/2 text-[#E4405F]" size={20} />
-            <input name="instagram_link" value={formData.instagram_link} onChange={handleInputChange} placeholder="@username yoki link" className="w-full bg-white border border-outline/5 rounded-2xl py-4 pl-14 pr-5 text-on-surface font-bold outline-none" />
-          </div>
+          <h4 className="text-[10px] font-black uppercase tracking-widest text-outline ml-1 flex items-center gap-2">
+            <MessageCircle size={14} className="text-[#229ED9]" /> Ijtimoiy tarmoqlar
+          </h4>
+          
+          {renderField(
+            'telegram_link', 'Telegram', 'Kanal yoki shaxsiy profil',
+            <MessageCircle className="text-[#229ED9]" size={20} />,
+            'https://t.me/username'
+          )}
+          
+          {renderField(
+            'instagram_link', 'Instagram', 'Biznes profil',
+            <Instagram className="text-[#E4405F]" size={20} />,
+            'https://instagram.com/username'
+          )}
+          
+          {renderField(
+            'youtube_link', 'YouTube', 'Agar mavjud bo\'lsa (ixtiyoriy)',
+            <Youtube className="text-[#FF0000]" size={20} />,
+            'https://youtube.com/@channel',
+            false
+          )}
         </div>
 
         <button type="submit" disabled={submitting} className="w-full main-button-gradient text-white font-black py-5 rounded-[28px] shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50">

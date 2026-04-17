@@ -167,7 +167,7 @@ const HomePage: React.FC = () => {
       </section>
 
       <div className="mt-12 mb-6 text-center">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-outline">TanlaAI Raqamli Butigi</p>
+        <p className="text-[10px] uppercase tracking-widest font-bold text-outline">Tanla Raqamli Butigi</p>
       </div>
     </div>
   );

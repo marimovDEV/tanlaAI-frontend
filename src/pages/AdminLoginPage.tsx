@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <form onSubmit={onSubmit} className="w-full max-w-md bg-white rounded-2xl shadow p-6 space-y-4">
         <h1 className="text-2xl font-bold">Admin Login</h1>
-        <p className="text-sm text-slate-500">TanlaAI adminkaga kirish</p>
+        <p className="text-sm text-slate-500">Tanla adminkaga kirish</p>
         <input
           className="w-full border rounded-lg px-3 py-2"
           placeholder="Username"
