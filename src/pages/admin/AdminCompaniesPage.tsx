@@ -3,7 +3,7 @@ import {
   Search, Trash2, Building2, 
   X, ExternalLink, Calendar, Package, 
   CheckCircle2, AlertCircle, MapPin, 
-  Settings2, Plus, ArrowRight, Phone, Play
+  Settings2, Plus, ArrowRight, Phone, Play, MessageCircle
 } from 'lucide-react';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
