@@ -1,10 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Building2, MapPin, MessageCircle, Share2 as Instagram } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, MessageCircle, Share2 as Instagram, Phone, Youtube, Zap } from 'lucide-react';
 import apiClient from '../api/client';
 import type { ApiListResponse, Company, Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import ProductCard from '../components/ProductCard';
+
+// Telegram WebApp safe link opener
+const openLink = (url: string) => {
+  try {
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg?.openLink) {
+      tg.openLink(url);
+    } else {
+      window.open(url, '_blank');
+    }
+  } catch {
+    window.open(url, '_blank');
+  }
+};
+
+const formatTelegramUrl = (link: string) => {
+  if (link.startsWith('http')) return link;
+  return `https://t.me/${link.replace('@', '')}`;
+};
+
+const formatInstagramUrl = (link: string) => {
+  if (link.startsWith('http')) return link;
+  return `https://instagram.com/${link.replace('@', '')}`;
+};
 
 const CompanyDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -86,28 +110,48 @@ const CompanyDetailPage: React.FC = () => {
 
         <p className="text-sm text-outline leading-relaxed max-w-md mx-auto">{company.description}</p>
 
-        <div className="flex justify-center gap-4">
+        {/* 📱 Telefon — Call tugmasi */}
+        {company.phone && (
+          <button
+            onClick={() => { haptic('medium'); openLink(`tel:${company.phone}`); }}
+            className="mx-auto flex items-center gap-3 bg-green-500 text-white px-6 py-3.5 rounded-2xl font-bold active:scale-95 transition-all shadow-lg shadow-green-500/20"
+          >
+            <Phone size={18} />
+            <span>{company.phone}</span>
+            <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest opacity-80 border-l border-white/20 pl-3">
+              <Zap size={10} /> Qo'ng'iroq
+            </span>
+          </button>
+        )}
+
+        {/* Ijtimoiy tarmoq tugmalari */}
+        <div className="flex justify-center gap-3 flex-wrap">
           {company.telegram_link && (
-            <a
-              href={`https://t.me/${company.telegram_link.replace('@', '')}`}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => haptic('light')}
-              className="w-12 h-12 rounded-2xl bg-[#0088cc]/10 text-[#0088cc] flex items-center justify-center"
+            <button
+              onClick={() => { haptic('light'); openLink(formatTelegramUrl(company.telegram_link!)); }}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#0088cc]/10 text-[#0088cc] font-bold text-sm active:scale-95 transition-all"
             >
-              <MessageCircle size={20} />
-            </a>
+              <MessageCircle size={18} />
+              Telegram
+            </button>
           )}
           {company.instagram_link && (
-            <a
-              href={company.instagram_link.startsWith('http') ? company.instagram_link : `https://instagram.com/${company.instagram_link.replace('@', '')}`}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => haptic('light')}
-              className="w-12 h-12 rounded-2xl bg-[#E4405F]/10 text-[#E4405F] flex items-center justify-center"
+            <button
+              onClick={() => { haptic('light'); openLink(formatInstagramUrl(company.instagram_link!)); }}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#E4405F]/10 text-[#E4405F] font-bold text-sm active:scale-95 transition-all"
             >
-              <Instagram size={20} />
-            </a>
+              <Instagram size={18} />
+              Instagram
+            </button>
+          )}
+          {company.youtube_link && (
+            <button
+              onClick={() => { haptic('light'); openLink(company.youtube_link!); }}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#FF0000]/10 text-[#FF0000] font-bold text-sm active:scale-95 transition-all"
+            >
+              <Youtube size={18} />
+              YouTube
+            </button>
           )}
         </div>
       </section>
