@@ -27,7 +27,8 @@ const resolveApiBaseUrl = () => {
   return `${DEFAULT_BACKEND_ORIGIN}/api/v1`;
 };
 
-const API_BASE_URL = resolveApiBaseUrl();
+export const BACKEND_URL = DEFAULT_BACKEND_ORIGIN;
+export const API_BASE_URL = resolveApiBaseUrl();
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { Heart, RefreshCcw } from 'lucide-react';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
+import { getMediaUrl } from '../utils/media';
 
 interface Props {
   product: Product;
@@ -34,7 +35,7 @@ const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted 
       <div className="relative aspect-[3/4] bg-[#f5f5f7] overflow-hidden">
         <NavLink to={`/product/${product.id}`} className="block w-full h-full">
           <img 
-            src={product.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' font-weight='bold' fill='%2394a3b8' text-anchor='middle' dominant-baseline='middle'%3EProduct%3C/text%3E%3C/svg%3E"} 
+            src={getMediaUrl(product.image) || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' font-weight='bold' fill='%2394a3b8' text-anchor='middle' dominant-baseline='middle'%3EProduct%3C/text%3E%3C/svg%3E"} 
             alt={product.name} 
             className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110"
           />

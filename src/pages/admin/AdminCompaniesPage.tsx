@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
+import { getMediaUrl } from '../../utils/media';
 
 type Company = {
   id: number;
@@ -200,7 +201,7 @@ export default function AdminCompaniesPage() {
                 <div className="flex items-center gap-5">
                   <div className="w-16 h-16 bg-white rounded-[24px] shadow-lg border border-slate-100 p-1 flex-shrink-0 relative overflow-hidden">
                     {c.logo ? (
-                      <img src={c.logo} alt={c.name} className="w-full h-full object-contain" />
+                      <img src={getMediaUrl(c.logo)} alt={c.name} className="w-full h-full object-contain" />
                     ) : (
                       <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300">
                         <Building2 size={24} />

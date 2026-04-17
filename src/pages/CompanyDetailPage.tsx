@@ -5,6 +5,7 @@ import apiClient from '../api/client';
 import type { ApiListResponse, Company, Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import ProductCard from '../components/ProductCard';
+import { getMediaUrl } from '../utils/media';
 
 // Telegram WebApp safe link opener
 const openLink = (url: string) => {
@@ -92,7 +93,7 @@ const CompanyDetailPage: React.FC = () => {
       <section className="text-center space-y-4">
         <div className="w-32 h-32 rounded-[36px] overflow-hidden mx-auto bg-white shadow-xl border border-outline/10">
           {company.logo ? (
-            <img src={company.logo} alt={company.name} className="w-full h-full object-cover" />
+            <img src={getMediaUrl(company.logo)} alt={company.name} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-outline/30">
               <Building2 size={36} />
