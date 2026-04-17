@@ -20,6 +20,7 @@ export default function AdminAIResultsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState<number>(0);
 
   const fetchResults = useCallback(async (isLoadMore = false) => {
     if (isLoadMore) setLoadingMore(true);
@@ -32,6 +33,8 @@ export default function AdminAIResultsPage() {
       const newResults = data.results ?? data;
       setResults(prev => isLoadMore ? [...prev, ...newResults] : newResults);
       setNextUrl(data.next || null);
+      if (data.count !== undefined) setTotalCount(data.count);
+      else if (!isLoadMore) setTotalCount(newResults.length);
     } catch (err) {
       console.error('Error fetching AI results:', err);
     } finally {
@@ -53,7 +56,7 @@ export default function AdminAIResultsPage() {
           <p className="text-sm text-slate-500">History of all AI transformations across the platform</p>
         </div>
         <div className="flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-semibold">
-          <Eye size={18} /> {results.length} Generations
+          <Eye size={18} /> {totalCount || results.length} Generations
         </div>
       </div>
 
