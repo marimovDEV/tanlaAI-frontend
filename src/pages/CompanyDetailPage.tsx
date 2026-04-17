@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Building2, MapPin, MessageCircle, Share2 as Instagram, Phone, Youtube, Zap } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, MessageCircle, Share2 as Instagram, Phone, Play, Zap } from 'lucide-react';
 import apiClient from '../api/client';
 import type { ApiListResponse, Company, Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
@@ -149,7 +149,7 @@ const CompanyDetailPage: React.FC = () => {
               onClick={() => { haptic('light'); openLink(company.youtube_link!); }}
               className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#FF0000]/10 text-[#FF0000] font-bold text-sm active:scale-95 transition-all"
             >
-              <Youtube size={18} />
+              <Play size={18} />
               YouTube
             </button>
           )}

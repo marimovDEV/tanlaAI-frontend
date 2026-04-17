@@ -10,7 +10,7 @@ import {
   Camera,
   Share2 as Instagram,
   Phone,
-  Youtube,
+  Play,
   AlertCircle,
 } from 'lucide-react';
 import apiClient from '../api/client';
@@ -330,7 +330,7 @@ const CompanyEditPage: React.FC = () => {
           
           {renderField(
             'youtube_link', 'YouTube', 'Agar mavjud bo\'lsa (ixtiyoriy)',
-            <Youtube className="text-[#FF0000]" size={20} />,
+            <Play className="text-[#FF0000]" size={20} />,
             'https://youtube.com/@channel',
             false
           )}
