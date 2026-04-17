@@ -3,7 +3,7 @@ import {
   Search, Trash2, Building2, 
   X, ExternalLink, Calendar, Package, 
   CheckCircle2, AlertCircle, MapPin, 
-  Settings2, Plus, ArrowRight
+  Settings2, Plus, ArrowRight, Phone, Play
 } from 'lucide-react';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
@@ -22,6 +22,8 @@ type Company = {
   created_at: string;
   telegram_link?: string;
   instagram_link?: string;
+  phone?: string;
+  youtube_link?: string;
 };
 
 export default function AdminCompaniesPage() {
@@ -38,6 +40,8 @@ export default function AdminCompaniesPage() {
     location: '',
     telegram_link: '',
     instagram_link: '',
+    phone: '',
+    youtube_link: '',
     logo: null as File | null
   });
   const [saving, setSaving] = useState(false);
@@ -73,6 +77,8 @@ export default function AdminCompaniesPage() {
       location: c.location || '',
       telegram_link: c.telegram_link || '',
       instagram_link: c.instagram_link || '',
+      phone: c.phone || '',
+      youtube_link: c.youtube_link || '',
       logo: null
     });
     setShowForm(true);
@@ -88,6 +94,8 @@ export default function AdminCompaniesPage() {
       fd.append('location', formData.location.trim());
       fd.append('telegram_link', formData.telegram_link.trim());
       fd.append('instagram_link', formData.instagram_link.trim());
+      fd.append('phone', formData.phone.trim());
+      fd.append('youtube_link', formData.youtube_link.trim());
       if (formData.logo) fd.append('logo', formData.logo);
 
       const { data } = await apiClient.patch(`/admin/companies/${editing.id}/`, fd, {
@@ -343,32 +351,59 @@ export default function AdminCompaniesPage() {
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    rows={3}
+                    rows={2}
                     className="w-full bg-slate-50 border border-slate-100 rounded-[24px] px-5 py-3.5 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
                     placeholder="Kompaniya haqida qisqacha..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 flex items-center gap-1.5">
+                    <Phone size={10} className="text-emerald-500" /> Telefon raqam
+                  </label>
+                  <input
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-[20px] px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
+                    placeholder="+998"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Telegram</label>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 flex items-center gap-1.5">
+                    <MessageCircle size={10} className="text-sky-500" /> Telegram
+                  </label>
                   <input
                     value={formData.telegram_link}
                     onChange={(e) => setFormData(prev => ({ ...prev, telegram_link: e.target.value }))}
                     className="w-full bg-slate-50 border border-slate-100 rounded-[20px] px-5 py-3.5 text-sm font-bold"
-                    placeholder="https://t.me/..."
+                    placeholder="@username"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Instagram</label>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 flex items-center gap-1.5">
+                    <Play size={10} className="text-red-500" /> Instagram
+                  </label>
                   <input
                     value={formData.instagram_link}
                     onChange={(e) => setFormData(prev => ({ ...prev, instagram_link: e.target.value }))}
                     className="w-full bg-slate-50 border border-slate-100 rounded-[20px] px-5 py-3.5 text-sm font-bold"
-                    placeholder="https://instagram.com/..."
+                    placeholder="@username"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 flex items-center gap-1.5">
+                  <Play size={10} className="text-red-600" /> YouTube
+                </label>
+                <input
+                  value={formData.youtube_link}
+                  onChange={(e) => setFormData(prev => ({ ...prev, youtube_link: e.target.value }))}
+                  className="w-full bg-slate-50 border border-slate-100 rounded-[20px] px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
+                  placeholder="https://youtube.com/..."
+                />
               </div>
 
               <div>
