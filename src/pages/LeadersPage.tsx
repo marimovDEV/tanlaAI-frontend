@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Star, ArrowUpRight, Search } from 'lucide-react';
 import apiClient from '../api/client';
+import { getMediaUrl } from '../utils/media';
 import type { ApiListResponse, Company } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import { cn } from '../utils/cn';
@@ -79,7 +80,7 @@ const LeadersPage: React.FC = () => {
             <div className="relative">
               <div className="w-16 h-16 rounded-2xl border border-outline/10 overflow-hidden bg-surface-variant">
                 {company.logo ? (
-                  <img src={company.logo} alt={company.name} className="w-full h-full object-cover" />
+                  <img src={getMediaUrl(company.logo)} alt={company.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-outline/30">
                     <Star size={24} />

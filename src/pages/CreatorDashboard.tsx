@@ -12,6 +12,7 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import apiClient from '../api/client';
+import { getMediaUrl } from '../utils/media';
 import type { ApiListResponse, Company, LeadRequest, Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import { cn } from '../utils/cn';
@@ -71,7 +72,7 @@ const CreatorDashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-[32px] border border-outline/5 shadow-sm flex items-center gap-5">
           <div className="w-16 h-16 rounded-2xl bg-surface-variant overflow-hidden border border-outline/10">
             {company.logo ? (
-              <img src={company.logo} alt="Logo" className="w-full h-full object-cover" />
+              <img src={getMediaUrl(company.logo)} alt="Logo" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-outline/30">
                 <Building2 size={24} />
@@ -158,7 +159,7 @@ const CreatorDashboard: React.FC = () => {
           {products.slice(0, 3).map((product) => (
             <div key={product.id} className="bg-white p-4 rounded-2xl border border-outline/5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-lg bg-surface-variant overflow-hidden">
-                <img src={product.image} alt="" className="w-full h-full object-cover" />
+                <img src={getMediaUrl(product.image)} alt="" className="w-full h-full object-cover" />
               </div>
               <div className="flex-1">
                 <p className="font-bold text-on-surface text-sm">{product.name}</p>

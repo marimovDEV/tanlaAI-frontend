@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, User, Calculator, Stars, MessageCircle, Phone, Ruler, RefreshCcw } from 'lucide-react';
 import apiClient from '../api/client';
+import { getMediaUrl } from '../utils/media';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import LeadForm from '../components/LeadForm';
@@ -114,9 +115,9 @@ const ProductDetailPage: React.FC = () => {
     <div className="px-4 sm:px-6 pt-2 pb-10">
       <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden bg-surface-variant mb-6 shadow-sm flex items-center justify-center">
         <img 
-          src={product.image || 'https://via.placeholder.com/800'} 
+          src={getMediaUrl(product.image) || 'https://via.placeholder.com/800'} 
           alt={product.name} 
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain mix-blend-multiply" 
         />
         {product.ai_status === 'processing' && (
           <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 border border-white/20 z-10 animate-pulse">
@@ -231,9 +232,9 @@ const ProductDetailPage: React.FC = () => {
             className="w-full bg-white p-5 rounded-2xl border border-outline/5 flex items-center justify-between shadow-sm active:scale-[0.98] transition-all text-left"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center overflow-hidden border border-outline/10">
+              <div className="w-10 h-10 bg-surface-variant rounded-xl overflow-hidden border border-outline/10">
                 {company.logo ? (
-                  <img src={company.logo} alt="Logo" className="w-full h-full object-cover" />
+                  <img src={getMediaUrl(company.logo)} alt="Logo" className="w-full h-full object-cover" />
                 ) : (
                   <User className="text-outline/40" size={24} />
                 )}
