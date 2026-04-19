@@ -138,7 +138,7 @@ export default function AdminProductsPage() {
     if (!confirm("Bu mahsulotni o'chirmoqchimisiz?")) return;
     setDeleting(id);
     try {
-      await apiClient.delete(`/admin/products/${id}//`);
+      await apiClient.delete(`/admin/products/${id}/`);
       setProducts((p) => p.filter((x) => x.id !== id));
       setSelectedIds(prev => prev.filter(x => x !== id));
     } finally {
@@ -150,7 +150,7 @@ export default function AdminProductsPage() {
     if (!confirm(`${selectedIds.length} ta mahsulotni o'chirmoqchimisiz?`)) return;
     setLoading(true);
     try {
-      await Promise.all(selectedIds.map(id => apiClient.delete(`/admin/products/${id}//`)));
+      await Promise.all(selectedIds.map(id => apiClient.delete(`/admin/products/${id}/`)));
       fetchProducts(search);
       setSelectedIds([]);
       showToast("Mahsulotlar o'chirildi.");
