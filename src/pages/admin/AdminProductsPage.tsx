@@ -54,6 +54,17 @@ export default function AdminProductsPage() {
   const [formComp, setFormComp] = useState('');
   const [formImage, setFormImage] = useState<File | null>(null);
 
+  // Extended form fields (matching web app)
+  const [formPricingType, setFormPricingType] = useState<'total' | 'per_m2'>('total');
+  const [formPricePerM2, setFormPricePerM2] = useState('');
+  const [formHeight, setFormHeight] = useState('');
+  const [formWidth, setFormWidth] = useState('');
+  const [formLeadTime, setFormLeadTime] = useState('3');
+  const [formIsFeatured, setFormIsFeatured] = useState(false);
+  const [formIsOnSale, setFormIsOnSale] = useState(false);
+  const [formDiscountPrice, setFormDiscountPrice] = useState('');
+  const [formSaleEndDate, setFormSaleEndDate] = useState('');
+
   const fetchProducts = useCallback(async (q = '') => {
     setLoading(true);
     try {
@@ -92,6 +103,15 @@ export default function AdminProductsPage() {
     setFormCat('');
     setFormComp('');
     setFormImage(null);
+    setFormPricingType('total');
+    setFormPricePerM2('');
+    setFormHeight('');
+    setFormWidth('');
+    setFormLeadTime('3');
+    setFormIsFeatured(false);
+    setFormIsOnSale(false);
+    setFormDiscountPrice('');
+    setFormSaleEndDate('');
     setShowForm(true);
   };
 
@@ -103,6 +123,15 @@ export default function AdminProductsPage() {
     setFormCat(String(p.category || ''));
     setFormComp(String(p.company || ''));
     setFormImage(null);
+    setFormPricingType((p as any).price_per_m2 && !p.price ? 'per_m2' : 'total');
+    setFormPricePerM2((p as any).price_per_m2 || '');
+    setFormHeight((p as any).height || '');
+    setFormWidth((p as any).width || '');
+    setFormLeadTime((p as any).lead_time_days != null ? String((p as any).lead_time_days) : '3');
+    setFormIsFeatured(Boolean((p as any).is_featured));
+    setFormIsOnSale(Boolean((p as any).is_on_sale));
+    setFormDiscountPrice((p as any).discount_price || '');
+    setFormSaleEndDate((p as any).sale_end_date || '');
     setShowForm(true);
   };
 
@@ -113,9 +142,41 @@ export default function AdminProductsPage() {
       const fd = new FormData();
       fd.append('name', formName.trim());
       fd.append('description', formDesc.trim());
-      fd.append('price', formPrice);
       fd.append('category', formCat);
       if (formComp) fd.append('company', formComp);
+
+      // Pricing
+      if (formPricingType === 'total') {
+        fd.append('price', formPrice);
+        fd.append('price_per_m2', '');
+        fd.append('height', formHeight);
+        fd.append('width', formWidth);
+      } else {
+        fd.append('price', '');
+        fd.append('price_per_m2', formPricePerM2);
+        fd.append('height', '');
+        fd.append('width', '');
+      }
+
+      // Lead time
+      const leadNum = parseInt(formLeadTime || '0', 10);
+      if (!Number.isNaN(leadNum) && leadNum > 0) {
+        fd.append('lead_time_days', String(leadNum));
+      }
+
+      // Featured
+      fd.append('is_featured', String(formIsFeatured));
+
+      // Sale
+      fd.append('is_on_sale', String(formIsOnSale));
+      if (formIsOnSale) {
+        fd.append('discount_price', formDiscountPrice);
+        fd.append('sale_end_date', formSaleEndDate);
+      } else {
+        fd.append('discount_price', '');
+        fd.append('sale_end_date', '');
+      }
+
       if (formImage) fd.append('image', formImage);
 
       if (editing) {
@@ -586,84 +647,194 @@ export default function AdminProductsPage() {
 
       {/* Product Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 z-[60] flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
+          <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-2xl p-8 space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-800">
-                {editing ? 'Mahsulotni tahrirlash' : 'Yangi mahsulot'}
-              </h2>
-              <button onClick={() => setShowForm(false)} className="p-1 hover:bg-slate-100 rounded-lg">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                  {editing ? 'Mahsulotni tahrirlash' : 'Yangi mahsulot'}
+                </h2>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Barcha maydonlarni to'ldiring</p>
+              </div>
+              <button onClick={() => setShowForm(false)} className="w-10 h-10 bg-slate-50 hover:bg-red-50 hover:text-red-500 text-slate-400 rounded-full flex items-center justify-center transition-all">
                 <X size={20} />
               </button>
             </div>
-            <div className="space-y-4">
+
+            <div className="space-y-6">
+              {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nomi</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Mahsulot nomi</label>
                 <input
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  placeholder="Mahsulot nomi"
+                  className="w-full bg-slate-50 border border-slate-100 rounded-[20px] px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
+                  placeholder="Masalan: Viktoriya eman eshik"
                 />
               </div>
+
+              {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Tavsifi</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Tavsif</label>
                 <textarea
                   value={formDesc}
                   onChange={(e) => setFormDesc(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 min-h-[100px]"
-                  placeholder="Mahsulot haqida ma'lumot"
+                  rows={3}
+                  className="w-full bg-slate-50 border border-slate-100 rounded-[24px] px-5 py-3.5 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
+                  placeholder="Mahsulot haqida ma'lumot..."
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              {/* Category + Company */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Narxi (sum)</label>
-                  <input
-                    type="number"
-                    value={formPrice}
-                    onChange={(e) => setFormPrice(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                    placeholder="Masalan: 500000"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Kategoriya</label>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Kategoriya</label>
                   <select
                     value={formCat}
                     onChange={(e) => setFormCat(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+                    className="w-full bg-slate-50 border border-slate-100 rounded-[20px] px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all appearance-none"
                   >
                     <option value="">Tanlang...</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Kompaniya</label>
+                  <select
+                    value={formComp}
+                    onChange={(e) => setFormComp(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-[20px] px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all appearance-none"
+                  >
+                    <option value="">Platform mahsuloti</option>
+                    {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Kompaniya (ixtiyoriy)</label>
-                <select
-                  value={formComp}
-                  onChange={(e) => setFormComp(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
-                >
-                  <option value="">Platform mahsuloti</option>
-                  {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+
+              {/* Pricing Section */}
+              <div className="bg-slate-50/80 p-6 rounded-[28px] border border-slate-100 space-y-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Narxlash</p>
+
+                {/* Pricing type toggle */}
+                <div className="flex p-1 bg-white rounded-2xl border border-slate-100">
+                  <button type="button" onClick={() => setFormPricingType('total')} className={cn("flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", formPricingType === 'total' ? "bg-slate-900 text-white shadow-md" : "text-slate-400")}>Qat'iy narx</button>
+                  <button type="button" onClick={() => setFormPricingType('per_m2')} className={cn("flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", formPricingType === 'per_m2' ? "bg-slate-900 text-white shadow-md" : "text-slate-400")}>m² uchun</button>
+                </div>
+
+                {formPricingType === 'total' ? (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Umumiy narx (UZS)</label>
+                      <input
+                        type="number"
+                        value={formPrice}
+                        onChange={(e) => setFormPrice(e.target.value)}
+                        className="w-full bg-white border border-slate-100 rounded-[20px] px-5 py-3.5 text-lg font-black focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1">Balandligi (sm)</label>
+                        <input type="number" value={formHeight} onChange={(e) => setFormHeight(e.target.value)} className="w-full bg-white border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1">Kengligi (sm)</label>
+                        <input type="number" value={formWidth} onChange={(e) => setFormWidth(e.target.value)} className="w-full bg-white border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">1 m² uchun narx (UZS)</label>
+                    <input
+                      type="number"
+                      value={formPricePerM2}
+                      onChange={(e) => setFormPricePerM2(e.target.value)}
+                      className="w-full bg-white border border-slate-100 rounded-[20px] px-5 py-3.5 text-lg font-black focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
+                      placeholder="0"
+                    />
+                  </div>
+                )}
               </div>
+
+              {/* Lead Time */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Rasm</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Tayyor bo'lish muddati (kun)</label>
                 <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFormImage(e.target.files?.[0] ?? null)}
-                  className="w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 file:font-semibold file:text-sm hover:file:bg-slate-200"
+                  type="number"
+                  min={1}
+                  value={formLeadTime}
+                  onChange={(e) => setFormLeadTime(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-100 rounded-[20px] px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
+                  placeholder="Masalan: 3"
                 />
               </div>
+
+              {/* Sale section */}
+              <div className="bg-red-50/50 border border-red-100/50 p-6 rounded-[28px] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-red-500">Chegirma</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Aksiyaviy narx berish</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={formIsOnSale}
+                    onChange={(e) => setFormIsOnSale(e.target.checked)}
+                    className="h-5 w-5 rounded border-slate-200 text-red-500 focus:ring-red-500/20"
+                  />
+                </div>
+                {formIsOnSale && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Chegirma narxi (UZS)</label>
+                      <input type="number" value={formDiscountPrice} onChange={(e) => setFormDiscountPrice(e.target.value)} placeholder="0" className="w-full bg-white border border-red-100 rounded-[20px] px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-red-500/10" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Aksiya tugash sanasi</label>
+                      <input type="datetime-local" value={formSaleEndDate} onChange={(e) => setFormSaleEndDate(e.target.value)} className="w-full bg-white border border-red-100 rounded-[20px] px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-red-500/10" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Featured toggle */}
+              <div className="bg-slate-50 border border-slate-100 rounded-[20px] p-5 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Asosiy vitrina</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Bosh sahifada ko'rsatish</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={formIsFeatured}
+                  onChange={(e) => setFormIsFeatured(e.target.checked)}
+                  className="h-5 w-5 rounded border-slate-200 text-[#0067a5] focus:ring-sky-500/20"
+                />
+              </div>
+
+              {/* Image */}
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Mahsulot rasmi</label>
+                <label className="flex items-center justify-between w-full bg-slate-50 border border-slate-200 border-dashed rounded-[20px] px-5 py-3.5 cursor-pointer hover:bg-sky-50 hover:border-sky-200 transition-all">
+                  <span className="text-xs font-bold text-slate-500">{formImage ? formImage.name : 'Rasm tanlash...'}</span>
+                  <Plus size={18} className="text-slate-400" />
+                  <input type="file" accept="image/*" onChange={(e) => setFormImage(e.target.files?.[0] ?? null)} className="hidden" />
+                </label>
+              </div>
+
+              {/* Submit */}
               <button
                 onClick={handleSubmit}
                 disabled={saving || !formName.trim() || !formCat}
-                className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl py-3 text-sm transition-colors shadow-lg shadow-sky-600/20 disabled:opacity-50"
+                className="w-full h-14 bg-slate-900 text-white font-black rounded-[20px] uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 disabled:opacity-50 active:scale-[0.98]"
               >
-                {saving ? 'Saqlanmoqda...' : editing ? "O'zgarishlarni saqlash" : 'Yangi mahsulot yaratish'}
+                {saving ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>{editing ? "O'zgarishlarni saqlash" : 'Yangi mahsulot yaratish'}</>
+                )}
               </button>
             </div>
           </div>
