@@ -110,6 +110,9 @@ export interface LeadRequest {
   width_cm?: number | null;
   height_cm?: number | null;
   calculated_price?: string | null;
+  address_text?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   created_at: string;
   is_processed: boolean;
   product_name?: string;
