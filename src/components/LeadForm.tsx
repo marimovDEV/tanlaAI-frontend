@@ -8,11 +8,16 @@ interface Props {
   onClose: () => void;
   leadType: 'call' | 'measurement';
   initialPriceInfo?: string;
+  widthCm?: number;
+  heightCm?: number;
   source?: string;
   sharedId?: string;
 }
 
-const LeadForm: React.FC<Props> = ({ productId, onClose, leadType, initialPriceInfo, source, sharedId }) => {
+const LeadForm: React.FC<Props> = ({
+  productId, onClose, leadType, initialPriceInfo,
+  widthCm, heightCm, source, sharedId,
+}) => {
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,12 +30,17 @@ const LeadForm: React.FC<Props> = ({ productId, onClose, leadType, initialPriceI
     haptic('medium');
 
     try {
+      // NOTE: `calculated_price` intentionally NOT sent — server always
+      // recomputes it from product.price_per_m2 × (width*height/10000)
+      // so clients can't quote themselves a discount.
       await apiClient.post('/leads/', {
         product: productId,
         lead_type: leadType,
         phone,
         message: message || "Siz bilan bog'lanishlarini kutmoqda.",
         price_info: initialPriceInfo || "",
+        width_cm: widthCm ?? null,
+        height_cm: heightCm ?? null,
         source: source || "",
         shared_id: sharedId || null,
       });

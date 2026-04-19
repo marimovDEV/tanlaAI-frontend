@@ -45,6 +45,13 @@ export interface TelegramUser {
 }
 
 
+export interface ProductImage {
+  id: number;
+  image: string;
+  is_main: boolean;
+  order: number;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -64,9 +71,11 @@ export interface Product {
   height?: string;
   width?: string;
   price_per_m2?: string;
+  lead_time_days?: number;
   ai_status: 'none' | 'processing' | 'completed' | 'error';
   company_details?: Company;
   owner_details?: TelegramUser;
+  images?: ProductImage[];
 }
 
 export interface Banner {
@@ -98,6 +107,9 @@ export interface LeadRequest {
   phone: string;
   status: string;
   price_info: string;
+  width_cm?: number | null;
+  height_cm?: number | null;
+  calculated_price?: string | null;
   created_at: string;
   is_processed: boolean;
   product_name?: string;

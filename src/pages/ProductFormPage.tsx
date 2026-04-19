@@ -1,17 +1,20 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { isAxiosError } from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Camera, 
-  Save, 
-  X, 
-  Trash2, 
-  ChevronDown, 
+import {
+  Camera,
+  Save,
+  X,
+  Trash2,
+  ChevronDown,
+  Star,
 } from 'lucide-react';
 import apiClient from '../api/client';
-import type { Product, Category } from '../types';
+import type { Product, Category, ProductImage } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import { cn } from '../utils/cn';
+
+const MAX_GALLERY_IMAGES = 5;
 
 interface ProductFormData {
   name: string;
@@ -23,6 +26,7 @@ interface ProductFormData {
   price_per_m2: string;
   height: string;
   width: string;
+  lead_time_days: string;
   is_featured: boolean;
   is_on_sale: boolean;
   discount_price: string;
@@ -38,6 +42,7 @@ const emptyFormData: ProductFormData = {
   price_per_m2: '',
   height: '',
   width: '',
+  lead_time_days: '3',
   is_featured: false,
   is_on_sale: false,
   discount_price: '',
@@ -73,6 +78,7 @@ const normalizeProduct = (product: Product): ProductFormData => ({
   price_per_m2: product.price_per_m2 ?? '',
   height: product.height ?? '',
   width: product.width ?? '',
+  lead_time_days: product.lead_time_days != null ? String(product.lead_time_days) : '3',
   is_featured: Boolean(product.is_featured),
   is_on_sale: Boolean(product.is_on_sale),
   discount_price: product.discount_price ?? '',
@@ -121,6 +127,13 @@ const ProductFormPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(emptyFormData);
 
+  // Gallery state: up to 5 images total. Existing come from server, new are File objects.
+  const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
+  const [deletedImageIds, setDeletedImageIds] = useState<number[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  // mainKey: either `existing-<id>` or `new-<index>` — identifies the cutout image
+  const [mainKey, setMainKey] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -129,12 +142,16 @@ const ProductFormPage: React.FC = () => {
           apiClient.get('categories/'),
           isEdit ? apiClient.get(`/products/${id}/`) : Promise.resolve(null)
         ]);
-        
+
         setCategories(catsRes.data.results || catsRes.data);
-        
+
         if (prodRes) {
           setFormData(normalizeProduct(prodRes.data));
           setPreview(prodRes.data.image ?? null);
+          const imgs: ProductImage[] = prodRes.data.images ?? [];
+          setExistingImages(imgs);
+          const currentMain = imgs.find(img => img.is_main);
+          if (currentMain) setMainKey(`existing-${currentMain.id}`);
         }
       } catch (err) {
         console.error('Error fetching form data:', err);
@@ -146,6 +163,60 @@ const ProductFormPage: React.FC = () => {
     void fetchData();
   }, [id, isEdit]);
 
+  // ---- Gallery handlers ----
+  const visibleExisting = existingImages.filter(img => !deletedImageIds.includes(img.id));
+  const totalImages = visibleExisting.length + newFiles.length;
+  const canAddMore = totalImages < MAX_GALLERY_IMAGES;
+
+  // Blob URLs for newly-selected files — memoized and revoked on change/unmount
+  // so we don't leak memory every time the user re-renders or swaps a file.
+  const newFilePreviews = useMemo(
+    () => newFiles.map((f) => URL.createObjectURL(f)),
+    [newFiles]
+  );
+  useEffect(() => {
+    return () => {
+      newFilePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [newFilePreviews]);
+
+  const handleGalleryFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    const slots = MAX_GALLERY_IMAGES - totalImages;
+    if (slots <= 0) {
+      setErrorMessage(`Maksimal ${MAX_GALLERY_IMAGES} ta rasm yuklash mumkin.`);
+      e.target.value = '';
+      return;
+    }
+    const accepted = files.slice(0, slots);
+    setNewFiles(prev => {
+      const next = [...prev, ...accepted];
+      // If there is still no main chosen, default to first image (existing or new)
+      if (!mainKey && visibleExisting.length === 0 && next.length > 0) {
+        setMainKey('new-0');
+      }
+      return next;
+    });
+    haptic('light');
+    e.target.value = '';
+  };
+
+  const removeExisting = (imgId: number) => {
+    setDeletedImageIds(prev => [...prev, imgId]);
+    if (mainKey === `existing-${imgId}`) setMainKey(null);
+  };
+
+  const removeNew = (idx: number) => {
+    setNewFiles(prev => prev.filter((_, i) => i !== idx));
+    if (mainKey === `new-${idx}`) setMainKey(null);
+    // Re-index mainKey if it pointed to a later new file
+    if (mainKey?.startsWith('new-')) {
+      const mIdx = Number(mainKey.split('-')[1]);
+      if (mIdx > idx) setMainKey(`new-${mIdx - 1}`);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
@@ -156,10 +227,27 @@ const ProductFormPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       setFormData(prev => ({ ...prev, image_file: file }));
-      setPreview(URL.createObjectURL(file));
+      setPreview((old) => {
+        // Revoke previous blob URL (if any) to avoid leaks
+        if (old && old.startsWith('blob:')) {
+          URL.revokeObjectURL(old);
+        }
+        return URL.createObjectURL(file);
+      });
       haptic('light');
     }
   };
+
+  // Revoke the main-preview blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (preview && preview.startsWith('blob:')) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+    // We intentionally capture the final value of `preview` only at unmount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handlePricingTypeChange = (pricing_type: 'total' | 'per_m2') => {
     setFormData((prev) => {
@@ -219,6 +307,21 @@ const ProductFormPage: React.FC = () => {
       data.append('image', formData.image_file);
     }
 
+    // Lead time (ready-by duration, in days)
+    const leadTimeNum = parseInt(formData.lead_time_days || '0', 10);
+    if (!Number.isNaN(leadTimeNum) && leadTimeNum > 0) {
+      data.append('lead_time_days', String(leadTimeNum));
+    }
+
+    // Gallery images (up to MAX_GALLERY_IMAGES; server enforces hard limit too)
+    newFiles.forEach(f => data.append('gallery_images', f));
+    if (mainKey?.startsWith('new-')) {
+      data.append('gallery_main_index', mainKey.split('-')[1]);
+    }
+    if (deletedImageIds.length > 0) {
+      data.append('delete_image_ids', deletedImageIds.join(','));
+    }
+
     try {
       if (isEdit) {
         await apiClient.patch(`/products/${id}/`, data, {
@@ -257,6 +360,103 @@ const ProductFormPage: React.FC = () => {
         <div onClick={() => fileInputRef.current?.click()} className="relative aspect-[4/5] bg-surface-variant rounded-[40px] border-2 border-dashed border-outline/10 overflow-hidden flex flex-col items-center justify-center cursor-pointer active:scale-[0.98] transition-all">
           {preview ? <img src={preview} alt="Preview" className="w-full h-full object-cover" /> : <><div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg mb-4 text-primary"><Camera size={28} /></div><p className="text-sm font-bold text-on-surface">Mahsulot rasmini yuklash</p><p className="text-[10px] text-outline mt-1 uppercase tracking-widest font-black">PNG, JPG 10MB gacha</p></>}
           <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+        </div>
+
+        {/* Gallery: 1 cutout (main) + up to 4 showcase images */}
+        <div className="bg-surface-variant/30 p-6 rounded-[32px] space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-outline">Galereya</p>
+              <p className="text-xs text-outline mt-1">
+                1 ta asosiy (foni olingan) + {MAX_GALLERY_IMAGES - 1} ta interyer rasm
+              </p>
+            </div>
+            <span className="text-[10px] font-black text-outline">
+              {totalImages}/{MAX_GALLERY_IMAGES}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {visibleExisting.map((img) => {
+              const key = `existing-${img.id}`;
+              const selected = mainKey === key;
+              return (
+                <div key={key} className={cn(
+                  "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all",
+                  selected ? "border-primary ring-2 ring-primary/30" : "border-outline/10"
+                )}>
+                  <img src={img.image} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setMainKey(key)}
+                    className={cn(
+                      "absolute top-1 left-1 rounded-full p-1 shadow",
+                      selected ? "bg-primary text-white" : "bg-white/90 text-outline"
+                    )}
+                    title="Asosiy (cutout) qilib belgilash"
+                  >
+                    <Star size={12} fill={selected ? 'currentColor' : 'none'} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeExisting(img.id)}
+                    className="absolute top-1 right-1 rounded-full bg-white/90 text-error p-1 shadow"
+                    title="O'chirish"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              );
+            })}
+            {newFiles.map((_f, i) => {
+              const key = `new-${i}`;
+              const selected = mainKey === key;
+              const url = newFilePreviews[i];
+              return (
+                <div key={key} className={cn(
+                  "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all",
+                  selected ? "border-primary ring-2 ring-primary/30" : "border-outline/10"
+                )}>
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setMainKey(key)}
+                    className={cn(
+                      "absolute top-1 left-1 rounded-full p-1 shadow",
+                      selected ? "bg-primary text-white" : "bg-white/90 text-outline"
+                    )}
+                    title="Asosiy (cutout) qilib belgilash"
+                  >
+                    <Star size={12} fill={selected ? 'currentColor' : 'none'} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeNew(i)}
+                    className="absolute top-1 right-1 rounded-full bg-white/90 text-error p-1 shadow"
+                    title="O'chirish"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              );
+            })}
+            {canAddMore && (
+              <label className="relative aspect-square rounded-2xl border-2 border-dashed border-outline/20 flex flex-col items-center justify-center text-outline text-xs font-bold cursor-pointer active:scale-[0.98] transition-all">
+                <Camera size={20} className="mb-1" />
+                + Rasm
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleGalleryFiles}
+                />
+              </label>
+            )}
+          </div>
+          <p className="text-[10px] text-outline">
+            ⭐ — asosiy rasm (foni olingan). Yulduzchani bosib asosiy rasmni tanlang.
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -308,6 +508,24 @@ const ProductFormPage: React.FC = () => {
               <input name="price_per_m2" type="number" value={formData.price_per_m2} onChange={handleInputChange} placeholder="0.00" className="w-full bg-white border border-outline/5 rounded-2xl py-4 px-5 text-on-surface font-black text-lg outline-none" />
             </div>
           )}
+        </div>
+
+        <div>
+          <label className="text-[10px] font-black uppercase tracking-widest text-outline ml-1 mb-2 block">
+            Tayyor bo'lish muddati (kun)
+          </label>
+          <input
+            name="lead_time_days"
+            type="number"
+            min={1}
+            value={formData.lead_time_days}
+            onChange={handleInputChange}
+            placeholder="Masalan: 3"
+            className="w-full bg-white border border-outline/5 rounded-2xl py-4 px-5 text-on-surface font-bold outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+          />
+          <p className="text-[10px] text-outline mt-2 ml-1">
+            Buyurtmadan keyin mahsulot necha kunda tayyor bo'ladi
+          </p>
         </div>
 
         <div className="bg-error/5 border border-error/10 p-6 rounded-[32px] space-y-5">

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, User, Calculator, Stars, MessageCircle, Phone, Ruler, RefreshCcw } from 'lucide-react';
+import { Heart, User, Calculator, Stars, MessageCircle, Phone, Ruler, RefreshCcw, Clock } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
 import type { Product } from '../types';
@@ -88,11 +88,29 @@ const ProductDetailPage: React.FC = () => {
 
   const calculatePrice = () => {
     if (!product?.price_per_m2) return 0;
-    const rate = product.is_on_sale && product.discount_price 
-      ? Number(product.discount_price) 
+    const rate = product.is_on_sale && product.discount_price
+      ? Number(product.discount_price)
       : Number(product.price_per_m2);
     return Math.round((calcHeight * calcWidth / 10000) * rate);
   };
+
+  // Build gallery: prefer `images` relation; fall back to legacy single `image`.
+  const gallery = useMemo(() => {
+    if (product?.images && product.images.length > 0) {
+      // Put main (cutout) first, then others by order
+      const sorted = [...product.images].sort((a, b) => {
+        if (a.is_main !== b.is_main) return a.is_main ? -1 : 1;
+        return (a.order ?? 0) - (b.order ?? 0);
+      });
+      return sorted.map(img => img.image);
+    }
+    return product?.image ? [product.image] : [];
+  }, [product]);
+
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+  useEffect(() => {
+    setActiveImageIdx(0);
+  }, [product?.id]);
 
   if (loading) {
     return (
@@ -113,11 +131,11 @@ const ProductDetailPage: React.FC = () => {
 
   return (
     <div className="px-4 sm:px-6 pt-2 pb-10">
-      <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden bg-surface-variant mb-6 shadow-sm flex items-center justify-center">
-        <img 
-          src={getMediaUrl(product.image) || 'https://via.placeholder.com/800'} 
-          alt={product.name} 
-          className="w-full h-full object-contain mix-blend-multiply" 
+      <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden bg-surface-variant mb-3 shadow-sm flex items-center justify-center">
+        <img
+          src={getMediaUrl(gallery[activeImageIdx]) || getMediaUrl(product.image) || 'https://via.placeholder.com/800'}
+          alt={product.name}
+          className="w-full h-full object-contain mix-blend-multiply"
         />
         {product.ai_status === 'processing' && (
           <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 border border-white/20 z-10 animate-pulse">
@@ -126,6 +144,23 @@ const ProductDetailPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {gallery.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar">
+          {gallery.map((src, i) => (
+            <button
+              key={`${src}-${i}`}
+              type="button"
+              onClick={() => setActiveImageIdx(i)}
+              className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
+                activeImageIdx === i ? 'border-primary ring-2 ring-primary/20' : 'border-transparent opacity-70'
+              }`}
+            >
+              <img src={getMediaUrl(src)} alt="" className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-6">
         <div className="flex justify-between items-start">
@@ -175,6 +210,18 @@ const ProductDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {product.lead_time_days ? (
+          <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-outline/5 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Clock size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-outline">Tayyor bo'lishi</p>
+              <p className="text-base font-extrabold text-on-surface">{product.lead_time_days} kun</p>
+            </div>
+          </div>
+        ) : null}
 
         <p className="text-on-surface text-sm leading-relaxed">
           {product.description}
@@ -311,11 +358,13 @@ const ProductDetailPage: React.FC = () => {
       </div>
 
       {showLeadForm && (
-        <LeadForm 
-          productId={product.id} 
-          leadType={leadType} 
+        <LeadForm
+          productId={product.id}
+          leadType={leadType}
           initialPriceInfo={product.price_per_m2 ? `${calcHeight}x${calcWidth} sm o'lchamda ${calculatePrice().toLocaleString()} so'm deb hisoblandi` : ""}
-          onClose={() => setShowLeadForm(false)} 
+          widthCm={product.price_per_m2 ? calcWidth : undefined}
+          heightCm={product.price_per_m2 ? calcHeight : undefined}
+          onClose={() => setShowLeadForm(false)}
         />
       )}
     </div>
