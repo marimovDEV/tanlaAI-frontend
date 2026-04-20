@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store, Phone, MapPin, ChevronLeft, RefreshCcw, Camera, Youtube } from 'lucide-react';
+import { Store, Phone, MapPin, ChevronLeft, RefreshCcw, Camera } from 'lucide-react';
 import apiClient from '../api/client';
 import { useTelegram } from '../contexts/useTelegram';
 import { cn } from '../utils/cn';
@@ -207,7 +207,10 @@ const CompanyCreatePage: React.FC = () => {
                 placeholder="YouTube kanal linki (ixtiyoriy)"
                 className="w-full h-14 bg-red-50/50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all placeholder:font-medium placeholder:text-slate-400"
               />
-              <Youtube size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-red-500" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500">
+                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+              </svg>
             </div>
           </div>
 
