@@ -463,10 +463,10 @@ const AIVisualizePage: React.FC = () => {
               </div>
               <div>
                 <p className="text-xs font-black text-slate-800">
-                  Eshik teshigi o'lchamlari
+                  Eshik qo'yiladigan joy o'lchamlari
                 </p>
                 <p className="text-[10px] text-slate-400">
-                  Ixtiyoriy — aniqlik uchun kiriting
+                  Ixtiyoriy — aniqroq natija uchun kiriting
                 </p>
               </div>
             </div>
