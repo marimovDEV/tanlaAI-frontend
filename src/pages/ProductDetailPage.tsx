@@ -129,6 +129,28 @@ const ProductDetailPage: React.FC = () => {
   const company = product.company_details;
   const telegramHref = buildTelegramLink(company?.telegram_link);
 
+  const handleCall = () => {
+    const phone = company?.phone;
+    if (!phone) return;
+    haptic('light');
+    const uri = `tel:${phone}`;
+    if (webApp && webApp.openLink) {
+      webApp.openLink(uri);
+    } else {
+      window.location.href = uri;
+    }
+  };
+
+  const handleTelegram = () => {
+    if (!telegramHref) return;
+    haptic('light');
+    if (webApp && webApp.openLink) {
+      webApp.openLink(telegramHref);
+    } else {
+      window.open(telegramHref, "_blank");
+    }
+  };
+
   return (
     <div className="px-4 sm:px-6 pt-2 pb-10">
       <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden bg-surface-variant mb-3 shadow-sm flex items-center justify-center">
@@ -302,17 +324,22 @@ const ProductDetailPage: React.FC = () => {
           is a secondary, exploratory path, so we demote it to a ghost button
           underneath. This matches the marketplace-first strategy.
         */}
-        <button
-          onClick={() => {
-            setLeadType('direct');
-            setShowLeadForm(true);
-            haptic('medium');
-          }}
-          className="w-full bg-primary text-white font-bold py-5 rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
-        >
-          <ShoppingBag size={20} />
-          <span className="text-lg">📦 Buyurtma berish</span>
-        </button>
+        <div className="relative pt-3">
+          <div className="absolute top-0 left-4 bg-error text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">
+            🔥 Eng ko'p sotilayotgan
+          </div>
+          <button
+            onClick={() => {
+              setLeadType('direct');
+              setShowLeadForm(true);
+              haptic('medium');
+            }}
+            className="w-full bg-primary text-white font-bold py-5 rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+          >
+            <ShoppingBag size={20} />
+            <span className="text-lg">📦 Buyurtma berish</span>
+          </button>
+        </div>
 
         <button
           onClick={() => {
@@ -326,52 +353,30 @@ const ProductDetailPage: React.FC = () => {
         </button>
 
         {/* Lead Generation CTAs */}
-        <div className="space-y-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-outline ml-1">Bog'lanish</p>
-          <div className="grid grid-cols-3 gap-3">
+        <div className="space-y-3 pt-2">
+          <p className="text-[10px] font-black uppercase tracking-widest text-outline ml-1">Sotuvchi bilan bog'lanish</p>
+          <div className="flex gap-3">
             <button 
-              onClick={() => {
-                setLeadType('call');
-                setShowLeadForm(true);
-                haptic('light');
-              }}
-              className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-outline/5 active:scale-95 transition-all"
+              onClick={handleCall}
+              disabled={!company?.phone}
+              className="relative flex-1 bg-emerald-500 text-white p-4 rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100"
             >
-              <Phone size={20} className="text-primary" />
-              <span className="text-[9px] font-bold text-outline uppercase tracking-wider">Qo'ng'iroq</span>
+              <div className="absolute -top-2.5 bg-white text-emerald-600 border border-emerald-100 text-[9px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Hozir online
+              </div>
+              <span className="text-sm font-bold flex items-center gap-2 mt-1">📞 Qo'ng'iroq</span>
             </button>
+
             <button 
-              onClick={() => {
-                setLeadType('measurement');
-                setShowLeadForm(true);
-                haptic('light');
-              }}
-              className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-outline/5 active:scale-95 transition-all"
+              onClick={handleTelegram}
+              disabled={!telegramHref}
+              className="relative flex-1 bg-sky-500 text-white p-4 rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-sky-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100"
             >
-              <Ruler size={20} className="text-primary" />
-              <span className="text-[9px] font-bold text-outline uppercase tracking-wider">O'lchash</span>
+              <div className="absolute -top-2.5 bg-white text-sky-600 border border-sky-100 text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-sm">
+                ⚡ Tez javob beradi
+              </div>
+              <span className="text-sm font-bold flex items-center gap-2 mt-1">✈️ Telegram</span>
             </button>
-            {telegramHref ? (
-              <a 
-                href={telegramHref}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => haptic('light')}
-                className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-outline/5 active:scale-95 transition-all"
-              >
-                <MessageCircle size={20} className="text-primary" />
-                <span className="text-[9px] font-bold text-outline uppercase tracking-wider">Telegram</span>
-              </a>
-            ) : (
-              <button
-                type="button"
-                disabled
-                className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-outline/5 opacity-50"
-              >
-                <MessageCircle size={20} className="text-primary" />
-                <span className="text-[9px] font-bold text-outline uppercase tracking-wider">Telegram</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
