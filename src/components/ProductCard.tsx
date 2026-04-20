@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Heart, RefreshCcw, Star, Phone } from 'lucide-react';
+import { Heart, Star, Phone } from 'lucide-react';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import { getMediaUrl } from '../utils/media';
