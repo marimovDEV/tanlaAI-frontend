@@ -17,19 +17,17 @@ const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted 
   const company = product.company_details;
 
   const formatPrice = (value?: string, suffix = '') => {
-    if (!value) {
-      return null;
-    }
+    if (!value) { return null; }
     return `${Number(value).toLocaleString()} so'm${suffix}`;
   };
 
-  const basePrice = product.price
-    ? formatPrice(product.price)
-    : formatPrice(product.price_per_m2, ' / m²');
+  const basePrice = product.price ? formatPrice(product.price) : formatPrice(product.price_per_m2, ' / m²');
+  const salePrice = product.price ? formatPrice(product.discount_price) : formatPrice(product.discount_price, ' / m²');
 
-  const salePrice = product.price
-    ? formatPrice(product.discount_price)
-    : formatPrice(product.discount_price, ' / m²');
+  let discountPct = 0;
+  if (hasSale && product.price && product.discount_price) {
+     discountPct = Math.round((1 - Number(product.discount_price) / Number(product.price)) * 100);
+  }
 
   const handleCall = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -44,39 +42,37 @@ const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted 
   };
 
   return (
-    <div className="bg-white rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group active:scale-[0.98] flex flex-col h-full border border-slate-100">
-      <div className="relative aspect-[4/5] bg-[#f8fafc] overflow-hidden p-2">
-        <NavLink to={`/product/${product.id}`} className="block w-full h-full bg-white rounded-[20px] shadow-sm">
+    <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 p-2.5 flex flex-col h-full border border-slate-50 group">
+      
+      {/* Image container */}
+      <div className="relative h-[140px] bg-slate-50 rounded-xl overflow-hidden mb-3.5 border border-slate-100">
+        <NavLink to={`/product/${product.id}`} className="block w-full h-full">
           <img 
-            src={getMediaUrl(product.image) || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' font-weight='bold' fill='%2394a3b8' text-anchor='middle' dominant-baseline='middle'%3EProduct%3C/text%3E%3C/svg%3E"} 
+            src={getMediaUrl(product.image) || "https://via.placeholder.com/300"} 
             alt={product.name} 
-            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </NavLink>
         
-        {/* Micro UX Tags */}
-        <div className="absolute top-4 left-4 flex flex-col gap-1.5 items-start">
-          {hasSale && (
-            <div className="bg-red-500 text-white px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1">
-              🔥 Chegirma
-            </div>
+        {/* Micro Badges */}
+        <div className="absolute top-2 left-2 flex flex-col gap-1.5 items-start">
+          {hasSale && discountPct > 0 && (
+            <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+              -{discountPct}%
+            </span>
           )}
           {product.is_featured && (
-            <div className="bg-amber-500 text-white px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1">
-              ⚡ Tez sotiladi
-            </div>
+            <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm flex items-center gap-0.5">
+              🔥 TOP
+            </span>
           )}
-          <div className="bg-emerald-500 text-white px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1">
-             Mavjud
-          </div>
         </div>
-
-        {product.ai_status === 'processing' && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white rounded-full px-3 py-1 flex items-center gap-1 shadow-md z-10 animate-pulse">
-            <RefreshCcw size={10} className="animate-spin" />
-            <span className="text-[9px] font-black uppercase tracking-widest">AI Processing</span>
-          </div>
-        )}
+        
+        <div className="absolute bottom-2 left-2">
+          <span className="bg-emerald-600/90 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+            🟢 Mavjud
+          </span>
+        </div>
 
         {onToggleWishlist && (
           <button 
@@ -85,46 +81,42 @@ const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted 
               onToggleWishlist(product.id);
               haptic('soft');
             }}
-            className="absolute top-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all border border-slate-100"
+            className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm active:scale-90 transition border border-white"
           >
-            <Heart size={16} className={isWishlisted ? 'fill-red-500 text-red-500' : 'text-slate-400'} />
+            <Heart size={14} className={isWishlisted ? 'fill-red-500 text-red-500' : 'text-slate-400'} />
           </button>
         )}
       </div>
 
-      <div className="p-4 flex flex-col flex-grow">
+      {/* Content */}
+      <div className="flex flex-col flex-grow">
         <NavLink to={`/product/${product.id}`} className="block mb-2">
-          <h4 className="text-[15px] font-bold text-slate-800 leading-tight line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors">
+          <h3 className="text-[13px] font-bold text-slate-800 leading-tight line-clamp-2">
             {product.name}
-          </h4>
-          <div className="flex items-center gap-1 mb-2">
-            <Star size={12} className="fill-amber-400 text-amber-400" />
-            <span className="text-[11px] font-bold text-slate-600">4.8</span>
-            <span className="text-[11px] text-slate-400 ml-1">({Math.floor(Math.random() * 50) + 10})</span>
-          </div>
+          </h3>
+          <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-medium">
+            <Star size={10} className="fill-amber-400 text-amber-400" /> 
+            4.8 ({(product.id * 7 % 40) + 10})
+          </p>
         </NavLink>
-
-        <div className="mt-auto pt-1 mb-3">
-          {hasSale && basePrice && salePrice ? (
-            <div className="flex flex-col">
-              <span className="text-[10px] text-slate-400 line-through leading-none mb-1">{basePrice}</span>
-              <span className="text-[17px] font-black text-red-600 leading-none">{salePrice}</span>
-            </div>
-          ) : basePrice ? (
-            <span className="text-[17px] font-black text-slate-900 leading-none">{basePrice}</span>
-          ) : (
-            <span className="text-[17px] font-black text-slate-300 leading-none">Kelishilgan</span>
+        
+        <div className="mt-auto mb-3">
+          <p className="text-[14px] font-black text-slate-900 leading-none">
+            {salePrice || basePrice || "Kelishilgan"}
+          </p>
+          {hasSale && basePrice && salePrice && (
+            <p className="text-[10px] text-slate-400 line-through mt-1">
+              {basePrice}
+            </p>
           )}
         </div>
 
-        {/* Quick Action CTA inside card */}
         <button 
           onClick={handleCall}
           disabled={!company?.phone}
-          className="w-full bg-[#16a34a] hover:bg-green-700 active:bg-green-800 text-white rounded-xl py-2.5 flex items-center justify-center gap-2 shadow-md shadow-green-600/20 transition-all disabled:opacity-50 disabled:active:scale-100"
+          className="mt-auto w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50 transition active:scale-95"
         >
-          <Phone size={16} fill="currentColor" className="text-white" />
-          <span className="text-[13px] font-black uppercase tracking-wider">Qo'ng'iroq</span>
+          <Phone size={14} className="fill-current" /> Qo'ng'iroq
         </button>
       </div>
     </div>

@@ -63,9 +63,9 @@ const HomePage: React.FC = () => {
   const recentProducts = products.slice(4);
 
   return (
-    <div className="p-4 sm:p-6 max-w-screen-xl mx-auto bg-[#f8fafc] min-h-screen">
+    <div className="p-4 sm:p-6 max-w-screen-xl mx-auto bg-[#f8fafc] min-h-screen pb-24">
       {/* 1. Header (Premium Style) */}
-      <div className="flex items-center justify-between mb-6 px-1">
+      <div className="flex items-center justify-between mb-4 px-1">
         <button 
           onClick={() => haptic('light')}
           className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 active:scale-95 transition-transform"
@@ -82,7 +82,22 @@ const HomePage: React.FC = () => {
         </button>
       </div>
 
-      {/* 2. Premium Search Bar */}
+      {/* 2. Hero Block */}
+      <div className="px-1 mb-6">
+        <div 
+          onClick={() => navigate('/visualize/new')}
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-5 rounded-[20px] shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-transform cursor-pointer"
+        >
+          <h2 className="text-lg font-black leading-tight">
+            Uyingiz uchun ideal eshikni toping
+          </h2>
+          <p className="text-sm opacity-90 mt-1 font-medium">
+            AI orqali sinab ko'ring 🚪✨
+          </p>
+        </div>
+      </div>
+
+      {/* 3. Premium Search Bar */}
       <div className="mb-8 px-1">
         <div 
           className="relative group transition-all"
