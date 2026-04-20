@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, User, ChevronRight, Sparkles } from 'lucide-react';
+import { Heart, User, ChevronRight, Sparkles, Building2, Store } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import type { ApiListResponse, Product, WishlistItem } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import ProductCard from '../components/ProductCard';
-import { cn } from '../utils/cn';
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -41,132 +40,209 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 pb-20 space-y-8">
-      {/* Profile Header */}
-      <div className="flex items-center gap-6">
-        <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden bg-surface-variant flex items-center justify-center">
-          {tgUser?.photo_url ? (
-            <img src={tgUser.photo_url} alt="Profile" className="w-full h-full object-cover" />
-          ) : (
-            <User size={32} className="text-outline/40" />
-          )}
-        </div>
-        <div className="flex-1 mt-2">
-          <h3 className="text-2xl font-extrabold text-on-surface leading-none">
-            {tgUser?.first_name || 'Foydalanuvchi'}
-          </h3>
-          <p className="text-outline text-sm mt-1">@{tgUser?.username || 'user'}</p>
-          <div className="mt-2.5 inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-wider">
-            Holat: {profile?.role === 'COMPANY' ? 'Sotuvchi' : 'Xaridor'}
-          </div>
-        </div>
-      </div>
+    <div className="pb-20" style={{ background: '#FFFBF6', minHeight: '100vh' }}>
+      <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`}</style>
 
-      {/* Menu Options */}
-      <div className="space-y-3">
-        {[
-          { icon: Sparkles, label: 'Mening vizualizatsiyalarim', path: '/visualizations', iconColor: 'bg-indigo-50 text-indigo-600' }
-        ].map((item, idx) => (
-          <button 
-            key={idx}
-            className="w-full flex items-center justify-between p-5 bg-white rounded-2xl border border-outline/5 active:scale-[0.98] transition-all"
-            onClick={() => {
-              if (item.path) navigate(item.path);
-              haptic('light');
+      {/* Profile Header */}
+      <div className="px-4 pt-6 pb-5">
+        <div className="flex items-center gap-5">
+          <div
+            className="w-[72px] h-[72px] rounded-2xl flex items-center justify-center overflow-hidden"
+            style={{
+              background: tgUser?.photo_url ? undefined : 'linear-gradient(135deg, #FF6B35, #FF2D55)',
+              boxShadow: '0 8px 24px rgba(255,107,53,0.25)',
+              border: '3px solid white',
             }}
           >
-            <div className="flex items-center gap-4">
-              <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center",
-                item.iconColor || "bg-primary/5 text-primary"
-              )}>
-                <item.icon size={20} />
-              </div>
-              <span className="font-bold text-sm">
-                {item.label}
-              </span>
+            {tgUser?.photo_url ? (
+              <img src={tgUser.photo_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <User size={28} className="text-white" />
+            )}
+          </div>
+          <div className="flex-1">
+            <h3 className="text-[22px] font-black text-[#1A1A2E] leading-none tracking-tight">
+              {tgUser?.first_name || 'Foydalanuvchi'}
+            </h3>
+            <p className="text-[13px] text-[#B0B0BF] font-bold mt-1">@{tgUser?.username || 'user'}</p>
+            <div
+              className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white"
+              style={{
+                background: profile?.role === 'COMPANY'
+                  ? 'linear-gradient(135deg, #00C9B1, #00A896)'
+                  : 'linear-gradient(135deg, #FF6B35, #FF2D55)',
+              }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+              {profile?.role === 'COMPANY' ? 'Sotuvchi' : 'Xaridor'}
             </div>
-            <ChevronRight size={16} className="text-outline/30" />
-          </button>
-        ))}
+          </div>
+        </div>
       </div>
 
-      {/* Company Strategy Block (Main CTA) */}
-      {!profile?.has_company ? (
-        <div>
-          <button 
-            onClick={() => { haptic('light'); navigate('/company/create'); }}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-[24px] p-5 flex items-center justify-between shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-transform"
+      {/* Quick Actions */}
+      <div className="px-4 space-y-2.5 mb-6">
+        <button
+          onClick={() => { haptic('light'); navigate('/visualizations'); }}
+          className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform"
+          style={{ background: '#fff', boxShadow: '0 4px 16px rgba(26,26,46,0.06)' }}
+        >
+          <div className="flex items-center gap-3.5">
+            <div
+              className="w-11 h-11 rounded-[14px] flex items-center justify-center"
+              style={{ background: 'rgba(139,92,246,0.08)' }}
+            >
+              <Sparkles size={20} color="#8B5CF6" />
+            </div>
+            <div>
+              <p className="text-[14px] font-black text-[#1A1A2E]">Mening vizualizatsiyalarim</p>
+              <p className="text-[10px] font-bold text-[#B0B0BF] uppercase tracking-widest">AI natijalarim</p>
+            </div>
+          </div>
+          <ChevronRight size={16} color="#C0C0CE" />
+        </button>
+
+        <button
+          onClick={() => { haptic('light'); navigate('/wishlist'); }}
+          className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform"
+          style={{ background: '#fff', boxShadow: '0 4px 16px rgba(26,26,46,0.06)' }}
+        >
+          <div className="flex items-center gap-3.5">
+            <div
+              className="w-11 h-11 rounded-[14px] flex items-center justify-center"
+              style={{ background: 'rgba(255,45,85,0.08)' }}
+            >
+              <Heart size={20} color="#FF2D55" />
+            </div>
+            <div>
+              <p className="text-[14px] font-black text-[#1A1A2E]">Sevimli mahsulotlar</p>
+              <p className="text-[10px] font-bold text-[#B0B0BF] uppercase tracking-widest">{wishlist.length} ta saqlangan</p>
+            </div>
+          </div>
+          <ChevronRight size={16} color="#C0C0CE" />
+        </button>
+      </div>
+
+      {/* Company CTA */}
+      <div className="px-4 mb-8">
+        {!profile?.has_company ? (
+          <button
+            onClick={() => { haptic('medium'); navigate('/company/create'); }}
+            className="w-full relative overflow-hidden p-5 rounded-[22px] flex items-center justify-between active:scale-[0.97] transition-transform"
+            style={{
+              background: 'linear-gradient(135deg, #FF6B35 0%, #FF2D55 100%)',
+              boxShadow: '0 12px 32px rgba(255,107,53,0.35)',
+            }}
           >
-            <div className="text-left pr-4">
-              <h3 className="font-black text-lg mb-1 leading-tight">🚀 Kompaniya ochish</h3>
-              <p className="text-xs font-medium opacity-90">
-                Kompaniyangizni qo'shing va sotuvlarni oshiring!
+            <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-15"
+              style={{ background: 'white', transform: 'translate(30%,-30%)' }} />
+            <div className="text-left pr-4 relative">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Store size={16} className="text-white/80" />
+                <span className="text-white/70 text-[10px] font-black uppercase tracking-widest">Yangi</span>
+              </div>
+              <h3 className="font-black text-[17px] text-white leading-tight mb-0.5">Kompaniya ochish</h3>
+              <p className="text-[12px] font-medium text-white/75">
+                Biznesingizni platformaga qo'shing
               </p>
             </div>
-            <div className="w-10 h-10 bg-white/20 flex-shrink-0 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-inner">
-              <ChevronRight size={24} className="text-white" />
+            <div
+              className="w-11 h-11 flex-shrink-0 rounded-[14px] flex items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.20)', backdropFilter: 'blur(8px)' }}
+            >
+              <ChevronRight size={20} className="text-white" />
             </div>
           </button>
-        </div>
-      ) : (
-        <div className="flex gap-2">
-          <button 
+        ) : (
+          <button
             onClick={() => { haptic('light'); navigate('/creator'); }}
-            className="flex-1 bg-slate-900 text-white rounded-[24px] p-5 flex items-center justify-between shadow-xl shadow-slate-900/20 active:scale-[0.98] transition-transform"
+            className="w-full p-5 rounded-[22px] flex items-center justify-between active:scale-[0.97] transition-transform"
+            style={{
+              background: 'linear-gradient(135deg, #1A1A2E, #2D2D4E)',
+              boxShadow: '0 12px 32px rgba(26,26,46,0.30)',
+            }}
           >
-            <div className="text-left pr-4">
-              <h3 className="font-black text-lg mb-1 leading-tight">🏢 Mening kompaniyam</h3>
-              <p className="text-xs font-medium opacity-90">
-                Dashboard va boshqaruv
-              </p>
+            <div className="flex items-center gap-3.5">
+              <div
+                className="w-11 h-11 rounded-[14px] flex items-center justify-center"
+                style={{ background: 'rgba(255,255,255,0.10)' }}
+              >
+                <Building2 size={20} className="text-white" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-black text-[17px] text-white leading-tight">Mening kompaniyam</h3>
+                <p className="text-[12px] font-medium text-white/60">Dashboard va boshqaruv</p>
+              </div>
             </div>
-            <div className="w-10 h-10 bg-white/10 flex-shrink-0 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10">
-              <ChevronRight size={24} className="text-white" />
-            </div>
+            <ChevronRight size={18} className="text-white/50" />
           </button>
-        </div>
+        )}
+      </div>
+
+      {/* Wishlist Section */}
+      {wishlist.length > 0 && (
+        <section className="px-4 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,45,85,0.08)' }}>
+                <Heart size={16} color="#FF2D55" />
+              </div>
+              <h2 className="text-[18px] font-black text-[#1A1A2E] tracking-tight">Sevimlilar</h2>
+            </div>
+            <button
+              onClick={() => navigate('/wishlist')}
+              className="text-[11px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+              style={{ color: '#FF2D55', background: 'rgba(255,45,85,0.06)' }}
+            >
+              Barchasi <ChevronRight size={12} className="inline" />
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-2 gap-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="rounded-[22px]" style={{
+                  height: '240px',
+                  background: 'linear-gradient(90deg,#f0ede8 25%,#e8e4de 50%,#f0ede8 75%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 1.4s infinite',
+                }} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {wishlist.slice(0, 4).map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isWishlisted={true}
+                  onToggleWishlist={handleToggleWishlist}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       )}
 
-      {/* Wishlist Section (Moved to Bottom) */}
-      <section className="pt-6">
-        <div className="flex items-center justify-between mb-6 px-1">
-          <h2 className="font-extrabold text-xl text-on-surface flex items-center gap-2">
-            <Heart size={20} className="fill-error text-error" />
-            Mening tanlovlarim
-          </h2>
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="aspect-[3/4] bg-surface-variant animate-pulse rounded-3xl" />
-            ))}
-          </div>
-        ) : wishlist.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4">
-            {wishlist.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                isWishlisted={true}
-                onToggleWishlist={handleToggleWishlist}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white/50 backdrop-blur-md rounded-3xl p-10 text-center border-2 border-dashed border-outline/10">
-            <Heart size={48} className="text-outline/20 mx-auto mb-4" />
-            <p className="text-outline text-sm font-medium">Sizning saqlanganlar ro'yxatingiz bo'sh.</p>
-            <button 
+      {/* Empty state if no wishlist */}
+      {!loading && wishlist.length === 0 && (
+        <div className="px-4">
+          <div
+            className="rounded-[22px] p-10 text-center"
+            style={{ background: '#fff', boxShadow: '0 4px 16px rgba(26,26,46,0.06)', border: '2px dashed rgba(26,26,46,0.06)' }}
+          >
+            <Heart size={40} color="#E0E0E8" className="mx-auto mb-3" />
+            <p className="text-[14px] font-bold text-[#B0B0BF] mb-3">Sizning sevimlilar ro'yxatingiz bo'sh</p>
+            <button
               onClick={() => { haptic('light'); navigate('/search'); }}
-              className="mt-4 text-primary font-bold text-sm"
+              className="text-[13px] font-black text-white px-6 py-2.5 rounded-[14px] active:scale-95 transition-transform"
+              style={{ background: 'linear-gradient(135deg, #FF6B35, #FF2D55)', boxShadow: '0 6px 18px rgba(255,107,53,0.28)' }}
             >
               Qidirishni boshlash
             </button>
           </div>
-        )}
-      </section>
+        </div>
+      )}
     </div>
   );
 };

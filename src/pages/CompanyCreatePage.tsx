@@ -60,7 +60,7 @@ const CompanyCreatePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-24">
+    <div className="min-h-screen pb-24" style={{ background: '#FFFBF6' }}>
       {/* Header */}
       <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-slate-100 sticky top-0 z-10">
         <button 
@@ -74,8 +74,10 @@ const CompanyCreatePage: React.FC = () => {
       </div>
 
       <div className="p-5 max-w-xl mx-auto">
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-[24px] p-6 text-white mb-8 shadow-xl shadow-blue-600/20 text-center">
-          <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl mx-auto flex items-center justify-center mb-4 border border-white/20 shadow-inner">
+        <div className="rounded-[24px] p-6 text-white mb-8 text-center relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #FF6B35, #FF2D55, #C0175A)', boxShadow: '0 12px 40px rgba(255,107,53,0.30)' }}>
+          <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-15" style={{ background: 'white', transform: 'translate(30%,-30%)' }} />
+          <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl mx-auto flex items-center justify-center mb-4 border border-white/20 shadow-inner relative">
             <Store size={32} className="text-white drop-shadow-md" />
           </div>
           <h1 className="text-xl font-black mb-1.5 leading-tight">Biznesingizni boshlang!</h1>
@@ -123,7 +125,7 @@ const CompanyCreatePage: React.FC = () => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Masalan: Elite Eshiklar" 
-                  className="w-full h-14 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-600 pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all placeholder:font-medium placeholder:text-slate-400"
+                  className="w-full h-14 bg-slate-50 rounded-2xl border-none focus:ring-[#FF6B35] pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all placeholder:font-medium placeholder:text-slate-400"
                 />
                 <Store size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               </div>
@@ -140,7 +142,7 @@ const CompanyCreatePage: React.FC = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="+998 90 123 45 67" 
-                  className="w-full h-14 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-600 pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all placeholder:font-medium placeholder:text-slate-400"
+                  className="w-full h-14 bg-slate-50 rounded-2xl border-none focus:ring-[#FF6B35] pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all placeholder:font-medium placeholder:text-slate-400"
                 />
                 <Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               </div>
@@ -156,7 +158,7 @@ const CompanyCreatePage: React.FC = () => {
                   onChange={handleChange}
                   placeholder="Falonchi ko'cha, 12-uy..."
                   rows={2}
-                  className="w-full py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-600 pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all resize-none placeholder:font-medium placeholder:text-slate-400"
+                  className="w-full py-4 bg-slate-50 rounded-2xl border-none focus:ring-[#FF6B35] pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all resize-none placeholder:font-medium placeholder:text-slate-400"
                 />
                 <MapPin size={20} className="absolute left-4 top-4 text-slate-400" />
               </div>
@@ -219,9 +221,10 @@ const CompanyCreatePage: React.FC = () => {
             disabled={loading || !formData.name || !formData.phone}
             className={cn(
               "w-full mt-6 h-14 flex items-center justify-center rounded-[20px] text-[15px] font-black uppercase tracking-wider transition-all",
+              !(loading || !formData.name || !formData.phone) && "bg-gradient-to-r from-[#FF6B35] to-[#FF2D55] shadow-xl shadow-[rgba(255,107,53,0.35)]",
               loading || !formData.name || !formData.phone 
-                ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
-                : "bg-green-600 text-white shadow-xl shadow-green-600/30 hover:bg-green-700 active:scale-[0.98]"
+                ? "bg-[#E8E4DE] text-[#B0B0BF] cursor-not-allowed" 
+                : "text-white active:scale-[0.98]"
             )}
           >
             {loading ? (
