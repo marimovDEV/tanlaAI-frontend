@@ -6,7 +6,7 @@ import ProductCard from '../components/ProductCard';
 import apiClient from '../api/client';
 import type { Banner, Category, Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
-import { Search, Menu, Bell } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -64,23 +64,6 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="p-4 sm:p-6 max-w-screen-xl mx-auto bg-[#f8fafc] min-h-screen pb-24">
-      {/* 1. Header (Premium Style) */}
-      <div className="flex items-center justify-between mb-4 px-1">
-        <button 
-          onClick={() => haptic('light')}
-          className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 active:scale-95 transition-transform"
-        >
-          <Menu size={22} className="text-slate-800" />
-        </button>
-        <h1 className="text-2xl font-black tracking-tighter text-[#2563eb]">Tanla</h1>
-        <button 
-          onClick={() => haptic('light')}
-          className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 active:scale-95 transition-transform relative"
-        >
-          <div className="absolute top-2.5 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
-          <Bell size={22} className="text-slate-800" />
-        </button>
-      </div>
 
       {/* 2. Hero Block */}
       <div className="px-1 mb-6">

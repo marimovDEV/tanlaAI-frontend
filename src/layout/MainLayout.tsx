@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Store, Search, ListOrdered, Percent, User, Menu, X, Building2, PlusCircle } from 'lucide-react';
+import { Store, Search, ListOrdered, Percent, User, Building2, PlusCircle, Bell } from 'lucide-react';
 import { useTelegram } from '../contexts/useTelegram';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -66,25 +66,14 @@ const MainLayout: React.FC = () => {
       {/* Mobile/Tablet View (sm, md) */}
       <div className="flex-1 flex flex-col min-w-0 lg:pl-[280px]">
         {/* Header (Mobile & Tablet only) */}
-        <nav className="fixed top-0 w-full lg:hidden z-[60] bg-background/80 backdrop-blur-md border-b border-outline/5 pt-[var(--sat)] min-h-[calc(4rem+var(--sat))]">
+        <nav className="fixed top-0 w-full lg:hidden z-[60] bg-white/95 backdrop-blur-md border-b border-slate-100 pt-[var(--sat)] h-[calc(4.5rem+var(--sat))]">
           <div className="h-full flex items-center justify-between px-4">
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => {
-                  setIsMenuOpen(!isMenuOpen);
-                  haptic('light');
-                }}
-                className="p-2 hover:bg-slate-50 rounded-xl transition-colors md:hidden"
-              >
-                {isMenuOpen ? <X size={24} className="text-slate-900" /> : <Menu size={24} className="text-slate-900" />}
-              </button>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                  <Store size={18} className="text-white" />
-                </div>
-                <div className="font-extrabold tracking-tight text-xl text-slate-900 md:text-2xl">
-                  Tanla
-                </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-[12px] flex items-center justify-center shadow-md shadow-blue-600/20">
+                <Store size={18} className="text-white" />
+              </div>
+              <div className="font-black tracking-tighter text-2xl text-slate-900">
+                Tanla
               </div>
             </div>
             
@@ -97,7 +86,7 @@ const MainLayout: React.FC = () => {
                   onClick={() => haptic('light')}
                   className={({ isActive: isLinkActive }) => cn(
                     "px-4 py-2 rounded-xl text-sm font-bold transition-all",
-                    isLinkActive ? "bg-primary/10 text-primary" : "text-outline hover:bg-surface-variant hover:text-on-surface"
+                    isLinkActive ? "bg-blue-50 text-blue-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                   )}
                 >
                   {item.label}
@@ -105,59 +94,28 @@ const MainLayout: React.FC = () => {
               ))}
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <NavLink 
                 to="/creator" 
-                className="hidden md:flex lg:hidden items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow-md shadow-primary/20 hover:bg-primary/90 transition-all"
+                className="hidden md:flex lg:hidden items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition-all"
               >
                 <Building2 size={16} /> {profile?.has_company ? "Studiya" : "Studio"}
               </NavLink>
+
+              <button 
+                onClick={() => {
+                  haptic('light');
+                  // navigate('/notifications'); // placeholder
+                }}
+                className="w-10 h-10 bg-[#f8fafc] flex items-center justify-center rounded-full border border-slate-100 shadow-sm relative active:scale-95 transition-transform"
+              >
+                <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#f8fafc]" />
+                <Bell size={20} className="text-slate-700" />
+              </button>
             </div>
           </div>
         </nav>
 
-        {/* Sliding Menu (Mobile only) */}
-        <div 
-          className={cn(
-            "fixed left-0 w-full z-[55] bg-surface border-b border-outline/10 shadow-xl transform transition-all duration-300 ease-out md:hidden",
-            isMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
-          )}
-          style={{ top: 'calc(4rem + var(--sat))' }}
-        >
-          <div className="p-6 flex flex-col gap-4 text-left">
-            <NavLink 
-              to={profile?.has_company ? "/creator" : "/company/create"} 
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-outline/5 active:scale-[0.98] transition-all"
-            >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                <Building2 size={24} />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-left">
-                  {profile?.has_company ? "Mening kompaniyam" : "Kompaniya yaratish"}
-                </h4>
-                <p className="text-[10px] text-outline font-medium text-left">
-                  {profile?.has_company ? "Studiyangizni boshqaring" : "Studiyangizni ro'yxatdan o'tkazing"}
-                </p>
-              </div>
-            </NavLink>
-
-            <NavLink 
-              to="/product/create" 
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-outline/5 active:scale-[0.98] transition-all"
-            >
-              <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
-                <PlusCircle size={24} />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-left">Mahsulot qo'shish</h4>
-                <p className="text-[10px] text-outline font-medium text-left">Yangi mahsulot qo'shish</p>
-              </div>
-            </NavLink>
-          </div>
-        </div>
 
         {/* Main Content */}
         <main className="pt-[calc(4rem+var(--sat)+0.5rem)] sm:pt-[calc(4rem+var(--sat)+1rem)] md:pt-16 lg:pt-8 pb-24 min-h-screen px-safe">
