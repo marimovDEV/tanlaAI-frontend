@@ -1,18 +1,41 @@
 import React, { useState } from 'react';
-import { X, Send, MapPin, Pencil, CheckCircle2, Loader2 } from 'lucide-react';
+import { X, Send, MapPin, Pencil, CheckCircle2, Loader2, ShoppingBag } from 'lucide-react';
 import apiClient from '../api/client';
 import { useTelegram } from '../contexts/useTelegram';
+
+export type LeadFormType = 'call' | 'measurement' | 'direct';
 
 interface Props {
   productId: number;
   onClose: () => void;
-  leadType: 'call' | 'measurement';
+  leadType: LeadFormType;
   initialPriceInfo?: string;
   widthCm?: number;
   heightCm?: number;
   source?: string;
   sharedId?: string;
 }
+
+// Per-type copy so we don't branch inside JSX.
+// `direct` = AI-free checkout: customer just wants to buy, so we foreground
+// that intent with a shopping icon and an order-focused title.
+const LEAD_COPY: Record<LeadFormType, { title: string; subtitle: string; cta: string }> = {
+  call: {
+    title: "Qo'ng'iroq buyurtma qilish",
+    subtitle: "Ma'lumotlaringizni kiriting, biz o'zimiz aloqaga chiqamiz.",
+    cta: "So'rovni yuborish",
+  },
+  measurement: {
+    title: "O'lchashni buyurtma qilish",
+    subtitle: "Ma'lumotlaringizni kiriting, biz o'zimiz aloqaga chiqamiz.",
+    cta: "So'rovni yuborish",
+  },
+  direct: {
+    title: "Buyurtma berish",
+    subtitle: "Mahsulotni buyurtma qilish uchun ma'lumotlaringizni kiriting.",
+    cta: "Buyurtmani tasdiqlash",
+  },
+};
 
 type AddressMode = 'location' | 'manual';
 
@@ -144,19 +167,36 @@ const LeadForm: React.FC<Props> = ({
         {success ? (
           <div className="text-center py-10">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Send className="text-primary" size={32} />
+              {leadType === 'direct' ? (
+                <ShoppingBag className="text-primary" size={32} />
+              ) : (
+                <Send className="text-primary" size={32} />
+              )}
             </div>
-            <h3 className="text-xl font-extrabold text-on-surface mb-2">Muvaffaqiyatli!</h3>
-            <p className="text-xs text-outline">Mutaxassislarimiz tez orada siz bilan bog'lanishadi.</p>
+            <h3 className="text-xl font-extrabold text-on-surface mb-2">
+              {leadType === 'direct' ? "Buyurtma qabul qilindi!" : "Muvaffaqiyatli!"}
+            </h3>
+            <p className="text-xs text-outline">
+              {leadType === 'direct'
+                ? "Kompaniya tez orada siz bilan bog'lanadi."
+                : "Mutaxassislarimiz tez orada siz bilan bog'lanishadi."}
+            </p>
           </div>
         ) : (
           <>
             <div className="flex justify-between items-start mb-6">
-              <div>
-                <h3 className="text-xl font-extrabold text-on-surface mb-1">
-                  {leadType === 'call' ? "Qo'ng'iroq buyurtma qilish" : "O'lchashni buyurtma qilish"}
-                </h3>
-                <p className="text-xs text-outline">Ma'lumotlaringizni kiriting, biz o'zimiz aloqaga chiqamiz.</p>
+              <div className="flex items-start gap-3">
+                {leadType === 'direct' && (
+                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <ShoppingBag size={20} className="text-primary" />
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-xl font-extrabold text-on-surface mb-1">
+                    {LEAD_COPY[leadType].title}
+                  </h3>
+                  <p className="text-xs text-outline">{LEAD_COPY[leadType].subtitle}</p>
+                </div>
               </div>
               <button
                 onClick={onClose}
@@ -290,7 +330,7 @@ const LeadForm: React.FC<Props> = ({
                 disabled={!canSubmit}
                 className="w-full bg-primary text-white font-bold py-5 rounded-2xl mt-2 shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {loading ? 'Yuborilmoqda...' : "So'rovni yuborish"}
+                {loading ? 'Yuborilmoqda...' : LEAD_COPY[leadType].cta}
               </button>
             </form>
           </>

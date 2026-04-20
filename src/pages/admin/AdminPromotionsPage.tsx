@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Tag, Package, Trash2, Edit3, Plus, Calendar, Clock } from 'lucide-react';
+import { Tag, Package, Trash2, Edit3, Plus, Calendar, Clock, Megaphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
@@ -20,6 +20,13 @@ type Promotion = {
 export default function AdminPromotionsPage() {
   const [promos, setPromos] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [broadcasting, setBroadcasting] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const fetchPromos = useCallback(async () => {
     setLoading(true);
@@ -48,6 +55,21 @@ export default function AdminPromotionsPage() {
     }
   };
 
+  const handleBroadcast = async (id: number, name: string) => {
+    const userCount = 'barcha';
+    if (!window.confirm(`"${name}" aksiyasini ${userCount} foydalanuvchilarga Telegram orqali yuborasizmi?`)) return;
+    setBroadcasting(id);
+    try {
+      const { data } = await apiClient.post(`admin/promotions/${id}/broadcast/`);
+      showToast(`📢 ${data.sent} ta foydalanuvchiga yuborildi!`, 'success');
+    } catch (error: any) {
+      const msg = error.response?.data?.detail || "Broadcast xatosi";
+      showToast(msg, 'error');
+    } finally {
+      setBroadcasting(null);
+    }
+  };
+
   const formatPrice = (price: string | number | null) => {
     if (!price) return '—';
     return new Intl.NumberFormat('uz-UZ').format(Number(price)) + " сум";
@@ -67,7 +89,7 @@ export default function AdminPromotionsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">E'lon qilingan aksiyalar</h1>
-          <p className="text-slate-500 font-medium">Barcha chegirmali mahsulotlarni boshqarish va monitoring qilish</p>
+          <p className="text-slate-500 font-medium">Barcha chegirmali mahsulotlarni boshqarish va broadcast qilish</p>
         </div>
         <Link 
           to="/adminka/products" 
@@ -102,6 +124,7 @@ export default function AdminPromotionsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {promos.map((p) => {
             const status = getStatus(p.sale_end_date);
+            const isBroadcasting = broadcasting === p.id;
             return (
               <div key={p.id} className="group bg-white rounded-[32px] p-4 border border-slate-100 hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 flex flex-col">
                 {/* Image Container */}
@@ -115,6 +138,18 @@ export default function AdminPromotionsPage() {
                     {status.label}
                   </div>
                   <div className="absolute bottom-3 right-3 flex gap-2 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                    <button
+                      onClick={() => handleBroadcast(p.id, p.name)}
+                      disabled={isBroadcasting}
+                      className="p-2 bg-amber-500 rounded-xl text-white hover:bg-amber-600 shadow-lg border border-amber-400 transition-colors disabled:opacity-50"
+                      title="📢 Barcha foydalanuvchilarga yuborish"
+                    >
+                      {isBroadcasting ? (
+                        <div className="w-[18px] h-[18px] border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Megaphone size={18} />
+                      )}
+                    </button>
                     <Link 
                       to={`/adminka/products/edit/${p.id}`}
                       className="p-2 bg-white rounded-xl text-slate-600 hover:text-primary shadow-lg border border-slate-100 transition-colors"
@@ -151,6 +186,20 @@ export default function AdminPromotionsPage() {
                     </div>
                   </div>
 
+                  {/* Broadcast button (always visible) */}
+                  <button
+                    onClick={() => handleBroadcast(p.id, p.name)}
+                    disabled={isBroadcasting}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-amber-100 transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {isBroadcasting ? (
+                      <div className="w-4 h-4 border-2 border-amber-300 border-t-amber-700 rounded-full animate-spin" />
+                    ) : (
+                      <Megaphone size={14} />
+                    )}
+                    {isBroadcasting ? 'Yuborilmoqda...' : '📢 Broadcast'}
+                  </button>
+
                   <div className="flex items-center justify-between text-[11px] px-1">
                     <div className="flex items-center gap-1.5 text-slate-500">
                       <Calendar size={12} className="text-slate-400" />
@@ -169,6 +218,18 @@ export default function AdminPromotionsPage() {
           })}
         </div>
       )}
+
+      {/* Toast */}
+      {toast && (
+        <div className={cn(
+          "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-8 py-4 rounded-[24px] shadow-2xl border-2 transition-all animate-in fade-in slide-in-from-bottom-4",
+          toast.type === 'success' ? 'bg-emerald-900 border-emerald-800 text-white' : 'bg-red-900 border-red-800 text-white'
+        )}>
+          <span className="text-lg">{toast.type === 'success' ? '✅' : '❌'}</span>
+          <span className="text-sm font-black tracking-tight">{toast.message}</span>
+        </div>
+      )}
     </div>
   );
 }
+

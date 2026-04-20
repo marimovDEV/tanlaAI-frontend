@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, User, Calculator, Stars, MessageCircle, Phone, Ruler, RefreshCcw, Clock } from 'lucide-react';
+import { Heart, User, Calculator, Stars, MessageCircle, Phone, Ruler, RefreshCcw, Clock, ShoppingBag } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
-import LeadForm from '../components/LeadForm';
+import LeadForm, { type LeadFormType } from '../components/LeadForm';
 
 const buildTelegramLink = (value?: string) => {
   if (!value) {
@@ -26,7 +26,7 @@ const ProductDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [wishlistBusy, setWishlistBusy] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
-  const [leadType, setLeadType] = useState<'call' | 'measurement'>('call');
+  const [leadType, setLeadType] = useState<LeadFormType>('call');
   const [calcHeight, setCalcHeight] = useState(200);
   const [calcWidth, setCalcWidth] = useState(80);
   const { haptic, webApp } = useTelegram();
@@ -295,7 +295,26 @@ const ProductDetailPage: React.FC = () => {
           </button>
         )}
 
-        <button 
+        {/*
+          Primary CTA: direct order (AI-free).
+          Rationale: direct orders are the highest-intent action on this page
+          — customer already knows they want the product. The AI visualization
+          is a secondary, exploratory path, so we demote it to a ghost button
+          underneath. This matches the marketplace-first strategy.
+        */}
+        <button
+          onClick={() => {
+            setLeadType('direct');
+            setShowLeadForm(true);
+            haptic('medium');
+          }}
+          className="w-full bg-primary text-white font-bold py-5 rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+        >
+          <ShoppingBag size={20} />
+          <span className="text-lg">📦 Buyurtma berish</span>
+        </button>
+
+        <button
           onClick={() => {
             navigate(`/product/${product.id}/visualize`);
             haptic('medium');
