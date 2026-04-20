@@ -333,7 +333,7 @@ const ProductDetailPage: React.FC = () => {
 
       {/* Sticky CTA Bar */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 px-4 py-3 space-y-2.5"
+        className="fixed bottom-0 left-0 right-0 z-[10000] px-4 py-3 space-y-2.5"
         style={{
           background: 'rgba(255,251,246,0.97)',
           backdropFilter: 'blur(24px)',
