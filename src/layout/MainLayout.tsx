@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Store, Search, ListOrdered, Percent, User, Building2, PlusCircle, Bell } from 'lucide-react';
+import { Store, Search, ListOrdered, Percent, User, Building2, Bell } from 'lucide-react';
 import { useTelegram } from '../contexts/useTelegram';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -11,7 +11,6 @@ function cn(...inputs: ClassValue[]) {
 
 const MainLayout: React.FC = () => {
   const { haptic, profile } = useTelegram();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const navItems = [
     { to: '/', icon: Store, label: "Do'kon" },
