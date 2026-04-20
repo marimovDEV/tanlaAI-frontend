@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Heart, Phone, Flame } from 'lucide-react';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
@@ -19,6 +19,7 @@ const ProductCard: React.FC<Props> = ({
   variant = 'grid',
 }) => {
   const { haptic, webApp } = useTelegram();
+  const navigate = useNavigate();
   const hasSale = product.is_on_sale && Boolean(product.discount_price);
   const company = product.company_details;
 
@@ -79,6 +80,24 @@ const ProductCard: React.FC<Props> = ({
               <Heart size={13} className={isWishlisted ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-[#C0C0CE]'} />
             </button>
           )}
+          {/* Company logo badge */}
+          {company && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); haptic('light'); navigate(`/company/${company.id}`); }}
+              className="absolute bottom-2 right-2 w-7 h-7 rounded-full overflow-hidden border-2 border-white active:scale-90 transition-transform"
+              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
+              title={company.name}
+            >
+              {company.logo ? (
+                <img src={getMediaUrl(company.logo)} alt={company.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white text-[9px] font-black"
+                  style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)' }}>
+                  {company.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </button>
+          )}
         </div>
         <div className="p-3 flex flex-col gap-1">
           <p className="text-[12px] font-bold text-[#1A1A2E] line-clamp-2 leading-snug">{product.name}</p>
@@ -136,6 +155,24 @@ const ProductCard: React.FC<Props> = ({
             <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />
             Mavjud
           </div>
+          {/* Company logo badge — clickable */}
+          {company && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); haptic('light'); navigate(`/company/${company.id}`); }}
+              className="absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full overflow-hidden border-2 border-white active:scale-90 transition-transform"
+              style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.22)' }}
+              title={company.name}
+            >
+              {company.logo ? (
+                <img src={getMediaUrl(company.logo)} alt={company.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white text-[10px] font-black"
+                  style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)' }}>
+                  {company.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </button>
+          )}
         </div>
       </NavLink>
 

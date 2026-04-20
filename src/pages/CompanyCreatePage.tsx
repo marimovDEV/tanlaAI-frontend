@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store, Phone, MapPin, ChevronLeft, RefreshCcw } from 'lucide-react';
+import { Store, Phone, MapPin, ChevronLeft, RefreshCcw, Camera, Youtube } from 'lucide-react';
 import apiClient from '../api/client';
 import { useTelegram } from '../contexts/useTelegram';
 import { cn } from '../utils/cn';
@@ -15,7 +15,18 @@ const CompanyCreatePage: React.FC = () => {
     location: '',
     instagram_link: '',
     telegram_link: '',
+    youtube_link: '',
   });
+
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (\!file) return;
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -28,7 +39,14 @@ const CompanyCreatePage: React.FC = () => {
     setLoading(true);
     haptic('medium');
     try {
-      await apiClient.post('companies/', formData);
+      if (logoFile) {
+        const fd = new FormData();
+        Object.entries(formData).forEach(([k, v]) => { if (v) fd.append(k, v); });
+        fd.append('logo', logoFile);
+        await apiClient.post('companies/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } else {
+        await apiClient.post('companies/', formData);
+      }
       haptic('medium');
       // Wait a tick then go to creator dashboard
       setTimeout(() => navigate('/creator', { replace: true }), 500);
@@ -68,6 +86,32 @@ const CompanyCreatePage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-4">
+            {/* Logo Upload */}
+            <div className="flex flex-col items-center gap-3 pb-2">
+              <label htmlFor="logo-upload" className="cursor-pointer group">
+                <div
+                  className="w-24 h-24 rounded-[24px] overflow-hidden flex items-center justify-center relative border-2 border-dashed transition-all"
+                  style={{ borderColor: logoPreview ? 'transparent' : 'rgba(255,107,53,0.30)', background: logoPreview ? 'transparent' : 'rgba(255,107,53,0.05)' }}
+                >
+                  {logoPreview ? (
+                    <img src={logoPreview} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1.5">
+                      <Camera size={24} color="#FF6B35" />
+                      <span className="text-[10px] font-black text-[#FF6B35] uppercase tracking-widest">Logo</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-[22px] flex items-center justify-center">
+                    <Camera size={20} className="text-white" />
+                  </div>
+                </div>
+              </label>
+              <input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+              <p className="text-[10px] text-[#B0B0BF] font-bold uppercase tracking-widest">
+                {logoPreview ? 'Logo tanlandi ✓' : 'Logo yuklang (ixtiyoriy)'}
+              </p>
+            </div>
+
             {/* Name */}
             <div>
               <label className="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Kompaniya Nomi *</label>
@@ -153,9 +197,21 @@ const CompanyCreatePage: React.FC = () => {
                 <path d="M21 5L2 12.5L9 16M21 5L18.5 20L9 16M21 5L9 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
+            {/* YouTube */}
+            <div className="relative">
+              <input
+                type="url"
+                name="youtube_link"
+                value={formData.youtube_link}
+                onChange={handleChange}
+                placeholder="YouTube kanal linki (ixtiyoriy)"
+                className="w-full h-14 bg-red-50/50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all placeholder:font-medium placeholder:text-slate-400"
+              />
+              <Youtube size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-red-500" />
+            </div>
           </div>
 
-          <button 
+          <button
             type="submit"
             disabled={loading || !formData.name || !formData.phone}
             className={cn(
