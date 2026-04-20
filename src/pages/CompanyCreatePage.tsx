@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store, Phone, MapPin, ChevronLeft, RefreshCcw, Camera } from 'lucide-react';
+import { Store, Phone, MapPin, ChevronLeft, RefreshCcw, Camera, FileText } from 'lucide-react';
 import apiClient from '../api/client';
 import { useTelegram } from '../contexts/useTelegram';
 import { cn } from '../utils/cn';
@@ -11,6 +11,7 @@ const CompanyCreatePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    description: '',
     phone: '',
     location: '',
     instagram_link: '',
@@ -152,7 +153,7 @@ const CompanyCreatePage: React.FC = () => {
             <div>
               <label className="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Manzilingiz</label>
               <div className="relative">
-                <textarea 
+                <textarea
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
@@ -161,6 +162,22 @@ const CompanyCreatePage: React.FC = () => {
                   className="w-full py-4 bg-slate-50 rounded-2xl border-none focus:ring-[#FF6B35] pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all resize-none placeholder:font-medium placeholder:text-slate-400"
                 />
                 <MapPin size={20} className="absolute left-4 top-4 text-slate-400" />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Tavsif (ixtiyoriy)</label>
+              <div className="relative">
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Do'koningiz haqida qisqacha ma'lumot..."
+                  rows={3}
+                  className="w-full py-4 bg-slate-50 rounded-2xl border-none focus:ring-[#FF6B35] pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all resize-none placeholder:font-medium placeholder:text-slate-400"
+                />
+                <FileText size={20} className="absolute left-4 top-4 text-slate-400" />
               </div>
             </div>
           </div>
