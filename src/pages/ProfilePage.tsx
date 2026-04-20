@@ -60,18 +60,55 @@ const ProfilePage: React.FC = () => {
       </div>
 
       {/* Stats/Quick Actions */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white p-5 rounded-3xl border border-outline/5 shadow-sm">
           <p className="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Saqlanganlar</p>
           <p className="text-xl font-black text-primary">{wishlist.length}</p>
         </div>
         <div className="bg-white p-5 rounded-3xl border border-outline/5 shadow-sm">
           <p className="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Holat</p>
-          <p className="text-sm font-black text-primary uppercase">
+          <p className="text-sm font-black text-primary uppercase line-clamp-1">
             {profile?.role === 'COMPANY' ? 'Ishlab chiqaruvchi' : 'Xaridor'}
           </p>
         </div>
       </div>
+
+      {/* Company Strategy Block */}
+      {!profile?.has_company ? (
+        <div className="mb-8">
+          <button 
+            onClick={() => { haptic('light'); navigate('/company/create'); }}
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-[24px] p-5 flex items-center justify-between shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-transform"
+          >
+            <div className="text-left pr-4">
+              <h3 className="font-black text-lg mb-1 leading-tight">🚀 Biznesingizni boshlang</h3>
+              <p className="text-xs font-medium opacity-90">
+                Kompaniyangizni qo'shing va sotuvlarni oshiring!
+              </p>
+            </div>
+            <div className="w-10 h-10 bg-white/20 flex-shrink-0 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-inner">
+              <ChevronRight size={24} className="text-white" />
+            </div>
+          </button>
+        </div>
+      ) : (
+        <div className="mb-8 flex gap-2">
+          <button 
+            onClick={() => { haptic('light'); navigate('/creator'); }}
+            className="flex-1 bg-slate-900 text-white rounded-[24px] p-5 flex items-center justify-between shadow-xl shadow-slate-900/20 active:scale-[0.98] transition-transform"
+          >
+            <div className="text-left pr-4">
+              <h3 className="font-black text-lg mb-1 leading-tight">🏢 Mening kompaniyam</h3>
+              <p className="text-xs font-medium opacity-90">
+                Dashboard va boshqaruv
+              </p>
+            </div>
+            <div className="w-10 h-10 bg-white/10 flex-shrink-0 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10">
+              <ChevronRight size={24} className="text-white" />
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* Wishlist Section */}
       <section>
