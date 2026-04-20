@@ -6,7 +6,7 @@ import ProductCard from '../components/ProductCard';
 import apiClient from '../api/client';
 import type { Banner, Category, Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
-import { Search } from 'lucide-react';
+import { Search, Menu, Bell } from 'lucide-react';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -59,10 +59,31 @@ const HomePage: React.FC = () => {
     );
   }
 
+  const topProducts = products.slice(0, 4);
+  const recentProducts = products.slice(4);
+
   return (
-    <div className="p-5 sm:p-8 max-w-screen-xl mx-auto">
-      {/* Search Bar - Premium Style */}
-      <div className="mb-8">
+    <div className="p-4 sm:p-6 max-w-screen-xl mx-auto bg-[#f8fafc] min-h-screen">
+      {/* 1. Header (Premium Style) */}
+      <div className="flex items-center justify-between mb-6 px-1">
+        <button 
+          onClick={() => haptic('light')}
+          className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 active:scale-95 transition-transform"
+        >
+          <Menu size={22} className="text-slate-800" />
+        </button>
+        <h1 className="text-2xl font-black tracking-tighter text-[#2563eb]">Tanla</h1>
+        <button 
+          onClick={() => haptic('light')}
+          className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 active:scale-95 transition-transform relative"
+        >
+          <div className="absolute top-2.5 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+          <Bell size={22} className="text-slate-800" />
+        </button>
+      </div>
+
+      {/* 2. Premium Search Bar */}
+      <div className="mb-8 px-1">
         <div 
           className="relative group transition-all"
           onClick={() => {
@@ -72,32 +93,42 @@ const HomePage: React.FC = () => {
         >
           <input 
             type="text" 
-            placeholder="Mahsulotlarni qidiring..." 
-            className="w-full h-14 bg-white rounded-2xl border border-slate-100 shadow-sm pl-12 pr-6 text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer group-hover:border-slate-200 group-hover:shadow-md"
+            placeholder="Eshik nomi, model..." 
+            className="w-full h-14 bg-white rounded-[20px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] pl-14 pr-6 text-[15px] font-medium transition-all cursor-pointer"
             readOnly
           />
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors">
-            <Search size={20} />
+          <div className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-600">
+            <Search size={22} />
           </div>
         </div>
       </div>
 
+      {/* 3. Main Banners Carousel */}
       {banners.length > 0 && (
-        <div className="mb-10">
+        <div className="mb-10 px-1">
           <BannerCarousel banners={banners} />
         </div>
       )}
 
-      {/* Aksiyalar Section - New */}
+      {/* 4. Categories (Horizontal scroll assumed in CategoryGrid) */}
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-5 px-2">
+          <h2 className="font-black text-[19px] text-slate-900 tracking-tight">Kategoriyalar</h2>
+        </div>
+        <div className="px-1">
+          <CategoryGrid categories={categories} />
+        </div>
+      </section>
+
+      {/* 🔥 Chegirmalar (Horizontal Scroll) */}
       {onSaleProducts.length > 0 && (
-        <section className="mb-10 animate-in fade-in slide-in-from-right-4 duration-700">
-          <div className="flex items-center justify-between mb-5 px-1">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-6 bg-error rounded-full" />
-              <h2 className="font-black text-xl text-slate-900 tracking-tight">Hafta aksiyalari</h2>
-            </div>
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-5 px-2">
+            <h2 className="font-black text-[19px] text-slate-900 tracking-tight flex items-center gap-2">
+              <span className="text-xl">🔥</span> Chegirmalar
+            </h2>
             <button
-              className="text-xs font-black text-error uppercase tracking-widest px-3 py-1 bg-red-50 rounded-lg active:scale-95 transition-all"
+              className="text-[11px] font-black text-red-600 uppercase tracking-widest px-3 py-1.5 bg-red-50 rounded-lg active:scale-95 transition-all"
               onClick={() => {
                 haptic('light');
                 navigate('/discounts');
@@ -106,9 +137,9 @@ const HomePage: React.FC = () => {
               Barchasi
             </button>
           </div>
-          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-1 px-1">
+          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-6 -mx-4 px-5 snap-x">
             {onSaleProducts.map((product) => (
-              <div key={product.id} className="w-[180px] flex-shrink-0">
+              <div key={product.id} className="w-[170px] flex-shrink-0 snap-start">
                 <ProductCard 
                   product={product} 
                   onToggleWishlist={async (id) => {
@@ -127,47 +158,62 @@ const HomePage: React.FC = () => {
         </section>
       )}
 
-      <section className="mb-10">
-        <div className="flex items-center justify-between mb-5 px-1">
-          <h2 className="font-black text-xl text-slate-900 tracking-tight">Kategoriyalar</h2>
-          <button
-            className="text-xs font-black text-primary uppercase tracking-widest px-3 py-1 bg-blue-50 rounded-lg active:scale-95 transition-all"
-            onClick={() => {
-              haptic('light');
-              navigate('/search');
-            }}
-          >
-            Barchasi
-          </button>
-        </div>
-        <CategoryGrid categories={categories} />
-      </section>
+      {/* 5. 🔥 Eng ko'p sotilayotganlar (2-col grid) */}
+      {topProducts.length > 0 && (
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-5 px-2">
+            <h2 className="font-black text-[19px] text-slate-900 tracking-tight flex items-center gap-2">
+              <span className="text-xl">🔥</span> Eng ko'p sotilayotganlar
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 px-1">
+            {topProducts.map((product) => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onToggleWishlist={async (id) => {
+                  try {
+                    await apiClient.post(`products/${id}/toggle_wishlist/`);
+                    setProducts(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }} 
+                isWishlisted={product.is_wishlisted}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section>
-        <div className="flex items-center justify-between mb-5 px-1">
-          <h2 className="font-black text-xl text-slate-900 tracking-tight">So'nggi mahsulotlar</h2>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {products.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              onToggleWishlist={async (id) => {
-                try {
-                  await apiClient.post(`products/${id}/toggle_wishlist/`);
-                  setProducts(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
-                } catch (e) {
-                  console.error(e);
-                }
-              }} 
-              isWishlisted={product.is_wishlisted}
-            />
-          ))}
-        </div>
-      </section>
+      {/* 6. So'nggi mahsulotlar (2-col grid) */}
+      {recentProducts.length > 0 && (
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-5 px-2">
+            <h2 className="font-black text-[19px] text-slate-900 tracking-tight">So'nggi mahsulotlar</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 px-1">
+            {recentProducts.map((product) => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onToggleWishlist={async (id) => {
+                  try {
+                    await apiClient.post(`products/${id}/toggle_wishlist/`);
+                    setProducts(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }} 
+                isWishlisted={product.is_wishlisted}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      <div className="mt-12 mb-6 text-center">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-outline">Tanla Raqamli Butigi</p>
+      <div className="mt-14 mb-8 text-center opacity-50">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500">Tanla Raqamli Butigi</p>
       </div>
     </div>
   );
