@@ -1,383 +1,383 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, User, Calculator, Stars, RefreshCcw, Clock, ShoppingBag } from 'lucide-react';
+import {
+  Heart, User, Calculator, Stars, RefreshCcw, Clock,
+  ShoppingBag, Phone, Send, ChevronLeft, Flame,
+} from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import LeadForm, { type LeadFormType } from '../components/LeadForm';
 
-const buildTelegramLink = (value?: string) => {
-  if (!value) {
-    return null;
-  }
-
-  if (value.startsWith('http://') || value.startsWith('https://')) {
-    return value;
-  }
-
-  return `https://t.me/${value.replace('@', '')}`;
+const buildTelegramLink = (v?: string) => {
+  if (!v) return null;
+  if (v.startsWith('http://') || v.startsWith('https://')) return v;
+  return `https://t.me/${v.replace('@', '')}`;
 };
 
 const ProductDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { id }    = useParams<{ id: string }>();
+  const navigate  = useNavigate();
+  const [product,      setProduct]      = useState<Product | null>(null);
+  const [loading,      setLoading]      = useState(true);
   const [wishlistBusy, setWishlistBusy] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
-  const [leadType, setLeadType] = useState<LeadFormType>('call');
-  const [calcHeight, setCalcHeight] = useState(200);
-  const [calcWidth, setCalcWidth] = useState(80);
+  const [leadType,     setLeadType]     = useState<LeadFormType>('call');
+  const [calcH, setCalcH] = useState(200);
+  const [calcW, setCalcW] = useState(80);
+  const [activeImg, setActiveImg] = useState(0);
   const { haptic, webApp } = useTelegram();
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await apiClient.get<Product>(`/products/${id}/`);
-        setProduct(response.data);
-        if (response.data.height) {
-          setCalcHeight(Number(response.data.height));
-        }
-        if (response.data.width) {
-          setCalcWidth(Number(response.data.width));
-        }
-      } catch (error) {
-        console.error('Error fetching product:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProduct();
+    apiClient.get<Product>(`/products/${id}/`)
+      .then(res => {
+        setProduct(res.data);
+        if (res.data.height) setCalcH(Number(res.data.height));
+        if (res.data.width)  setCalcW(Number(res.data.width));
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [id]);
 
   useEffect(() => {
-    // BackButton is supported since v6.1+
-    if (webApp && webApp.isVersionAtLeast('6.1')) {
+    if (webApp?.isVersionAtLeast('6.1')) {
       webApp.BackButton.show();
-      const handleBack = () => navigate(-1);
-      webApp.BackButton.onClick(handleBack);
-      return () => {
-        webApp.BackButton.hide();
-        webApp.BackButton.offClick(handleBack);
-      };
+      const back = () => navigate(-1);
+      webApp.BackButton.onClick(back);
+      return () => { webApp.BackButton.hide(); webApp.BackButton.offClick(back); };
     }
   }, [webApp, navigate]);
 
-  const handleToggleWishlist = async () => {
-    if (!product || wishlistBusy) {
-      return;
-    }
+  useEffect(() => { setActiveImg(0); }, [product?.id]);
 
-    setWishlistBusy(true);
-    try {
-      const response = await apiClient.post<{ status: 'added' | 'removed' }>(`/products/${product.id}/toggle_wishlist/`);
-      setProduct((prev) => (
-        prev
-          ? { ...prev, is_wishlisted: response.data.status === 'added' }
-          : prev
-      ));
-      haptic(response.data.status === 'added' ? 'medium' : 'soft');
-    } catch (error) {
-      console.error('Error toggling wishlist:', error);
-    } finally {
-      setWishlistBusy(false);
-    }
-  };
-
-  const calculatePrice = () => {
-    if (!product?.price_per_m2) return 0;
-    const rate = product.is_on_sale && product.discount_price
-      ? Number(product.discount_price)
-      : Number(product.price_per_m2);
-    return Math.round((calcHeight * calcWidth / 10000) * rate);
-  };
-
-  // Build gallery: prefer `images` relation; fall back to legacy single `image`.
   const gallery = useMemo(() => {
-    if (product?.images && product.images.length > 0) {
-      // Put main (cutout) first, then others by order
-      const sorted = [...product.images].sort((a, b) => {
-        if (a.is_main !== b.is_main) return a.is_main ? -1 : 1;
-        return (a.order ?? 0) - (b.order ?? 0);
-      });
-      return sorted.map(img => img.image);
+    if (product?.images?.length) {
+      return [...product.images]
+        .sort((a, b) => (a.is_main === b.is_main ? 0 : a.is_main ? -1 : 1))
+        .map(i => i.image);
     }
     return product?.image ? [product.image] : [];
   }, [product]);
 
-  const [activeImageIdx, setActiveImageIdx] = useState(0);
-  useEffect(() => {
-    setActiveImageIdx(0);
-  }, [product?.id]);
+  const toggleWishlist = async () => {
+    if (!product || wishlistBusy) return;
+    setWishlistBusy(true);
+    try {
+      const res = await apiClient.post<{ status: 'added'|'removed' }>(`/products/${product.id}/toggle_wishlist/`);
+      setProduct(p => p ? { ...p, is_wishlisted: res.data.status === 'added' } : p);
+      haptic(res.data.status === 'added' ? 'medium' : 'soft');
+    } finally { setWishlistBusy(false); }
+  };
+
+  const calcTotal = () => {
+    if (!product?.price_per_m2) return 0;
+    const rate = product.is_on_sale && product.discount_price
+      ? Number(product.discount_price) : Number(product.price_per_m2);
+    return Math.round((calcH * calcW / 10000) * rate);
+  };
+
+  const fmt = (v?: string | null) => v ? `${Number(v).toLocaleString()} so'm` : null;
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="w-full aspect-[4/5] bg-surface-variant animate-pulse rounded-3xl" />
-        <div className="space-y-4">
-          <div className="h-8 bg-surface-variant animate-pulse rounded-lg w-2/3" />
-          <div className="h-4 bg-surface-variant animate-pulse rounded-lg w-1/3" />
-        </div>
+      <div className="p-4 space-y-4" style={{ background: '#FFFBF6', minHeight: '100vh' }}>
+        <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`}</style>
+        {[1,2,3].map(i => (
+          <div key={i} className="rounded-[22px]" style={{
+            height: i===1 ? '340px' : '80px',
+            background: 'linear-gradient(90deg,#f0ede8 25%,#e8e4de 50%,#f0ede8 75%)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 1.4s infinite',
+          }} />
+        ))}
       </div>
     );
   }
 
-  if (!product) return <div className="p-6">Product not found.</div>;
+  if (!product) return <div className="p-6 text-center text-[#8A8A99]">Mahsulot topilmadi.</div>;
 
-  const company = product.company_details;
+  const company     = product.company_details;
   const telegramHref = buildTelegramLink(company?.telegram_link);
+  const hasSale     = product.is_on_sale && Boolean(product.discount_price);
 
   const handleCall = () => {
-    const phone = company?.phone;
-    if (!phone) return;
+    if (!company?.phone) return;
     haptic('light');
-    const uri = `tel:${phone}`;
-    if (webApp && webApp.openLink) {
-      webApp.openLink(uri);
-    } else {
-      window.location.href = uri;
-    }
+    const uri = `tel:${company.phone}`;
+    if (webApp?.openLink) webApp.openLink(uri); else window.location.href = uri;
   };
-
   const handleTelegram = () => {
     if (!telegramHref) return;
     haptic('light');
-    if (webApp && webApp.openLink) {
-      webApp.openLink(telegramHref);
-    } else {
-      window.open(telegramHref, "_blank");
-    }
+    if (webApp?.openLink) webApp.openLink(telegramHref); else window.open(telegramHref, '_blank');
   };
 
   return (
-    <div className="px-4 sm:px-6 pt-2 pb-10">
-      <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden bg-surface-variant mb-3 shadow-sm flex items-center justify-center">
-        <img
-          src={getMediaUrl(gallery[activeImageIdx]) || getMediaUrl(product.image) || 'https://via.placeholder.com/800'}
-          alt={product.name}
-          className="w-full h-full object-contain mix-blend-multiply"
-        />
-        {product.ai_status === 'processing' && (
-          <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 border border-white/20 z-10 animate-pulse">
-            <RefreshCcw size={16} className="text-white animate-spin" />
-            <span className="text-[10px] font-black text-white uppercase tracking-widest">SI...</span>
+    <div style={{ background: '#FFFBF6', minHeight: '100vh' }}>
+      <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`}</style>
+
+      {/* Hero Image */}
+      <div className="relative">
+        <div className="w-full overflow-hidden" style={{ height: '340px', background: '#f5f0eb' }}>
+          <img
+            src={getMediaUrl(gallery[activeImg]) || getMediaUrl(product.image) || 'https://via.placeholder.com/800'}
+            alt={product.name}
+            className="w-full h-full object-contain mix-blend-multiply"
+          />
+          <div className="absolute bottom-0 left-0 right-0 h-24"
+            style={{ background: 'linear-gradient(to top,#FFFBF6,transparent)' }} />
+
+          {/* Back button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{ background: 'rgba(255,251,246,0.90)', backdropFilter: 'blur(12px)', boxShadow: '0 2px 12px rgba(0,0,0,0.12)' }}
+          >
+            <ChevronLeft size={20} color="#1A1A2E" />
+          </button>
+
+          {/* Wishlist */}
+          <button
+            onClick={toggleWishlist}
+            disabled={wishlistBusy}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{ background: 'rgba(255,251,246,0.90)', backdropFilter: 'blur(12px)', boxShadow: '0 2px 12px rgba(0,0,0,0.12)' }}
+          >
+            <Heart size={18} className={product.is_wishlisted ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-[#C0C0CE]'} />
+          </button>
+
+          {/* AI badge */}
+          {product.ai_status === 'processing' && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase"
+              style={{ background: 'rgba(0,150,255,0.88)', backdropFilter: 'blur(8px)' }}>
+              <RefreshCcw size={12} className="animate-spin" /> AI ishlayapti
+            </div>
+          )}
+
+          <div className="absolute top-4 left-16 flex flex-col gap-1.5">
+            {hasSale && (
+              <span className="text-white text-[10px] font-black px-2.5 py-1 rounded-full"
+                style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)' }}>
+                Chegirma
+              </span>
+            )}
+            {product.is_featured && (
+              <span className="text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1"
+                style={{ background: '#FFB800' }}>
+                <Flame size={9} className="fill-white" /> TOP
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Thumbnails */}
+        {gallery.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 pb-2 mt-3">
+            {gallery.map((src, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveImg(i)}
+                className="flex-shrink-0 w-[58px] h-[58px] rounded-[14px] overflow-hidden active:scale-90 transition-transform"
+                style={{
+                  border: activeImg === i ? '2.5px solid #FF6B35' : '2px solid transparent',
+                  boxShadow: activeImg === i ? '0 4px 12px rgba(255,107,53,0.28)' : '0 2px 8px rgba(0,0,0,0.06)',
+                  background: '#f5f0eb',
+                }}
+              >
+                <img src={getMediaUrl(src)} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
           </div>
         )}
       </div>
 
-      {gallery.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar">
-          {gallery.map((src, i) => (
-            <button
-              key={`${src}-${i}`}
-              type="button"
-              onClick={() => setActiveImageIdx(i)}
-              className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
-                activeImageIdx === i ? 'border-primary ring-2 ring-primary/20' : 'border-transparent opacity-70'
-              }`}
-            >
-              <img src={getMediaUrl(src)} alt="" className="w-full h-full object-cover" />
-            </button>
-          ))}
+      {/* Content */}
+      <div className="px-4 pt-4 pb-40 space-y-4">
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-widest text-[#FF6B35] mb-1">{product.category_name}</p>
+          <h1 className="text-[22px] font-black text-[#1A1A2E] leading-tight tracking-tight">{product.name}</h1>
         </div>
-      )}
 
-      <div className="space-y-6">
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <h2 className="text-2xl font-extrabold text-on-surface">{product.name}</h2>
-            <p className="text-outline text-sm mt-1">{product.category_name}</p>
+        {/* Price */}
+        <div
+          className="flex items-center justify-between p-4 rounded-[20px]"
+          style={{ background: hasSale ? 'rgba(255,107,53,0.06)' : '#fff', boxShadow: '0 4px 16px rgba(26,26,46,0.06)' }}
+        >
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#B0B0BF] mb-1">Narx</p>
+            {product.price ? (
+              <>
+                <p className="text-[24px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
+                  {fmt(hasSale ? product.discount_price : product.price)}
+                </p>
+                {hasSale && <p className="text-[12px] text-[#C0C0CE] line-through mt-0.5">{fmt(product.price)}</p>}
+              </>
+            ) : product.price_per_m2 ? (
+              <>
+                <p className="text-[20px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
+                  {fmt(hasSale ? product.discount_price : product.price_per_m2)} / m2
+                </p>
+                {hasSale && <p className="text-[12px] text-[#C0C0CE] line-through mt-0.5">{fmt(product.price_per_m2)} / m2</p>}
+              </>
+            ) : (
+              <p className="text-[18px] font-black text-[#8A8A99]">Kelishilgan narx</p>
+            )}
           </div>
-          <button 
-            type="button"
-            className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform"
-            onClick={handleToggleWishlist}
-            disabled={wishlistBusy}
-          >
-            <Heart size={24} className={product.is_wishlisted ? 'fill-error text-error' : 'text-outline'} />
-          </button>
-        </div>
-
-        <div className="p-5 bg-white rounded-2xl border border-outline/5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] font-extrabold uppercase tracking-widest text-outline">Narx ma'lumoti</p>
-            <div className="text-right">
-              {product.price ? (
-                <>
-                  {product.is_on_sale && product.discount_price ? (
-                    <>
-                      <p className="text-xs text-outline line-through">{Number(product.price).toLocaleString()} сум</p>
-                      <p className="text-2xl font-extrabold text-error">{Number(product.discount_price).toLocaleString()} сум</p>
-                    </>
-                  ) : (
-                    <p className="text-2xl font-extrabold text-primary">{Number(product.price).toLocaleString()} сум</p>
-                  )}
-                </>
-              ) : product.price_per_m2 ? (
-                <>
-                  {product.is_on_sale && product.discount_price ? (
-                    <>
-                      <p className="text-[10px] text-outline line-through">{Number(product.price_per_m2).toLocaleString()} сум / м²</p>
-                      <p className="text-xl font-extrabold text-error">{Number(product.discount_price).toLocaleString()} сум / м²</p>
-                    </>
-                  ) : (
-                    <p className="text-xl font-extrabold text-primary">{Number(product.price_per_m2).toLocaleString()} сум / м²</p>
-                  )}
-                </>
-              ) : (
-                <p className="text-lg font-bold text-outline">So'rov bo'yicha narx</p>
-              )}
+          {hasSale && product.price && product.discount_price && (
+            <div className="w-14 h-14 rounded-[18px] flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', boxShadow: '0 6px 18px rgba(255,107,53,0.32)' }}>
+              <div className="text-center">
+                <p className="text-white text-[9px] font-black leading-none">MINUS</p>
+                <p className="text-white text-[16px] font-black leading-none mt-0.5">
+                  {Math.round((1 - Number(product.discount_price)/Number(product.price))*100)}%
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {product.lead_time_days ? (
-          <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-outline/5 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Clock size={18} />
+        {/* Lead time */}
+        {product.lead_time_days && (
+          <div className="flex items-center gap-3 p-4 rounded-[18px]"
+            style={{ background: 'rgba(0,201,177,0.07)', border: '1.5px solid rgba(0,201,177,0.18)' }}>
+            <div className="w-10 h-10 rounded-[14px] flex items-center justify-center"
+              style={{ background: 'rgba(0,201,177,0.15)' }}>
+              <Clock size={18} color="#00C9B1" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-outline">Tayyor bo'lishi</p>
-              <p className="text-base font-extrabold text-on-surface">{product.lead_time_days} kun</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#00A896]">Tayyor bo'lishi</p>
+              <p className="text-[15px] font-black text-[#1A1A2E]">{product.lead_time_days} ish kuni</p>
             </div>
           </div>
-        ) : null}
+        )}
 
-        <p className="text-on-surface text-sm leading-relaxed">
-          {product.description}
-        </p>
+        {/* Description */}
+        {product.description && (
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#B0B0BF] mb-2">Tavsif</p>
+            <p className="text-[14px] text-[#4A4A5A] leading-relaxed font-medium">{product.description}</p>
+          </div>
+        )}
 
-        {/* Live Price Calculator */}
+        {/* Calculator */}
         {product.price_per_m2 && (
-          <div className="bg-primary/5 p-6 rounded-3xl border border-primary/10 space-y-4">
+          <div className="p-5 rounded-[20px] space-y-4"
+            style={{ background: 'rgba(255,107,53,0.05)', border: '1.5px solid rgba(255,107,53,0.12)' }}>
             <div className="flex items-center gap-2">
-              <Calculator size={16} className="text-primary" />
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Jonli narx hisoblagichi</h4>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-[9px] font-bold text-outline uppercase tracking-wider mb-2 block ml-1">Balandlik (sm)</label>
-                <input 
-                  type="number" 
-                  value={calcHeight}
-                  onChange={(e) => setCalcHeight(Number(e.target.value))}
-                  className="w-full bg-white border border-outline/10 rounded-xl py-3 px-4 text-sm font-bold outline-none"
-                />
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{ background: 'rgba(255,107,53,0.12)' }}>
+                <Calculator size={15} color="#FF6B35" />
               </div>
-              <div>
-                <label className="text-[9px] font-bold text-outline uppercase tracking-wider mb-2 block ml-1">Kenglik (sm)</label>
-                <input 
-                  type="number" 
-                  value={calcWidth}
-                  onChange={(e) => setCalcWidth(Number(e.target.value))}
-                  className="w-full bg-white border border-outline/10 rounded-xl py-3 px-4 text-sm font-bold outline-none"
-                />
-              </div>
+              <p className="text-[12px] font-black uppercase tracking-widest text-[#FF6B35]">Narx Hisoblagichi</p>
             </div>
-
-            <div className="flex items-center justify-between p-4 bg-primary/10 rounded-2xl">
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Balandlik (sm)', val: calcH, set: setCalcH },
+                { label: 'Kenglik (sm)',   val: calcW, set: setCalcW },
+              ].map(({ label, val, set }) => (
+                <div key={label}>
+                  <p className="text-[10px] font-bold text-[#B0B0BF] uppercase tracking-wider mb-1.5">{label}</p>
+                  <input
+                    type="number"
+                    value={val}
+                    onChange={e => set(Number(e.target.value))}
+                    className="w-full rounded-[14px] px-4 py-3 text-[14px] font-black text-[#1A1A2E] outline-none"
+                    style={{ background: '#fff', border: '1.5px solid rgba(255,107,53,0.15)' }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between px-4 py-3 rounded-[16px]"
+              style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', boxShadow: '0 6px 20px rgba(255,107,53,0.28)' }}>
               <div>
-                <p className="text-[9px] font-bold text-primary/60 uppercase tracking-widest">Taxminiy umumiy summa</p>
-                <p className="text-xl font-black text-primary mt-0.5">{calculatePrice().toLocaleString()} сум</p>
+                <p className="text-white/70 text-[9px] font-black uppercase tracking-widest">Taxminiy summa</p>
+                <p className="text-white text-[20px] font-black leading-tight">{calcTotal().toLocaleString()} so'm</p>
               </div>
               <div className="text-right">
-                <p className="text-[8px] font-bold text-outline uppercase">Narx</p>
-                <p className="text-[10px] font-bold text-on-surface">
-                  {Number(product.is_on_sale && product.discount_price ? product.discount_price : product.price_per_m2).toLocaleString()} / м²
+                <p className="text-white/60 text-[9px] font-black uppercase">Narx / m2</p>
+                <p className="text-white text-[12px] font-black">
+                  {Number(hasSale ? product.discount_price : product.price_per_m2).toLocaleString()}
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Studio Info */}
+        {/* Company */}
         {company && (
           <button
-            type="button"
             onClick={() => navigate(`/company/${company.id}`)}
-            className="w-full bg-white p-5 rounded-2xl border border-outline/5 flex items-center justify-between shadow-sm active:scale-[0.98] transition-all text-left"
+            className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform text-left"
+            style={{ background: '#fff', boxShadow: '0 4px 16px rgba(26,26,46,0.07)' }}
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-surface-variant rounded-xl overflow-hidden border border-outline/10">
-                {company.logo ? (
-                  <img src={getMediaUrl(company.logo)} alt="Logo" className="w-full h-full object-cover" />
-                ) : (
-                  <User className="text-outline/40" size={24} />
-                )}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-[14px] overflow-hidden bg-[#f5f0eb] flex items-center justify-center">
+                {company.logo
+                  ? <img src={getMediaUrl(company.logo)} alt="Logo" className="w-full h-full object-cover" />
+                  : <User size={22} color="#C0C0CE" />
+                }
               </div>
               <div>
-                <p className="text-[10px] uppercase font-black tracking-widest text-outline">Studiya</p>
-                <p className="font-bold text-on-surface">{company.name}</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-[#B0B0BF]">Studiya</p>
+                <p className="text-[15px] font-black text-[#1A1A2E]">{company.name}</p>
               </div>
             </div>
-            <div className="bg-primary/10 text-primary text-[8px] font-black px-2 py-1 rounded-md uppercase tracking-tighter">Tasdiqlangan</div>
+            <span className="text-[9px] font-black uppercase tracking-tighter px-2.5 py-1 rounded-full text-white"
+              style={{ background: 'rgba(0,201,177,0.85)' }}>
+              Tasdiqlangan
+            </span>
           </button>
         )}
+      </div>
 
-        {/*
-          Primary CTA: direct order (AI-free).
-          Rationale: direct orders are the highest-intent action on this page
-          — customer already knows they want the product. The AI visualization
-          is a secondary, exploratory path, so we demote it to a ghost button
-          underneath. This matches the marketplace-first strategy.
-        */}
-        <div className="relative pt-3">
-          <div className="absolute top-0 left-4 bg-error text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">
-            🔥 Eng ko'p sotilayotgan
-          </div>
-          <button
-            onClick={() => {
-              setLeadType('direct');
-              setShowLeadForm(true);
-              haptic('medium');
-            }}
-            className="w-full bg-primary text-white font-bold py-5 rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
-          >
-            <ShoppingBag size={20} />
-            <span className="text-lg">📦 Buyurtma berish</span>
-          </button>
-        </div>
-
+      {/* Sticky CTA Bar */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 px-4 py-3 space-y-2.5"
+        style={{
+          background: 'rgba(255,251,246,0.97)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderTop: '1px solid rgba(26,26,46,0.07)',
+          paddingBottom: 'calc(0.75rem + var(--sab))',
+        }}
+      >
         <button
-          onClick={() => {
-            navigate(`/product/${product.id}/visualize`);
-            haptic('medium');
-          }}
-          className="w-full main-button-gradient text-white font-bold py-5 rounded-2xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+          onClick={() => { setLeadType('direct'); setShowLeadForm(true); haptic('medium'); }}
+          className="w-full flex items-center justify-center gap-2.5 py-4 rounded-[18px] text-[15px] font-black text-white active:scale-[0.97] transition-transform"
+          style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', boxShadow: '0 8px 28px rgba(255,107,53,0.35)' }}
         >
-          < Stars size={20} fill="white" />
-          <span className="text-lg">Sun'iy intellekt orqali yaratish</span>
+          <ShoppingBag size={18} className="fill-white" />
+          Buyurtma berish
         </button>
 
-        {/* Lead Generation CTAs */}
-        <div className="space-y-3 pt-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-outline ml-1">Sotuvchi bilan bog'lanish</p>
-          <div className="flex gap-3">
-            <button 
-              onClick={handleCall}
-              disabled={!company?.phone}
-              className="relative flex-1 bg-emerald-500 text-white p-4 rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100"
-            >
-              <div className="absolute -top-2.5 bg-white text-emerald-600 border border-emerald-100 text-[9px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Hozir online
-              </div>
-              <span className="text-sm font-bold flex items-center gap-2 mt-1">📞 Qo'ng'iroq</span>
-            </button>
-
-            <button 
-              onClick={handleTelegram}
-              disabled={!telegramHref}
-              className="relative flex-1 bg-sky-500 text-white p-4 rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-sky-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100"
-            >
-              <div className="absolute -top-2.5 bg-white text-sky-600 border border-sky-100 text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-sm">
-                ⚡ Tez javob beradi
-              </div>
-              <span className="text-sm font-bold flex items-center gap-2 mt-1">✈️ Telegram</span>
-            </button>
-          </div>
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            onClick={handleCall}
+            disabled={!company?.phone}
+            className="flex items-center justify-center gap-1.5 py-3 rounded-[14px] text-[12px] font-black text-white active:scale-95 transition-transform disabled:opacity-40"
+            style={{ background: 'linear-gradient(135deg,#00C9B1,#00A896)', boxShadow: '0 4px 14px rgba(0,201,177,0.28)' }}
+          >
+            <Phone size={14} className="fill-white" />
+            Qo'ng'iroq
+          </button>
+          <button
+            onClick={handleTelegram}
+            disabled={!telegramHref}
+            className="flex items-center justify-center gap-1.5 py-3 rounded-[14px] text-[12px] font-black text-white active:scale-95 transition-transform disabled:opacity-40"
+            style={{ background: 'linear-gradient(135deg,#1DA1F2,#0078D4)', boxShadow: '0 4px 14px rgba(29,161,242,0.28)' }}
+          >
+            <Send size={14} />
+            Telegram
+          </button>
+          <button
+            onClick={() => { navigate(`/product/${product.id}/visualize`); haptic('medium'); }}
+            className="flex items-center justify-center gap-1.5 py-3 rounded-[14px] text-[12px] font-black text-white active:scale-95 transition-transform"
+            style={{ background: 'linear-gradient(135deg,#8B5CF6,#6D28D9)', boxShadow: '0 4px 14px rgba(109,40,217,0.28)' }}
+          >
+            <Stars size={14} />
+            AI
+          </button>
         </div>
       </div>
 
@@ -385,9 +385,9 @@ const ProductDetailPage: React.FC = () => {
         <LeadForm
           productId={product.id}
           leadType={leadType}
-          initialPriceInfo={product.price_per_m2 ? `${calcHeight}x${calcWidth} sm o'lchamda ${calculatePrice().toLocaleString()} so'm deb hisoblandi` : ""}
-          widthCm={product.price_per_m2 ? calcWidth : undefined}
-          heightCm={product.price_per_m2 ? calcHeight : undefined}
+          initialPriceInfo={product.price_per_m2 ? `${calcH}x${calcW} sm - ${calcTotal().toLocaleString()} so'm` : ''}
+          widthCm={product.price_per_m2 ? calcW : undefined}
+          heightCm={product.price_per_m2 ? calcH : undefined}
           onClose={() => setShowLeadForm(false)}
         />
       )}

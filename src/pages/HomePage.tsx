@@ -6,7 +6,48 @@ import ProductCard from '../components/ProductCard';
 import apiClient from '../api/client';
 import type { Banner, Category, Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
-import { Search } from 'lucide-react';
+import { Search, Sparkles, ChevronRight, Flame, TrendingUp, Tag } from 'lucide-react';
+
+/* ─── Skeleton loader ─── */
+const Skeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <div className={`rounded-2xl ${className}`}
+    style={{
+      background: 'linear-gradient(90deg, #f0ede8 25%, #e8e4de 50%, #f0ede8 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'shimmer 1.4s infinite',
+    }}
+  />
+);
+
+/* ─── Section header ─── */
+const SectionHeader: React.FC<{
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  onSeeAll?: () => void;
+  color?: string;
+}> = ({ icon, title, subtitle, onSeeAll, color = '#FF6B35' }) => (
+  <div className="flex items-center justify-between mb-5 px-1">
+    <div className="flex items-center gap-2.5">
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${color}18` }}>
+        <span style={{ color }}>{icon}</span>
+      </div>
+      <div>
+        <h2 className="text-[18px] font-black text-[#1A1A2E] leading-none tracking-tight">{title}</h2>
+        {subtitle && <p className="text-[10px] text-[#B0B0BF] font-bold uppercase tracking-widest mt-0.5">{subtitle}</p>}
+      </div>
+    </div>
+    {onSeeAll && (
+      <button
+        onClick={onSeeAll}
+        className="flex items-center gap-0.5 text-[11px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+        style={{ color, background: `${color}14` }}
+      >
+        Barchasi <ChevronRight size={12} />
+      </button>
+    )}
+  </div>
+);
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,42 +59,52 @@ const HomePage: React.FC = () => {
   const { haptic } = useTelegram();
 
   useEffect(() => {
-    const fetchHomeData = async () => {
+    const fetch = async () => {
       try {
-        const [bannersRes, categoriesRes, productsRes, onSaleRes] = await Promise.all([
+        const [bRes, cRes, pRes, sRes] = await Promise.all([
           apiClient.get('banners/'),
           apiClient.get('categories/'),
           apiClient.get('products/'),
           apiClient.get('products/?is_on_sale=true'),
         ]);
-
-        setBanners(bannersRes.data.results || bannersRes.data);
-        setCategories(categoriesRes.data.results || categoriesRes.data);
-        setProducts(productsRes.data.results || productsRes.data);
-        setOnSaleProducts(onSaleRes.data.results || onSaleRes.data);
-      } catch (error) {
-        console.error('Error fetching home data:', error);
+        setBanners(bRes.data.results ?? bRes.data);
+        setCategories(cRes.data.results ?? cRes.data);
+        setProducts(pRes.data.results ?? pRes.data);
+        setOnSaleProducts(sRes.data.results ?? sRes.data);
+      } catch (e) {
+        console.error(e);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchHomeData();
+    fetch();
   }, []);
 
+  const toggleWishlist = async (
+    id: number,
+    setter: React.Dispatch<React.SetStateAction<Product[]>>
+  ) => {
+    try {
+      await apiClient.post(`products/${id}/toggle_wishlist/`);
+      setter(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  /* ─── Loading skeleton ─── */
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="w-full h-48 bg-surface-variant animate-pulse rounded-2xl" />
-        <div className="flex gap-4 overflow-hidden">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="w-16 h-16 bg-surface-variant animate-pulse rounded-2xl flex-shrink-0" />
-          ))}
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="aspect-[3/4] bg-surface-variant animate-pulse rounded-3xl" />
-          ))}
+      <div className="px-4 pt-4 space-y-6">
+        <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`}</style>
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-44 w-full" />
+        <div className="grid grid-cols-2 gap-3">
+          <Skeleton className="h-56" />
+          <Skeleton className="h-56" />
+          <Skeleton className="h-56" />
+          <Skeleton className="h-56" />
         </div>
       </div>
     );
@@ -63,155 +114,180 @@ const HomePage: React.FC = () => {
   const recentProducts = products.slice(4);
 
   return (
-    <div className="p-4 sm:p-6 max-w-screen-xl mx-auto bg-[#f8fafc] min-h-screen pb-24">
+    <div className="pb-8" style={{ background: '#FFFBF6' }}>
+      <style>{`
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+      `}</style>
 
-      {/* 2. Hero Block */}
-      <div className="px-1 mb-6">
-        <div 
-          onClick={() => navigate('/visualize/new')}
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-5 rounded-[20px] shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-transform cursor-pointer"
-        >
-          <h2 className="text-lg font-black leading-tight">
-            Uyingiz uchun ideal eshikni toping
-          </h2>
-          <p className="text-sm opacity-90 mt-1 font-medium">
-            AI orqali sinab ko'ring 🚪✨
-          </p>
-        </div>
-      </div>
-
-      {/* 3. Premium Search Bar */}
-      <div className="mb-8 px-1">
-        <div 
-          className="relative group transition-all"
-          onClick={() => {
-            haptic('light');
-            navigate('/search');
+      {/* ─── AI Visualizer Hero ─── */}
+      <div className="px-4 pt-4 mb-5">
+        <div
+          onClick={() => { haptic('medium'); navigate('/visualize/new'); }}
+          className="relative overflow-hidden rounded-[24px] p-5 cursor-pointer active:scale-[0.98] transition-transform"
+          style={{
+            background: 'linear-gradient(135deg, #FF6B35 0%, #FF2D55 55%, #C0175A 100%)',
+            boxShadow: '0 12px 40px rgba(255,107,53,0.38)',
           }}
         >
-          <input 
-            type="text" 
-            placeholder="Eshik nomi, model..." 
-            className="w-full h-14 bg-white rounded-[20px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] pl-14 pr-6 text-[15px] font-medium transition-all cursor-pointer"
-            readOnly
-          />
-          <div className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-600">
-            <Search size={22} />
+          {/* BG blobs */}
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20"
+            style={{ background: 'white', transform: 'translate(30%,-30%)' }} />
+          <div className="absolute bottom-0 left-1/2 w-20 h-20 rounded-full opacity-10"
+            style={{ background: 'white', transform: 'translate(-50%,40%)' }} />
+
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center">
+                <Sparkles size={15} className="text-white" />
+              </div>
+              <span className="text-white/80 text-[11px] font-black uppercase tracking-widest">AI Visualizer</span>
+            </div>
+            <h2 className="text-white text-[20px] font-black leading-tight mb-1">
+              Uyingizni virtual<br/>bezating ✨
+            </h2>
+            <p className="text-white/75 text-[12px] font-medium">
+              AI yordamida ideal dizaynni toping
+            </p>
+            <div className="mt-4 inline-flex items-center gap-1.5 bg-white text-[#FF6B35] text-[12px] font-black px-4 py-2 rounded-[14px]">
+              Sinab ko'ring <ChevronRight size={14} />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Main Banners Carousel */}
+      {/* ─── Search Bar ─── */}
+      <div className="px-4 mb-6">
+        <div
+          className="relative cursor-pointer active:scale-[0.98] transition-transform"
+          onClick={() => { haptic('light'); navigate('/search'); }}
+        >
+          <div
+            className="w-full h-[52px] flex items-center gap-3 px-5 rounded-[18px]"
+            style={{
+              background: 'white',
+              boxShadow: '0 4px 20px rgba(26,26,46,0.06)',
+              border: '1.5px solid rgba(255,107,53,0.10)',
+            }}
+          >
+            <Search size={20} color="#FF6B35" strokeWidth={2.5} />
+            <span className="text-[14px] font-semibold text-[#C0C0CE]">
+              Mahsulot qidiring…
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Banners ─── */}
       {banners.length > 0 && (
-        <div className="mb-10 px-1">
+        <div className="px-4 mb-8">
           <BannerCarousel banners={banners} />
         </div>
       )}
 
-      {/* 4. Categories (Horizontal scroll assumed in CategoryGrid) */}
-      <section className="mb-10">
-        <div className="flex items-center justify-between mb-5 px-2">
-          <h2 className="font-black text-[19px] text-slate-900 tracking-tight">Kategoriyalar</h2>
-        </div>
-        <div className="px-1">
-          <CategoryGrid categories={categories} />
-        </div>
-      </section>
+      {/* ─── Categories ─── */}
+      {categories.length > 0 && (
+        <section className="mb-8">
+          <div className="px-4">
+            <SectionHeader
+              icon={<Tag size={16} />}
+              title="Kategoriyalar"
+              subtitle="Mahsulot turini tanlang"
+              color="#00C9B1"
+            />
+          </div>
+          <div className="px-4">
+            <CategoryGrid categories={categories} />
+          </div>
+        </section>
+      )}
 
-      {/* 🔥 Chegirmalar (Horizontal Scroll) */}
+      {/* ─── SALE Strip ─── */}
       {onSaleProducts.length > 0 && (
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-5 px-2">
-            <h2 className="font-black text-[19px] text-slate-900 tracking-tight flex items-center gap-2">
-              <span className="text-xl">🔥</span> Chegirmalar
-            </h2>
-            <button
-              className="text-[11px] font-black text-red-600 uppercase tracking-widest px-3 py-1.5 bg-red-50 rounded-lg active:scale-95 transition-all"
-              onClick={() => {
-                haptic('light');
-                navigate('/discounts');
-              }}
-            >
-              Barchasi
-            </button>
+        <section className="mb-8">
+          <div className="px-4">
+            <SectionHeader
+              icon={<Flame size={16} />}
+              title="Chegirmalar 🔥"
+              subtitle="Maxsus narxlar"
+              onSeeAll={() => { haptic('light'); navigate('/discounts'); }}
+              color="#FF2D55"
+            />
           </div>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-6 -mx-4 px-5 snap-x">
-            {onSaleProducts.map((product) => (
-              <div key={product.id} className="w-[170px] flex-shrink-0 snap-start">
-                <ProductCard 
-                  product={product} 
-                  onToggleWishlist={async (id) => {
-                    try {
-                      await apiClient.post(`products/${id}/toggle_wishlist/`);
-                      setOnSaleProducts(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
-                    } catch (e) {
-                      console.error(e);
-                    }
-                  }} 
-                  isWishlisted={product.is_wishlisted}
+
+          {/* Horizontal scroll strip with gradient fade */}
+          <div className="relative">
+            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-3 px-4 snap-x snap-mandatory">
+              {onSaleProducts.map(p => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  variant="horizontal"
+                  onToggleWishlist={id => toggleWishlist(id, setOnSaleProducts)}
+                  isWishlisted={p.is_wishlisted}
                 />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      {/* 5. 🔥 Eng ko'p sotilayotganlar (2-col grid) */}
+      {/* ─── Best Sellers ─── */}
       {topProducts.length > 0 && (
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-5 px-2">
-            <h2 className="font-black text-[19px] text-slate-900 tracking-tight flex items-center gap-2">
-              <span className="text-xl">🔥</span> Eng ko'p sotilayotganlar
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 px-1">
-            {topProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                onToggleWishlist={async (id) => {
-                  try {
-                    await apiClient.post(`products/${id}/toggle_wishlist/`);
-                    setProducts(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
-                  } catch (e) {
-                    console.error(e);
-                  }
-                }} 
-                isWishlisted={product.is_wishlisted}
+        <section className="mb-8 px-4">
+          <SectionHeader
+            icon={<TrendingUp size={16} />}
+            title="Eng ko'p sotilayotganlar"
+            subtitle="Xaridorlar sevgani"
+            color="#FF6B35"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            {topProducts.map(p => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onToggleWishlist={id => toggleWishlist(id, setProducts)}
+                isWishlisted={p.is_wishlisted}
               />
             ))}
           </div>
         </section>
       )}
 
-      {/* 6. So'nggi mahsulotlar (2-col grid) */}
+      {/* ─── Recent Products ─── */}
       {recentProducts.length > 0 && (
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-5 px-2">
-            <h2 className="font-black text-[19px] text-slate-900 tracking-tight">So'nggi mahsulotlar</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 px-1">
-            {recentProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                onToggleWishlist={async (id) => {
-                  try {
-                    await apiClient.post(`products/${id}/toggle_wishlist/`);
-                    setProducts(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
-                  } catch (e) {
-                    console.error(e);
-                  }
-                }} 
-                isWishlisted={product.is_wishlisted}
+        <section className="mb-8 px-4">
+          <SectionHeader
+            icon={<Sparkles size={16} />}
+            title="So'nggi mahsulotlar"
+            subtitle="Yangi kelganlar"
+            color="#FFB800"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            {recentProducts.map(p => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onToggleWishlist={id => toggleWishlist(id, setProducts)}
+                isWishlisted={p.is_wishlisted}
               />
             ))}
           </div>
         </section>
       )}
 
-      <div className="mt-14 mb-8 text-center opacity-50">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500">Tanla Raqamli Butigi</p>
+      {/* ─── Footer brand ─── */}
+      <div className="mt-6 mb-4 text-center">
+        <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white"
+          style={{ boxShadow: '0 2px 12px rgba(26,26,46,0.06)' }}>
+          <div className="w-5 h-5 rounded-lg flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)' }}>
+            <Sparkles size={11} className="text-white" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-[#C0C0CE]">
+            Tanla · Home Boutique
+          </span>
+        </div>
       </div>
     </div>
   );

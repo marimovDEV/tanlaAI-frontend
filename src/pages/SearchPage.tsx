@@ -1,11 +1,22 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Search, X, LayoutGrid, SlidersHorizontal } from 'lucide-react';
 import apiClient from '../api/client';
 import type { ApiListResponse, Product, Category } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import ProductCard from '../components/ProductCard';
-import { cn } from '../utils/cn';
+
+const CardSkeleton = () => (
+  <div
+    className="rounded-[22px] overflow-hidden"
+    style={{
+      background: 'linear-gradient(90deg,#f0ede8 25%,#e8e4de 50%,#f0ede8 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'shimmer 1.4s infinite',
+      height: '280px',
+    }}
+  />
+);
 
 const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,177 +31,177 @@ const SearchPage: React.FC = () => {
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const categoryId = searchParams.get('category');
-      const search = searchParams.get('search');
-      
       let url = '/products/?';
-      if (categoryId) url += `category=${categoryId}&`;
-      if (search) url += `search=${search}&`;
-
-      const response = await apiClient.get<ApiListResponse<Product> | Product[]>(url);
-      setProducts(Array.isArray(response.data) ? response.data : response.data.results);
-    } catch (err) {
-      console.error('Error fetching searched products:', err);
+      const cat = searchParams.get('category');
+      const q   = searchParams.get('search');
+      if (cat) url += `category=${cat}&`;
+      if (q)   url += `search=${q}&`;
+      const res = await apiClient.get<ApiListResponse<Product> | Product[]>(url);
+      setProducts(Array.isArray(res.data) ? res.data : res.data.results);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
   }, [searchParams]);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await apiClient.get<ApiListResponse<Category> | Category[]>('/categories/');
-        setCategories(Array.isArray(response.data) ? response.data : response.data.results);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-      }
-    };
-    fetchCategories();
+    apiClient.get<ApiListResponse<Category> | Category[]>('/categories/')
+      .then(res => setCategories(Array.isArray(res.data) ? res.data : res.data.results))
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const t = setTimeout(() => {
       if (searchTerm !== (searchParams.get('search') || '')) {
-        const newParams = new URLSearchParams(searchParams);
-        if (searchTerm) newParams.set('search', searchTerm);
-        else newParams.delete('search');
-        setSearchParams(newParams);
+        const p = new URLSearchParams(searchParams);
+        searchTerm ? p.set('search', searchTerm) : p.delete('search');
+        setSearchParams(p);
       }
-    }, 500);
-
-    return () => clearTimeout(timer);
+    }, 480);
+    return () => clearTimeout(t);
   }, [searchTerm, searchParams, setSearchParams]);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const toggleCategory = (id: number) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (activeCategory === id.toString()) {
-      newParams.delete('category');
-    } else {
-      newParams.set('category', id.toString());
-    }
-    setSearchParams(newParams);
+    const p = new URLSearchParams(searchParams);
+    activeCategory === id.toString() ? p.delete('category') : p.set('category', id.toString());
+    setSearchParams(p);
     haptic('light');
   };
 
+  const clearAll = () => {
+    setSearchTerm('');
+    setSearchParams(new URLSearchParams());
+  };
+
   return (
-    <div className="p-4 sm:p-6 pb-20 space-y-6">
-      {/* Search Input */}
-      <div className="relative">
-        <input 
-          type="text" 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Mahsulotlarni qidiring..." 
-          className="w-full h-14 bg-white rounded-2xl border-none shadow-sm pl-12 pr-12 text-sm focus:ring-2 focus:ring-primary/20 transition-all font-medium"
-        />
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-outline">
-          <Search size={20} />
-        </div>
-        {searchTerm && (
-          <button 
-            onClick={() => setSearchTerm('')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-outline/40 hover:text-outline"
+    <div style={{ background: '#FFFBF6' }} className="min-h-screen">
+      <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`}</style>
+
+      <div
+        className="sticky z-30 px-4 pt-4 pb-3 space-y-3"
+        style={{
+          top: 0,
+          background: 'rgba(255,251,246,0.95)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(26,26,46,0.05)',
+        }}
+      >
+        <div className="relative">
+          <div
+            className="w-full h-[52px] flex items-center gap-3 px-5 rounded-[18px]"
+            style={{
+              background: '#fff',
+              boxShadow: '0 4px 20px rgba(26,26,46,0.07)',
+              border: '1.5px solid rgba(255,107,53,0.12)',
+            }}
           >
-            <X size={18} />
+            <Search size={20} color="#FF6B35" strokeWidth={2.5} className="flex-shrink-0" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Mahsulot qidiring..."
+              className="flex-1 bg-transparent text-[14px] font-semibold text-[#1A1A2E] placeholder-[#C0C0CE] outline-none"
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')} className="text-[#C0C0CE] active:scale-90 transition-transform">
+                <X size={18} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5 snap-x">
+          <button
+            onClick={clearAll}
+            className="flex-shrink-0 snap-start px-4 py-2 rounded-full text-[12px] font-black whitespace-nowrap transition-all active:scale-95"
+            style={(!activeCategory && !searchTerm)
+              ? { background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', color: '#fff', boxShadow: '0 4px 12px rgba(255,107,53,0.28)' }
+              : { background: '#fff', color: '#8A8A99', border: '1.5px solid rgba(26,26,46,0.08)' }
+            }
+          >
+            Barchasi
+          </button>
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => toggleCategory(cat.id)}
+              className="flex-shrink-0 snap-start px-4 py-2 rounded-full text-[12px] font-black whitespace-nowrap transition-all active:scale-95"
+              style={activeCategory === cat.id.toString()
+                ? { background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', color: '#fff', boxShadow: '0 4px 12px rgba(255,107,53,0.28)' }
+                : { background: '#fff', color: '#8A8A99', border: '1.5px solid rgba(26,26,46,0.08)' }
+              }
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2">
+          <LayoutGrid size={14} color="#FF6B35" />
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#8A8A99]">
+            {loading ? '...' : `${products.length} ta mahsulot`}
+          </span>
+        </div>
+        {(activeCategory || searchTerm) && (
+          <button
+            onClick={clearAll}
+            className="flex items-center gap-1 text-[11px] font-black text-[#FF2D55] uppercase tracking-widest active:scale-95 transition-transform"
+          >
+            <SlidersHorizontal size={12} /> Tozalash
           </button>
         )}
       </div>
 
-      {/* Categories Filter */}
-      <div className="flex overflow-x-auto gap-2 no-scrollbar px-1 py-1">
-        <button
-          onClick={() => {
-            const newParams = new URLSearchParams(searchParams);
-            newParams.delete('category');
-            setSearchParams(newParams);
-            haptic('soft');
-          }}
-          className={cn(
-            "px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border",
-            !activeCategory 
-              ? "bg-primary text-white border-primary shadow-md" 
-              : "bg-white text-outline border-outline/10"
-          )}
-        >
-          Barcha mahsulotlar
-        </button>
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => toggleCategory(cat.id)}
-            className={cn(
-              "px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border",
-              activeCategory === cat.id.toString()
-                ? "bg-primary text-white border-primary shadow-md" 
-                : "bg-white text-outline border-outline/10"
-            )}
-          >
-            {cat.name}
-          </button>
-        ))}
-      </div>
-
-      {/* Sort/Filter Bar */}
-      <div className="flex items-center justify-between border-b border-outline/5 pb-4 px-1">
-        <div className="flex items-center gap-2 text-outline text-[10px] font-black uppercase tracking-widest">
-          <SlidersHorizontal size={14} />
-          <span>{products.length} ta natija topildi</span>
-        </div>
-        <button className="flex items-center gap-1.5 text-primary text-[10px] font-black uppercase tracking-widest">
-          <ArrowUpDown size={14} />
-          <span>Mos keluvchi</span>
-        </button>
-      </div>
-
-      {/* Results Grid */}
-      {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="aspect-[3/4] bg-surface-variant animate-pulse rounded-3xl" />
-          ))}
-        </div>
-      ) : products.length > 0 ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {products.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              onToggleWishlist={async (id) => {
-                try {
+      <div className="px-4 pb-10">
+        {loading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {[1,2,3,4,5,6].map(i => <CardSkeleton key={i} />)}
+          </div>
+        ) : products.length > 0 ? (
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {products.map(p => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onToggleWishlist={async id => {
                   await apiClient.post(`/products/${id}/toggle_wishlist/`);
-                  setProducts(prev => prev.map(p => p.id === id ? { ...p, is_wishlisted: !p.is_wishlisted } : p));
-                } catch (e) {
-                  console.error(e);
-                }
-              }} 
-              isWishlisted={product.is_wishlisted}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="py-20 text-center space-y-4">
-          <div className="w-20 h-20 bg-surface-variant/50 rounded-full flex items-center justify-center mx-auto">
-            <Search size={40} className="text-outline/20" />
+                  setProducts(prev => prev.map(pr => pr.id === id ? { ...pr, is_wishlisted: !pr.is_wishlisted } : pr));
+                }}
+                isWishlisted={p.is_wishlisted}
+              />
+            ))}
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-on-surface">Natija topilmadi</h3>
-            <p className="text-sm text-outline">Filtrlarni yoki qidiruv so'zini o'zgartirib ko'ring.</p>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+            <div
+              className="w-20 h-20 rounded-[24px] flex items-center justify-center"
+              style={{ background: 'rgba(255,107,53,0.08)' }}
+            >
+              <Search size={32} color="#FF6B35" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h3 className="text-[18px] font-black text-[#1A1A2E] mb-1">Natija topilmadi</h3>
+              <p className="text-[13px] text-[#B0B0BF] font-medium leading-relaxed">
+                Boshqa kategoriya yoki qidiruv so'zi bilan urinib ko'ring
+              </p>
+            </div>
+            <button
+              onClick={clearAll}
+              className="px-6 py-3 rounded-[16px] text-[13px] font-black text-white active:scale-95 transition-transform"
+              style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', boxShadow: '0 6px 20px rgba(255,107,53,0.28)' }}
+            >
+              Filtrlarni tozalash
+            </button>
           </div>
-          <button 
-            onClick={() => {
-              setSearchTerm('');
-              setSearchParams(new URLSearchParams());
-            }}
-            className="text-primary font-bold text-sm"
-          >
-            Barcha filtrlarni tozalash
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

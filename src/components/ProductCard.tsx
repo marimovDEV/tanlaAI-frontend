@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Heart, Star, Phone } from 'lucide-react';
+import { Heart, Phone, Flame } from 'lucide-react';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import { getMediaUrl } from '../utils/media';
@@ -9,24 +9,34 @@ interface Props {
   product: Product;
   onToggleWishlist?: (id: number) => void;
   isWishlisted?: boolean;
+  variant?: 'grid' | 'horizontal';
 }
 
-const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted }) => {
+const ProductCard: React.FC<Props> = ({
+  product,
+  onToggleWishlist,
+  isWishlisted,
+  variant = 'grid',
+}) => {
   const { haptic, webApp } = useTelegram();
   const hasSale = product.is_on_sale && Boolean(product.discount_price);
   const company = product.company_details;
 
-  const formatPrice = (value?: string, suffix = '') => {
-    if (!value) { return null; }
-    return `${Number(value).toLocaleString()} so'm${suffix}`;
-  };
+  const fmt = (v?: string, suffix = '') =>
+    v ? `${Number(v).toLocaleString()} so'm${suffix}` : null;
 
-  const basePrice = product.price ? formatPrice(product.price) : formatPrice(product.price_per_m2, ' / m²');
-  const salePrice = product.price ? formatPrice(product.discount_price) : formatPrice(product.discount_price, ' / m²');
+  const basePrice = product.price
+    ? fmt(product.price)
+    : fmt(product.price_per_m2, " / m²");
+  const salePrice = product.price
+    ? fmt(product.discount_price)
+    : fmt(product.discount_price, " / m²");
 
   let discountPct = 0;
   if (hasSale && product.price && product.discount_price) {
-     discountPct = Math.round((1 - Number(product.discount_price) / Number(product.price)) * 100);
+    discountPct = Math.round(
+      (1 - Number(product.discount_price) / Number(product.price)) * 100
+    );
   }
 
   const handleCall = (e: React.MouseEvent) => {
@@ -34,89 +44,124 @@ const ProductCard: React.FC<Props> = ({ product, onToggleWishlist, isWishlisted 
     if (!company?.phone) return;
     haptic('light');
     const uri = `tel:${company.phone}`;
-    if (webApp && webApp.openLink) {
-      webApp.openLink(uri);
-    } else {
-      window.location.href = uri;
-    }
+    if (webApp?.openLink) webApp.openLink(uri);
+    else window.location.href = uri;
   };
 
-  return (
-    <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 p-2.5 flex flex-col h-full border border-slate-50 group">
-      
-      {/* Image container */}
-      <div className="relative h-[140px] bg-slate-50 rounded-xl overflow-hidden mb-3.5 border border-slate-100">
-        <NavLink to={`/product/${product.id}`} className="block w-full h-full">
-          <img 
-            src={getMediaUrl(product.image) || "https://via.placeholder.com/300"} 
-            alt={product.name} 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+  /* ── Horizontal variant (sale strip) ── */
+  if (variant === 'horizontal') {
+    return (
+      <NavLink
+        to={`/product/${product.id}`}
+        className="flex-shrink-0 w-[160px] flex flex-col bg-white rounded-[20px] overflow-hidden active:scale-[0.97] transition-transform"
+        style={{ boxShadow: '0 4px 20px rgba(26,26,46,0.08)' }}
+      >
+        <div className="relative h-[130px] overflow-hidden bg-[#f5f0eb]">
+          <img
+            src={getMediaUrl(product.image) || 'https://via.placeholder.com/300'}
+            alt={product.name}
+            className="w-full h-full object-cover"
           />
-        </NavLink>
-        
-        {/* Micro Badges */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1.5 items-start">
           {hasSale && discountPct > 0 && (
-            <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+            <span
+              className="absolute top-2.5 left-2.5 text-white text-[10px] font-black px-2 py-0.5 rounded-full"
+              style={{ background: '#FF2D55' }}
+            >
               -{discountPct}%
             </span>
           )}
-          {product.is_featured && (
-            <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm flex items-center gap-0.5">
-              🔥 TOP
-            </span>
+          {onToggleWishlist && (
+            <button
+              onClick={(e) => { e.preventDefault(); onToggleWishlist(product.id); haptic('soft'); }}
+              className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center active:scale-90 transition-transform"
+              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
+            >
+              <Heart size={13} className={isWishlisted ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-[#C0C0CE]'} />
+            </button>
           )}
         </div>
-        
-        <div className="absolute bottom-2 left-2">
-          <span className="bg-emerald-600/90 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-            🟢 Mavjud
-          </span>
+        <div className="p-3 flex flex-col gap-1">
+          <p className="text-[12px] font-bold text-[#1A1A2E] line-clamp-2 leading-snug">{product.name}</p>
+          <p className="text-[13px] font-black" style={{ color: '#FF6B35' }}>{salePrice || basePrice || 'Kelishilgan'}</p>
+          {hasSale && basePrice && salePrice && (
+            <p className="text-[10px] text-[#C0C0CE] line-through">{basePrice}</p>
+          )}
         </div>
+      </NavLink>
+    );
+  }
 
-        {onToggleWishlist && (
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              onToggleWishlist(product.id);
-              haptic('soft');
-            }}
-            className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm active:scale-90 transition border border-white"
-          >
-            <Heart size={14} className={isWishlisted ? 'fill-red-500 text-red-500' : 'text-slate-400'} />
-          </button>
-        )}
-      </div>
+  /* ── Default grid variant ── */
+  return (
+    <div
+      className="bg-white rounded-[22px] flex flex-col overflow-hidden active:scale-[0.97] transition-transform"
+      style={{ boxShadow: '0 4px 20px rgba(26,26,46,0.07)' }}
+    >
+      {/* Image */}
+      <NavLink to={`/product/${product.id}`} className="block">
+        <div className="relative h-[160px] sm:h-[180px] overflow-hidden bg-[#f5f0eb]">
+          <img
+            src={getMediaUrl(product.image) || 'https://via.placeholder.com/300'}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+          />
+          {/* Badges */}
+          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+            {hasSale && discountPct > 0 && (
+              <span className="text-white text-[10px] font-black px-2 py-0.5 rounded-full"
+                style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)' }}>
+                -{discountPct}%
+              </span>
+            )}
+            {product.is_featured && (
+              <span className="text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5"
+                style={{ background: '#FFB800' }}>
+                <Flame size={9} className="fill-white" /> TOP
+              </span>
+            )}
+          </div>
+          {/* Wishlist */}
+          {onToggleWishlist && (
+            <button
+              onClick={(e) => { e.preventDefault(); onToggleWishlist(product.id); haptic('soft'); }}
+              className="absolute top-2.5 right-2.5 w-8 h-8 bg-white rounded-full flex items-center justify-center active:scale-90 transition-transform"
+              style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.14)' }}
+            >
+              <Heart size={15} className={isWishlisted ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-[#C0C0CE]'} />
+            </button>
+          )}
+          {/* Availability */}
+          <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 text-white text-[9px] font-bold px-2 py-0.5 rounded-full"
+            style={{ background: 'rgba(0,180,140,0.88)', backdropFilter: 'blur(6px)' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />
+            Mavjud
+          </div>
+        </div>
+      </NavLink>
 
-      {/* Content */}
-      <div className="flex flex-col flex-grow">
-        <NavLink to={`/product/${product.id}`} className="block mb-2">
-          <h3 className="text-[13px] font-bold text-slate-800 leading-tight line-clamp-2">
-            {product.name}
-          </h3>
-          <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-medium">
-            <Star size={10} className="fill-amber-400 text-amber-400" /> 
-            4.8 ({(product.id * 7 % 40) + 10})
-          </p>
+      {/* Body */}
+      <div className="p-3.5 flex flex-col flex-1">
+        <NavLink to={`/product/${product.id}`}>
+          <h3 className="text-[13px] font-bold text-[#1A1A2E] leading-snug line-clamp-2 mb-2">{product.name}</h3>
         </NavLink>
-        
-        <div className="mt-auto mb-3">
-          <p className="text-[14px] font-black text-slate-900 leading-none">
-            {salePrice || basePrice || "Kelishilgan"}
+
+        <div className="mb-3">
+          <p className="text-[15px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
+            {salePrice || basePrice || 'Kelishilgan'}
           </p>
           {hasSale && basePrice && salePrice && (
-            <p className="text-[10px] text-slate-400 line-through mt-1">
-              {basePrice}
-            </p>
+            <p className="text-[10px] text-[#C0C0CE] line-through mt-0.5">{basePrice}</p>
           )}
         </div>
 
-        <button 
+        <button
           onClick={handleCall}
           disabled={!company?.phone}
-          className="mt-auto w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50 transition active:scale-95"
+          className="mt-auto w-full flex items-center justify-center gap-1.5 py-2.5 rounded-[14px] text-[12px] font-black text-white disabled:opacity-40 active:scale-95 transition-transform"
+          style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', boxShadow: '0 4px 14px rgba(255,107,53,0.28)' }}
         >
-          <Phone size={14} className="fill-current" /> Qo'ng'iroq
+          <Phone size={13} className="fill-white" />
+          Qo'ng'iroq
         </button>
       </div>
     </div>
