@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store, Phone, MapPin, Instagram, Camera, ChevronLeft, RefreshCcw } from 'lucide-react';
+import { Store, Phone, MapPin, ChevronLeft, RefreshCcw } from 'lucide-react';
 import apiClient from '../api/client';
 import { useTelegram } from '../contexts/useTelegram';
 import { cn } from '../utils/cn';
@@ -29,12 +29,12 @@ const CompanyCreatePage: React.FC = () => {
     haptic('medium');
     try {
       await apiClient.post('companies/', formData);
-      haptic('notification', 'success' as any);
+      haptic('medium');
       // Wait a tick then go to creator dashboard
       setTimeout(() => navigate('/creator', { replace: true }), 500);
     } catch (error: any) {
       console.error('Error creating company:', error);
-      haptic('notification', 'error' as any);
+      haptic('heavy');
       alert("Kompaniya yaratishda xato: " + JSON.stringify(error?.response?.data || error.message));
     } finally {
       setLoading(false);
@@ -132,7 +132,11 @@ const CompanyCreatePage: React.FC = () => {
                 placeholder="Instagram profilingiz (yoki @username)" 
                 className="w-full h-14 bg-pink-50/50 rounded-2xl border-none focus:ring-2 focus:ring-pink-500 pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all placeholder:font-medium placeholder:text-slate-400"
               />
-              <Instagram size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-500" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-pink-500">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
             </div>
 
             {/* Telegram */}
