@@ -83,6 +83,8 @@ interface TelegramWebApp {
   expand: () => void;
   isVersionAtLeast: (version: string) => boolean;
   close: () => void;
+  openLink: (url: string, options?: { try_instant_view?: boolean }) => void;
+  openTelegramLink: (url: string) => void;
   onEvent: (eventType: string, eventHandler: (params: TelegramEventPayload) => void) => void;
   offEvent: (eventType: string, eventHandler: (params: TelegramEventPayload) => void) => void;
   sendData: (data: string) => void;

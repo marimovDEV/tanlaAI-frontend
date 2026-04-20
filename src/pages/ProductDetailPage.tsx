@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, User, Calculator, Stars, MessageCircle, Phone, Ruler, RefreshCcw, Clock, ShoppingBag } from 'lucide-react';
+import { Heart, User, Calculator, Stars, RefreshCcw, Clock, ShoppingBag } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
 import type { Product } from '../types';
