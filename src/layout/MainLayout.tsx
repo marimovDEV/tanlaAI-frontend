@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Store, Search, ListOrdered, Percent, User, Building2, Bell } from 'lucide-react';
+import { Store, Search, ListOrdered, Percent, User, Building2 } from 'lucide-react';
 import { useTelegram } from '../contexts/useTelegram';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -100,17 +100,6 @@ const MainLayout: React.FC = () => {
               >
                 <Building2 size={16} /> {profile?.has_company ? "Studiya" : "Studio"}
               </NavLink>
-
-              <button 
-                onClick={() => {
-                  haptic('light');
-                  // navigate('/notifications'); // placeholder
-                }}
-                className="w-10 h-10 bg-[#f8fafc] flex items-center justify-center rounded-full border border-slate-100 shadow-sm relative active:scale-95 transition-transform"
-              >
-                <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#f8fafc]" />
-                <Bell size={20} className="text-slate-700" />
-              </button>
             </div>
           </div>
         </nav>
