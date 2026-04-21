@@ -59,6 +59,7 @@ body {
 .gradient-gold      { background: linear-gradient(135deg, #FFB800 0%, #FF8C00 100%); }
 .gradient-hero      { background: linear-gradient(135deg, #FF6B35 0%, #FF2D55 60%, #C0175A 100%); }
 .gradient-ai        { background: linear-gradient(135deg, #00C9B1 0%, #0096FF 100%); }
+.main-button-gradient { background: linear-gradient(135deg, #FF6B35 0%, #FF2D55 100%); }
 
 /* ─── Glassmorphism ─── */
 .glass {
