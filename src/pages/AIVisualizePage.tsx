@@ -9,6 +9,7 @@ import {
   RefreshCcw,
   Download,
   Share2,
+  Ruler,
   Phone,
   ArrowLeftRight,
   Wand2,
@@ -887,11 +888,7 @@ const AIVisualizePage: React.FC = () => {
         <LeadForm
           productId={product.id}
           leadType={leadType}
-          initialPriceInfo={
-            inputHeight && inputWidth
-              ? `${inputHeight}×${inputWidth} sm — AI vizualizatsiya`
-              : "AI vizualizatsiyasi"
-          }
+          initialPriceInfo="AI vizualizatsiyasi"
           onClose={() => setShowLeadForm(false)}
         />
       )}
