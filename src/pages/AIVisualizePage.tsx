@@ -9,7 +9,6 @@ import {
   RefreshCcw,
   Download,
   Share2,
-  Ruler,
   Phone,
   ArrowLeftRight,
   Wand2,
@@ -92,10 +91,6 @@ const AIVisualizePage: React.FC = () => {
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<RoomAnalysisSummary | null>(null);
-  const [generationPrompt, setGenerationPrompt] = useState<string | null>(null);
-  const [generationMeta, setGenerationMeta] = useState<GenerationMeta | null>(
-    null,
-  );
   const [pipelineMeta, setPipelineMeta] = useState<PipelineMeta | null>(null);
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [leadType, setLeadType] = useState<"call" | "measurement">("call");
@@ -157,8 +152,6 @@ const AIVisualizePage: React.FC = () => {
           if (response.data.status === "done") {
             setResultImage(response.data.image_url ?? null);
             setAnalysis(response.data.analysis ?? null);
-            setGenerationPrompt(response.data.generation_prompt ?? null);
-            setGenerationMeta(response.data.generation_meta ?? null);
             setPipelineMeta(response.data.pipeline ?? null);
             setStatus("done");
             haptic("heavy");
@@ -206,8 +199,6 @@ const AIVisualizePage: React.FC = () => {
       setStatus("idle");
       setError(null);
       setAnalysis(null);
-      setGenerationPrompt(null);
-      setGenerationMeta(null);
       setPipelineMeta(null);
       setCurrentRequestId(null);
       haptic("light");
@@ -293,8 +284,6 @@ const AIVisualizePage: React.FC = () => {
     setResultImage(null);
     setError(null);
     setAnalysis(null);
-    setGenerationPrompt(null);
-    setGenerationMeta(null);
     setPipelineMeta(null);
     setCurrentRequestId(null);
     setShowBeforeAfter(false);
