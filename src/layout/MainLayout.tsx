@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Store, Search, Percent, User, Building2, Sparkles, Heart } from 'lucide-react';
 import { useTelegram } from '../contexts/useTelegram';
 import { clsx, type ClassValue } from 'clsx';
@@ -8,6 +8,9 @@ import { twMerge } from 'tailwind-merge';
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+// Root tabs — no back button on these
+const ROOT_PATHS = new Set(['/', '/search', '/discounts', '/wishlist', '/profile']);
 
 const navItems = [
   { to: '/',          icon: Store,   label: "Do'kon"  },
@@ -18,7 +21,25 @@ const navItems = [
 ];
 
 const MainLayout: React.FC = () => {
-  const { haptic, profile } = useTelegram();
+  const { haptic, profile, webApp } = useTelegram();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  /* ── Telegram native Back Button ── */
+  useEffect(() => {
+    if (!webApp?.isVersionAtLeast?.('6.1')) return;
+
+    const isRoot = ROOT_PATHS.has(location.pathname);
+
+    if (isRoot) {
+      webApp.BackButton.hide();
+    } else {
+      webApp.BackButton.show();
+      const handler = () => { haptic('light'); navigate(-1); };
+      webApp.BackButton.onClick(handler);
+      return () => webApp.BackButton.offClick(handler);
+    }
+  }, [location.pathname, webApp, navigate, haptic]);
 
   return (
     <div className="min-h-screen bg-[#FFFBF6] text-[#1A1A2E] flex overflow-x-hidden" style={{ fontFamily: 'Manrope, sans-serif' }}>

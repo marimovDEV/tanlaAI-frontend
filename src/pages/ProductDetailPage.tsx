@@ -40,15 +40,6 @@ const ProductDetailPage: React.FC = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  useEffect(() => {
-    if (webApp?.isVersionAtLeast('6.1')) {
-      webApp.BackButton.show();
-      const back = () => navigate(-1);
-      webApp.BackButton.onClick(back);
-      return () => { webApp.BackButton.hide(); webApp.BackButton.offClick(back); };
-    }
-  }, [webApp, navigate]);
-
   useEffect(() => { setActiveImg(0); }, [product?.id]);
 
   const gallery = useMemo(() => {
