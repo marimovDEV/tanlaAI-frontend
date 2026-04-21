@@ -402,7 +402,7 @@ const ProductDetailPage: React.FC = () => {
         }}
       >
         <button
-          onClick={() => { setLeadType('direct'); setShowLeadForm(true); haptic('medium'); }}
+          onClick={() => { navigate(`/product/${product.id}/order?qty=${qty}`); haptic('medium'); }}
           className="w-full flex items-center justify-center gap-2.5 py-4 rounded-[18px] text-[15px] font-black text-white active:scale-[0.97] transition-transform"
           style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', boxShadow: '0 8px 28px rgba(255,107,53,0.35)' }}
         >

@@ -9,7 +9,7 @@ import {
   RefreshCcw,
   Download,
   Share2,
-  Phone,
+  ShoppingBag,
   ArrowLeftRight,
   Wand2,
   ImageIcon,
@@ -17,7 +17,6 @@ import {
 import apiClient from "../api/client";
 import type { Product } from "../types";
 import { useTelegram } from "../contexts/useTelegram";
-import LeadForm from "../components/LeadForm";
 
 interface AIUploadResponse {
   status: "ok" | "error" | "processing" | "preparing";
@@ -293,38 +292,36 @@ const AIVisualizePage: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!resultImage) return;
+    if (!resultId) return;
+    setIsSaving(true);
     haptic("medium");
     
-    // Result is already saved on server by the background task.
-    // We just provide a way to 'view/download' it or simply confirm it's in the library.
-    if (webApp?.openLink) {
-      webApp.openLink(resultImage);
-    } else {
-      window.open(resultImage, "_blank");
+    try {
+      const downloadUrl = `${apiClient.defaults.baseURL}/ai-results/${resultId}/download/`;
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.setAttribute("download", `tanla_ai_${resultId}.png`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      alert("✅ Vizualizatsiya yuklab olinmoqda...");
+    } catch (err) {
+      console.error("Save error:", err);
+      alert("Saqlashda xatolik yuz berdi");
+    } finally {
+      setIsSaving(false);
     }
-    
-    // Optimistic feedback
-    alert("✅ Vizualizatsiya kutubxonangizga saqlandi! Rasmni bosib turib galereyaga saqlashingiz mumkin.");
   };
 
   const handleShare = async () => {
-    if (!resultImage || !product) return;
+    if (!resultId || !product) return;
     setIsSharing(true);
     haptic("medium");
 
     try {
-      // 1. Create SharedDesign on backend directly (without client-side blob fetch to avoid CORS)
-      // We pass the result Image URL and product ID
-      const res = await apiClient.post<{ id: string }>("/shared-designs/", {
-        product: product.id,
-        image_url: resultImage, // Backend should handle fetching its own local file
-        original_image_url: preview,
-      });
+      const shareUrl = `${window.location.origin}/share/${resultId}`;
 
-      const shareUrl = `${window.location.origin}/share/${res.data.id}`;
-
-      // 2. Share flow
       if (webApp?.openTelegramLink) {
         webApp.openTelegramLink(
           `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(
@@ -342,17 +339,7 @@ const AIVisualizePage: React.FC = () => {
       }
     } catch (err) {
       console.error("Share error:", err);
-      
-      // Fallback: simple share if design creation fails
-      if (navigator.share) {
-        await navigator.share({
-          title: "Tanla AI",
-          text: `${product.name} vizualizatsiyasi`,
-          url: window.location.href
-        });
-      } else {
-        alert("Ulashishda xatolik yuz berdi");
-      }
+      alert("Ulashishda xatolik yuz berdi");
     } finally {
       setIsSharing(false);
     }
@@ -736,14 +723,13 @@ const AIVisualizePage: React.FC = () => {
             {/* Primary Action: Purchase/Contact */}
             <button
               onClick={() => {
-                setLeadType("call");
-                setShowLeadForm(true);
+                navigate(`/product/${product.id}/order?ai_id=${resultId}`);
                 haptic("medium");
               }}
               className="w-full flex items-center justify-center gap-3 py-5 bg-primary text-white rounded-[24px] font-black shadow-xl shadow-primary/25 active:scale-[0.97] transition-all text-base"
             >
-              <Phone size={20} fill="white" />
-              Sotib olish / Bog'lanish
+              <ShoppingBag size={20} fill="white" />
+              Sotib olish / Buyurtma berish
             </button>
 
             {/* Secondary Actions: Save & Share */}
@@ -889,18 +875,6 @@ const AIVisualizePage: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
-
-      {/* ─── LEAD FORM MODAL ─── */}
-      {showLeadForm && product && (
-        <LeadForm
-          productId={product.id}
-          leadType={leadType}
-          initialPriceInfo="AI vizualizatsiyasi"
-          quantity={1}
-          totalPrice={Number(product.price)}
-          onClose={() => setShowLeadForm(false)}
-        />
       )}
     </div>
   );

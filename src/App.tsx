@@ -23,6 +23,7 @@ import CompanyDetailPage from './pages/CompanyDetailPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminSystemPage from './pages/AdminSystemPage';
 import VisualizePickerPage from './pages/VisualizePickerPage';
+import OrderPage from './pages/OrderPage';
 
 // Admin pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -78,6 +79,7 @@ function App() {
             <Route path="/product/:id/visualize" element={<AIVisualizePage />} />
             <Route path="/product/:id/ai-generate" element={<AIVisualizePage />} />
             <Route path="/product/:id/edit" element={<ProductFormPage />} />
+            <Route path="/product/:id/order" element={<OrderPage />} />
             <Route path="/company/:id" element={<CompanyDetailPage />} />
             
             {/* Creator Dashboard Routes */}
