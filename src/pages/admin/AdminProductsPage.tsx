@@ -4,12 +4,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
 
+type ProductImage = {
+  id: number;
+  image: string;
+  is_main: boolean;
+  order: number;
+};
+
 type Product = {
   id: number;
   name: string;
   description: string;
   price: string | null;
   image: string | null;
+  images: ProductImage[];
   category: number | null;
   category_name: string;
   ai_status: string;
@@ -53,6 +61,10 @@ export default function AdminProductsPage() {
   const [formCat, setFormCat] = useState('');
   const [formComp, setFormComp] = useState('');
   const [formImage, setFormImage] = useState<File | null>(null);
+  // Gallery images
+  const [formGalleryFiles, setFormGalleryFiles] = useState<File[]>([]);
+  const [formGalleryPreviews, setFormGalleryPreviews] = useState<string[]>([]);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   // Extended form fields (matching web app)
   const [formPricingType, setFormPricingType] = useState<'total' | 'per_m2'>('total');
@@ -95,6 +107,11 @@ export default function AdminProductsPage() {
     return () => clearTimeout(t);
   }, [search, fetchProducts]);
 
+  const resetGallery = () => {
+    setFormGalleryFiles([]);
+    setFormGalleryPreviews([]);
+  };
+
   const openCreate = () => {
     setEditing(null);
     setFormName('');
@@ -103,6 +120,7 @@ export default function AdminProductsPage() {
     setFormCat('');
     setFormComp('');
     setFormImage(null);
+    resetGallery();
     setFormPricingType('total');
     setFormPricePerM2('');
     setFormHeight('');
@@ -123,6 +141,7 @@ export default function AdminProductsPage() {
     setFormCat(String(p.category || ''));
     setFormComp(String(p.company || ''));
     setFormImage(null);
+    resetGallery();
     setFormPricingType((p as any).price_per_m2 && !p.price ? 'per_m2' : 'total');
     setFormPricePerM2((p as any).price_per_m2 || '');
     setFormHeight((p as any).height || '');
@@ -133,6 +152,20 @@ export default function AdminProductsPage() {
     setFormDiscountPrice((p as any).discount_price || '');
     setFormSaleEndDate((p as any).sale_end_date || '');
     setShowForm(true);
+  };
+
+  const handleGalleryAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newFiles = [...formGalleryFiles, ...files].slice(0, 4);
+    setFormGalleryFiles(newFiles);
+    setFormGalleryPreviews(newFiles.map(f => URL.createObjectURL(f)));
+    if (galleryInputRef.current) galleryInputRef.current.value = '';
+  };
+
+  const removeGalleryItem = (idx: number) => {
+    const files = formGalleryFiles.filter((_, i) => i !== idx);
+    setFormGalleryFiles(files);
+    setFormGalleryPreviews(files.map(f => URL.createObjectURL(f)));
   };
 
   const handleSubmit = async () => {
@@ -178,6 +211,12 @@ export default function AdminProductsPage() {
       }
 
       if (formImage) fd.append('image', formImage);
+
+      // Gallery images (up to 4)
+      formGalleryFiles.forEach((f, i) => {
+        fd.append('gallery_images', f);
+        if (i === 0) fd.append('gallery_main_index', '0');
+      });
 
       if (editing) {
         await apiClient.patch(`/admin/products/${editing.id}/`, fd, {
@@ -439,15 +478,42 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-[80px] h-[110px] rounded-2xl bg-[#f5f5f7] border border-slate-100 flex items-center justify-center p-1.5 flex-shrink-0 shadow-sm overflow-hidden group-hover:shadow-md transition-all">
-                          {p.image ? (
-                            <img
-                              src={p.image.startsWith('http') ? p.image : `${MEDIA_BASE}${p.image}`}
-                              alt={p.name}
-                              className="w-full h-full object-contain mix-blend-multiply"
-                            />
-                          ) : (
-                            <Package size={24} className="text-slate-200" />
+                        <div className="flex flex-col gap-1">
+                          {/* Main image */}
+                          <div className="w-[72px] h-[80px] rounded-xl bg-[#f5f5f7] border border-slate-100 flex items-center justify-center p-1 flex-shrink-0 shadow-sm overflow-hidden relative">
+                            {p.image ? (
+                              <img
+                                src={p.image.startsWith('http') ? p.image : `${MEDIA_BASE}${p.image}`}
+                                alt={p.name}
+                                className="w-full h-full object-contain mix-blend-multiply"
+                              />
+                            ) : (
+                              <Package size={20} className="text-slate-200" />
+                            )}
+                          </div>
+                          {/* Gallery strip */}
+                          {p.images && p.images.length > 0 && (
+                            <div className="flex gap-1">
+                              {p.images.slice(0, 3).map(img => (
+                                <div key={img.id} className="relative w-[21px] h-[21px] rounded-md overflow-hidden border border-slate-200 flex-shrink-0">
+                                  <img
+                                    src={img.image.startsWith('http') ? img.image : `${MEDIA_BASE}${img.image}`}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
+                                  {img.is_main && (
+                                    <div className="absolute inset-0 bg-emerald-500/40 flex items-center justify-center">
+                                      <span className="text-white text-[6px] font-black">★</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                              {p.images.length > 3 && (
+                                <div className="w-[21px] h-[21px] rounded-md bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-400">
+                                  +{p.images.length - 3}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                         <div className="min-w-0">
@@ -818,10 +884,71 @@ export default function AdminProductsPage() {
               <div>
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Mahsulot rasmi</label>
                 <label className="flex items-center justify-between w-full bg-slate-50 border border-slate-200 border-dashed rounded-[20px] px-5 py-3.5 cursor-pointer hover:bg-sky-50 hover:border-sky-200 transition-all">
-                  <span className="text-xs font-bold text-slate-500">{formImage ? formImage.name : 'Rasm tanlash...'}</span>
+                  <span className="text-xs font-bold text-slate-500">{formImage ? formImage.name : 'Asosiy rasm tanlash...'}</span>
                   <Plus size={18} className="text-slate-400" />
                   <input type="file" accept="image/*" onChange={(e) => setFormImage(e.target.files?.[0] ?? null)} className="hidden" />
                 </label>
+              </div>
+
+              {/* Gallery images */}
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
+                  Gallery rasmlari (max 4)
+                  {editing && (editing as any).images?.length > 0 && (
+                    <span className="ml-2 text-emerald-500">• Mavjud: {(editing as any).images.length} ta</span>
+                  )}
+                </label>
+
+                {/* Existing gallery (edit mode) */}
+                {editing && (editing as any).images?.length > 0 && (
+                  <div className="flex gap-2 flex-wrap mb-3">
+                    {((editing as any).images as ProductImage[]).map(img => (
+                      <div key={img.id} className="relative w-16 h-16">
+                        <img
+                          src={img.image.startsWith('http') ? img.image : `${MEDIA_BASE}${img.image}`}
+                          alt=""
+                          className="w-full h-full object-cover rounded-xl border-2 border-slate-200"
+                        />
+                        {img.is_main && (
+                          <span className="absolute -top-1 -left-1 bg-emerald-500 text-white text-[8px] font-black px-1 py-0.5 rounded-full">
+                            MAIN
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* New gallery uploads */}
+                <div className="flex gap-2 flex-wrap">
+                  {formGalleryPreviews.map((src, i) => (
+                    <div key={i} className="relative w-16 h-16">
+                      <img src={src} alt="" className="w-full h-full object-cover rounded-xl border-2 border-blue-300" />
+                      {i === 0 && (
+                        <span className="absolute -top-1 -left-1 bg-blue-500 text-white text-[8px] font-black px-1 py-0.5 rounded-full">MAIN</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeGalleryItem(i)}
+                        className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black"
+                      >×</button>
+                    </div>
+                  ))}
+                  {formGalleryFiles.length < 4 && (
+                    <label className="w-16 h-16 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center cursor-pointer hover:border-blue-400 transition-colors">
+                      <Plus size={20} className="text-slate-400" />
+                      <input
+                        ref={galleryInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleGalleryAdd}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1.5 ml-1">1-rasm avtomatik PRIMARY (AI uchun) deb belgilanadi</p>
               </div>
 
               {/* Submit */}
