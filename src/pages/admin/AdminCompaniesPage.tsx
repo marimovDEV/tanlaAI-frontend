@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { 
   Search, Trash2, Building2, 
-  X, ExternalLink, Calendar, Package, 
-  CheckCircle2, AlertCircle, MapPin, 
+  X, Package, 
+  AlertCircle, MapPin, 
   Settings2, Plus, ArrowRight, Phone, Play, MessageCircle, CreditCard
 } from 'lucide-react';
 import apiClient from '../../api/client';

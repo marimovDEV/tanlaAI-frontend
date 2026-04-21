@@ -10,6 +10,7 @@ import {
   RefreshCcw,
   Check,
   AlertCircle,
+  Activity,
   ChevronRight,
 } from "lucide-react";
 import apiClient from "../api/client";

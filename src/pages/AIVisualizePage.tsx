@@ -9,7 +9,6 @@ import {
   RefreshCcw,
   Download,
   Share2,
-  Ruler,
   Phone,
   ArrowLeftRight,
   Wand2,
@@ -86,8 +85,6 @@ const AIVisualizePage: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [inputHeight, setInputHeight] = useState("");
-  const [inputWidth, setInputWidth] = useState("");
   const [status, setStatus] = useState<
     "idle" | "uploading" | "processing" | "done" | "error"
   >("idle");
@@ -185,8 +182,6 @@ const AIVisualizePage: React.FC = () => {
       try {
         const response = await apiClient.get<Product>(`/products/${id}/`);
         setProduct(response.data);
-        setInputHeight(response.data.height ?? "");
-        setInputWidth(response.data.width ?? "");
       } catch (err) {
         console.error("Error fetching product:", err);
       }
@@ -223,8 +218,9 @@ const AIVisualizePage: React.FC = () => {
 
     const formData = new FormData();
     formData.append("room_photo", image);
-    if (inputHeight.trim()) formData.append("height", inputHeight.trim());
-    if (inputWidth.trim()) formData.append("width", inputWidth.trim());
+    
+    console.log("DEBUG [AI]: Starting upload for product:", product.id);
+    console.log("DEBUG [AI]: Room image file:", image.name, image.size, image.type);
 
     try {
       const response = await apiClient.post<AIUploadResponse>(
@@ -351,12 +347,6 @@ const AIVisualizePage: React.FC = () => {
                   <p className="text-xs font-bold text-slate-800 mt-0.5 line-clamp-2">
                     {product.name}
                   </p>
-                  {(product.height || product.width) && (
-                    <p className="text-[10px] text-primary font-bold mt-1">
-                      {product.height && `${product.height}×`}
-                      {product.width} sm
-                    </p>
-                  )}
                 </div>
               </div>
 
@@ -455,51 +445,6 @@ const AIVisualizePage: React.FC = () => {
             </div>
           )}
 
-          {/* Dimensions */}
-          <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center">
-                <Ruler size={15} className="text-primary" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-slate-800">
-                  Eshik qo'yiladigan joy o'lchamlari
-                </p>
-                <p className="text-[10px] text-slate-400">
-                  Ixtiyoriy — aniqroq natija uchun kiriting
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">
-                  Balandlik (sm)
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={inputHeight}
-                  onChange={(e) => setInputHeight(e.target.value)}
-                  placeholder={product?.height ?? "200"}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:border-primary/50 focus:bg-white transition-colors"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">
-                  Kenglik (sm)
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={inputWidth}
-                  onChange={(e) => setInputWidth(e.target.value)}
-                  placeholder={product?.width ?? "80"}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:border-primary/50 focus:bg-white transition-colors"
-                />
-              </div>
-            </div>
-          </div>
-
           {/* CTA button */}
           {preview && (
             <button
@@ -558,7 +503,7 @@ const AIVisualizePage: React.FC = () => {
                   {currentLoadingLabel}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  Gemini AI ishlayapti, iltimos kuting...
+                  ⏳ AI ishlayapti, iltimos kuting...
                 </p>
               </div>
 

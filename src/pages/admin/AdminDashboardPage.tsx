@@ -4,7 +4,7 @@ import {
   Package, Users, Image,
   TrendingUp, Eye, Plus, RefreshCw, 
   CheckCircle2, Clock, MousePointer2, ChevronRight,
-  ShieldAlert, Activity, Building2, FolderTree
+  Activity, Building2
 } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import apiClient from '../../api/client';
