@@ -109,7 +109,9 @@ const AIVisualizePage: React.FC = () => {
   const pollTimeoutRef = useRef<number | null>(null);
   const retryTimeoutRef = useRef<number | null>(null);
   const loadingStepTimerRef = useRef<number | null>(null);
-  const { haptic } = useTelegram();
+  const { haptic, webApp } = useTelegram();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   // Loading step progression
   useEffect(() => {
@@ -297,6 +299,89 @@ const AIVisualizePage: React.FC = () => {
     setCurrentRequestId(null);
     setShowBeforeAfter(false);
     setSliderPos(20);
+    setIsSaving(false);
+    setIsSharing(false);
+  };
+
+  const handleSave = async () => {
+    if (!resultImage || !product) return;
+    setIsSaving(true);
+    haptic("medium");
+
+    try {
+      // 1. Fetch image as blob
+      const blob = await fetch(resultImage).then((r) => r.blob());
+      const formData = new FormData();
+      formData.append("image", blob, `ai_result_${Date.now()}.png`);
+      formData.append("product", product.id.toString());
+      formData.append("status", "done");
+
+      if (image) {
+        formData.append("input_image", image);
+      }
+
+      // 2. Save to backend
+      await apiClient.post("/ai-results/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      alert("✅ Vizualizatsiya kutubxonangizga saqlandi!");
+      navigate("/visualizations");
+    } catch (err) {
+      console.error("Save error:", err);
+      alert("Saqlashda xatolik yuz berdi");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!resultImage || !product) return;
+    setIsSharing(true);
+    haptic("medium");
+
+    try {
+      // 1. Prepare images as blobs
+      const resultBlob = await fetch(resultImage).then((r) => r.blob());
+      const formData = new FormData();
+      formData.append("image", resultBlob, `share_${Date.now()}.png`);
+
+      if (preview) {
+        const previewBlob = await fetch(preview).then((r) => r.blob());
+        formData.append("original_image", previewBlob, `original_${Date.now()}.png`);
+      }
+
+      formData.append("product", product.id.toString());
+
+      // 2. Create SharedDesign
+      const res = await apiClient.post<{ id: string }>("/shared-designs/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const shareUrl = `${window.location.origin}/share/${res.data.id}`;
+
+      // 3. Share flow
+      if (webApp?.openTelegramLink) {
+        webApp.openTelegramLink(
+          `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(
+            `${product.name} vizualizatsiyasi ✨`
+          )}`
+        );
+      } else if (navigator.share) {
+        await navigator.share({
+          title: "Tanla AI Vizualizatsiyasi",
+          url: shareUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("🔗 Link nusxalandi!");
+      }
+    } catch (err) {
+      console.error("Share error:", err);
+      alert("Ulashishda xatolik yuz berdi");
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   const isLoading = status === "uploading" || status === "processing";
@@ -673,7 +758,8 @@ const AIVisualizePage: React.FC = () => {
           )}
 
           {/* Action buttons */}
-          <div className="space-y-3">
+          <div className="space-y-4">
+            {/* Primary Action: Purchase/Contact */}
             <button
               onClick={() => {
                 setLeadType("call");
@@ -686,84 +772,50 @@ const AIVisualizePage: React.FC = () => {
               Sotib olish / Bog'lanish
             </button>
 
-            <div className="grid grid-cols-3 gap-3">
+            {/* Secondary Actions: Save & Share */}
+            <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => {
-                  setLeadType("measurement");
-                  setShowLeadForm(true);
-                  haptic("medium");
-                }}
-                className="flex flex-col items-center justify-center gap-1.5 py-4 bg-white text-primary border-2 border-primary/20 rounded-2xl text-[10px] font-black active:scale-95 transition-all uppercase tracking-wider"
+                disabled={isSaving}
+                onClick={handleSave}
+                className="flex items-center justify-center gap-2 py-4 bg-white text-slate-700 border-2 border-slate-100 rounded-2xl text-xs font-bold active:scale-95 transition-all shadow-sm disabled:opacity-50"
               >
-                <Ruler size={18} />
-                O'lchash
+                {isSaving ? (
+                  <RefreshCcw size={18} className="animate-spin text-slate-400" />
+                ) : (
+                  <>
+                    <Download size={18} />
+                    Saqlash
+                  </>
+                )}
               </button>
 
               <button
-                type="button"
-                onClick={() => {
-                  haptic("medium");
-                  navigate("/profile/visualizations");
-                }}
-                className="flex flex-col items-center justify-center gap-1.5 py-4 bg-white text-slate-700 border border-slate-200 rounded-2xl text-[10px] font-black active:scale-95 transition-all uppercase tracking-wider"
+                disabled={isSharing}
+                onClick={handleShare}
+                className="flex items-center justify-center gap-2 py-4 bg-white text-slate-700 border-2 border-slate-100 rounded-2xl text-xs font-bold active:scale-95 transition-all shadow-sm disabled:opacity-50"
               >
-                <Download size={18} />
-                Saqlash
-              </button>
-
-              <button
-                type="button"
-                onClick={async () => {
-                  if (!resultImage) return;
-                  haptic("medium");
-                  try {
-                    // Upload the blob explicitly to generate a Share URL
-                    const blob = await fetch(resultImage).then(r => r.blob());
-                    const formData = new FormData();
-                    formData.append("image", blob, `share_${Date.now()}.png`);
-                    
-                    if (preview) {
-                      const originalBlob = await fetch(preview).then(r => r.blob());
-                      formData.append("original_image", originalBlob, `original_${Date.now()}.png`);
-                    }
-
-                    if (product) {
-                      formData.append("product", product.id.toString());
-                    }
-                    
-                    const res = await apiClient.post("/shared-designs/", formData, {
-                      headers: { "Content-Type": "multipart/form-data" }
-                    });
-                    
-                    const shareUrl = `${window.location.origin}/share/${res.data.id}`;
-                    
-                    const webApp = window.Telegram?.WebApp as any;
-                    
-                    if (webApp?.openTelegramLink) {
-                      webApp.openTelegramLink(
-                        `https://t.me/share/url?url=${shareUrl}&text=${encodeURIComponent(product?.name || "Eshik")}`
-                      );
-                    } else if (navigator.share) {
-                      await navigator.share({
-                        title: product?.name ?? "Tanla vizualizatsiyasi",
-                        url: shareUrl,
-                      });
-                    } else {
-                        // Fallback
-                        await navigator.clipboard.writeText(shareUrl);
-                        alert("Link nusxalandi!");
-                    }
-                  } catch(e) {
-                      console.error("Share error:", e);
-                      alert("Ulashishda xatolik yuz berdi");
-                  }
-                }}
-                className="flex flex-col items-center justify-center gap-1.5 py-4 bg-white text-slate-700 border border-slate-200 rounded-2xl text-[10px] font-black active:scale-95 transition-all uppercase tracking-wider"
-              >
-                <Share2 size={18} />
-                Ulashish
+                {isSharing ? (
+                  <RefreshCcw size={18} className="animate-spin text-slate-400" />
+                ) : (
+                  <>
+                    <Share2 size={18} />
+                    Ulashish
+                  </>
+                )}
               </button>
             </div>
+
+            {/* Tertiary / Measurement */}
+            <button
+              onClick={() => {
+                setLeadType("measurement");
+                setShowLeadForm(true);
+                haptic("medium");
+              }}
+              className="w-full py-4 bg-slate-50 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all border border-slate-100/50"
+            >
+              O'lchash xizmatini chaqirish
+            </button>
           </div>
 
           {/* Analysis card */}
@@ -822,24 +874,6 @@ const AIVisualizePage: React.FC = () => {
             </div>
           )}
 
-          {/* Prompt debug card (optional) */}
-          {generationPrompt && (
-            <div className="bg-slate-900 text-white rounded-3xl p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black uppercase tracking-widest text-cyan-300">
-                  AI Prompt
-                </p>
-                {generationMeta?.model && (
-                  <span className="bg-white/10 text-cyan-200 text-[10px] font-bold px-2.5 py-1 rounded-full">
-                    {generationMeta.model}
-                  </span>
-                )}
-              </div>
-              <pre className="whitespace-pre-wrap text-xs leading-5 text-slate-300 font-mono max-h-48 overflow-auto">
-                {generationPrompt}
-              </pre>
-            </div>
-          )}
 
           {/* Retry button */}
           <button
