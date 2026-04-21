@@ -150,7 +150,7 @@ export default function AdminDashboardPage() {
             <div className="flex items-center justify-center md:justify-start gap-4">
               <div className="flex flex-col">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Keyingi to'lov</span>
-                <span className="text-sm font-black text-slate-700">{data.billing.server_due_date || 'Noma'lum'}</span>
+                <span className="text-sm font-black text-slate-700">{data.billing.server_due_date || "Noma'lum"}</span>
               </div>
               <div className="w-px h-8 bg-slate-100" />
               <div className="flex flex-col">
