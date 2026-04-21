@@ -40,10 +40,20 @@ type SettingsState = {
   show_debug_logs: boolean;
   enable_deploy_actions: boolean;
   deploy_enabled: boolean;
+  // Billing fields
+  server_due_date: string | null;
+  server_cost: number;
+  server_note: string;
+  ai_due_date: string | null;
+  ai_cost_per_request: number;
+  usd_to_uzs_rate: number;
+  ai_monthly_budget_uzs: number;
+  ai_storage_channel_id: string;
 };
 
 const tabs = [
   { id: "general", label: "Umumiy", icon: Settings },
+  { id: "billing", label: "Hisob-kitob", icon: Activity },
   { id: "ai", label: "AI & Tasvirlar", icon: Bot },
   { id: "viz", label: "Vizualizatsiya", icon: Crosshair },
   { id: "crm", label: "CRM & Leads", icon: Users },
@@ -65,8 +75,11 @@ export default function AdminSettingsPage() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get("/admin/system-settings/");
-      setSettings(data);
+      const [settingsRes, billingRes] = await Promise.all([
+        apiClient.get("/admin/system-settings/"),
+        apiClient.get("/admin/billing/")
+      ]);
+      setSettings({ ...settingsRes.data, ...billingRes.data });
     } catch (e) {
       console.error("Settings load failed", e);
     } finally {
@@ -79,7 +92,10 @@ export default function AdminSettingsPage() {
     setSaving(true);
     setStatus("idle");
     try {
-      await apiClient.post("/admin/system-settings/", settings);
+      await Promise.all([
+        apiClient.post("/admin/system-settings/", settings),
+        apiClient.post("/admin/billing/", settings)
+      ]);
       setStatus("success");
       setTimeout(() => setStatus("idle"), 3000);
     } catch {
@@ -142,7 +158,7 @@ export default function AdminSettingsPage() {
             Tizim Sozlamalari
           </h1>
           <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">
-            Platforma boshqaruvi va AI konfiguratsiyasi
+            Platforma boshqaruvi va SaaS nazorati
           </p>
         </div>
         <button
@@ -213,6 +229,62 @@ export default function AdminSettingsPage() {
               exit={{ opacity: 0, x: -10 }}
               className="space-y-10"
             >
+              {activeTab === "billing" && settings && (
+                <div className="space-y-8">
+                  <header className="flex items-center gap-4 text-rose-500">
+                    <Activity className="w-6 h-6" />
+                    <h2 className="text-xl font-black tracking-tight text-slate-900">
+                      SaaS Hisob-kitoblari
+                    </h2>
+                  </header>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="p-6 bg-slate-50 rounded-3xl space-y-6">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">💻 Server</h3>
+                      <Field
+                        label="Oylik narxi (UZS)"
+                        type="number"
+                        value={settings.server_cost}
+                        onChange={(v) => updateSetting("server_cost", Number(v))}
+                      />
+                      <Field
+                        label="Keyingi to'lov sanasi"
+                        type="date"
+                        value={settings.server_due_date || ""}
+                        onChange={(v) => updateSetting("server_due_date", v)}
+                      />
+                      <Field
+                        label="Eslatma"
+                        value={settings.server_note}
+                        onChange={(v) => updateSetting("server_note", v)}
+                      />
+                    </div>
+
+                    <div className="p-6 bg-slate-50 rounded-3xl space-y-6">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">🤖 AI Xizmati</h3>
+                      <Field
+                        label="Bitta so'rov narxi (USD)"
+                        type="number"
+                        step="0.0001"
+                        value={settings.ai_cost_per_request}
+                        onChange={(v) => updateSetting("ai_cost_per_request", Number(v))}
+                      />
+                      <Field
+                        label="USD kursi (1$ = X UZS)"
+                        type="number"
+                        value={settings.usd_to_uzs_rate}
+                        onChange={(v) => updateSetting("usd_to_uzs_rate", Number(v))}
+                      />
+                      <Field
+                        label="Oylik AI Budjeti (UZS)"
+                        type="number"
+                        value={settings.ai_monthly_budget_uzs}
+                        onChange={(v) => updateSetting("ai_monthly_budget_uzs", Number(v))}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
               {activeTab === "general" && settings && (
                 <div className="space-y-8">
                   <header className="flex items-center gap-4 text-indigo-600">
@@ -306,6 +378,17 @@ export default function AdminSettingsPage() {
                       value={settings.enable_bg_removal}
                       onChange={(v) => updateSetting("enable_bg_removal", v)}
                     />
+                  </div>
+
+                  <div className="pt-4">
+                    <Field
+                      label="Telegram Storage ID (Channel/Group)"
+                      value={settings.ai_storage_channel_id || ""}
+                      onChange={(v) => updateSetting("ai_storage_channel_id", v)}
+                    />
+                    <p className="text-[10px] text-slate-400 mt-2 px-1 leading-relaxed">
+                      AI rasmlarni "Unlimited Cloud" sifatida saqlash uchun kanal yoki guruh ID sini kiriting (Masalan: -100123456789). Bo'sh qolsa default admin botga yuboradi.
+                    </p>
                   </div>
                 </div>
               )}

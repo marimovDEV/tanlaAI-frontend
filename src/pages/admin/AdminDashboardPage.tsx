@@ -33,6 +33,29 @@ type DashboardData = {
     ai_error_count: number;
     active_promotions: number;
   };
+  growth: {
+    products: number;
+    companies: number;
+    users: number;
+    leads: number;
+    ai_results: number;
+  };
+  billing: {
+    server_due_date: string | null;
+    server_cost: number;
+    server_note: string;
+    server_days_left: number | null;
+    ai_due_date: string | null;
+    ai_cost_per_request_usd: number;
+    ai_cost_per_request_uzs: number;
+    usd_to_uzs_rate: number;
+    ai_monthly_budget_uzs: number;
+    ai_total_requests: number;
+    ai_cost_total_uzs: number;
+    ai_cost_this_month_uzs: number;
+    ai_cost_today_uzs: number;
+    ai_days_left: number | null;
+  };
   ai_status: Record<string, number>;
   ai_performance: {
     success_rate: number;
@@ -74,30 +97,102 @@ export default function AdminDashboardPage() {
   ].filter(d => d.value > 0);
 
   const stats = [
-    { label: 'Mahsulotlar', value: data.counts.product_count, icon: Package, color: 'text-sky-600', bg: 'bg-sky-50' },
-    { label: 'Kompaniyalar', value: data.counts.company_count, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Kategoriyalar', value: data.counts.category_count, icon: FolderTree, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { label: 'Foydalanuvchilar', value: data.counts.user_count, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'AI Natijalar', value: data.counts.ai_result_count, icon: Eye, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { label: 'AI Xatoliklar', value: data.counts.ai_error_count, icon: ShieldAlert, color: 'text-red-600', bg: 'bg-red-50' },
+    { label: 'Mahsulotlar', value: data.counts.product_count, growth: data.growth.products, icon: Package, color: 'text-sky-600', bg: 'bg-sky-50' },
+    { label: 'Kompaniyalar', value: data.counts.company_count, growth: data.growth.companies, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Lidlar (Leads)', value: data.counts.lead_count, growth: data.growth.leads, icon: MousePointer2, color: 'text-rose-600', bg: 'bg-rose-50' },
+    { label: 'Foydalanuvchilar', value: data.counts.user_count, growth: data.growth.users, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
   ];
+
+  const getStatusColor = (days: number | null) => {
+    if (days === null) return 'text-slate-400';
+    if (days <= 0) return 'text-red-600';
+    if (days <= 3) return 'text-amber-500';
+    return 'text-emerald-500';
+  };
+
+  const getStatusBg = (days: number | null) => {
+    if (days === null) return 'bg-slate-50';
+    if (days <= 0) return 'bg-red-50';
+    if (days <= 3) return 'bg-amber-50';
+    return 'bg-emerald-50';
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Umumiy holat</h1>
-          <p className="text-sm text-slate-500 font-medium mt-1">Platformangiz statistikasi va real vaqt tahlili</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">SaaS Control Panel</h1>
+          <p className="text-sm text-slate-500 font-medium mt-1">Real-vaqt tizim monitoringi va moliyaviy tahlil</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center gap-2">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Tizim Onlayn</span>
-          </div>
+          <Link to="/adminka/system" className="px-5 py-2.5 bg-white border border-slate-100 rounded-2xl text-[11px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2">
+            <Plus size={16} /> Tizim Sozlamalari
+          </Link>
           <button onClick={() => window.location.reload()} className="p-2.5 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-[#0067a5] transition-colors shadow-sm">
             <RefreshCw size={18} />
           </button>
+        </div>
+      </div>
+
+      {/* ── SaaS Financial & Status Row ────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Server Status Card */}
+        <div className="bg-white p-7 rounded-[32px] shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-8 group">
+          <div className={cn("w-20 h-20 rounded-3xl flex items-center justify-center shrink-0 transition-transform duration-500 group-hover:rotate-6", getStatusBg(data.billing.server_days_left))}>
+            <Activity size={36} className={getStatusColor(data.billing.server_days_left)} />
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">💻 Server holati</p>
+            <h3 className="text-2xl font-black text-slate-900 mb-2">
+              {data.billing.server_cost.toLocaleString()} <span className="text-sm font-medium text-slate-400">uzs/oy</span>
+            </h3>
+            <div className="flex items-center justify-center md:justify-start gap-4">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Keyingi to'lov</span>
+                <span className="text-sm font-black text-slate-700">{data.billing.server_due_date || 'Noma'lum'}</span>
+              </div>
+              <div className="w-px h-8 bg-slate-100" />
+              <div className="flex flex-col">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Status</span>
+                <span className={cn("text-sm font-black", getStatusColor(data.billing.server_days_left))}>
+                  {data.billing.server_days_left === null ? 'Noma\'lum' : 
+                   data.billing.server_days_left <= 0 ? '🔴 BUGUN TO\'LASH KERAK' :
+                   data.billing.server_days_left <= 3 ? `🟡 ${data.billing.server_days_left} kun qoldi` :
+                   `🟢 ${data.billing.server_days_left} kun qoldi`}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Cost Tracking Card */}
+        <div className="bg-white p-7 rounded-[32px] shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-8 group">
+          <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center shrink-0 transition-transform duration-500 group-hover:-rotate-6">
+            <Eye size={36} className="text-indigo-600" />
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">🤖 AI Xarajatlar (Oylik)</p>
+            <h3 className="text-2xl font-black text-slate-900 mb-2">
+              {data.billing.ai_cost_this_month_uzs.toLocaleString()} <span className="text-sm font-medium text-slate-400">uzs</span>
+            </h3>
+            <div className="flex items-center justify-center md:justify-start gap-6">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Bugun</span>
+                <span className="text-sm font-black text-emerald-500">{data.billing.ai_cost_today_uzs.toLocaleString()} uzs</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Jami so'rov</span>
+                <span className="text-sm font-black text-slate-700">{data.billing.ai_total_requests.toLocaleString()}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Limit</span>
+                <span className="text-sm font-black text-indigo-600">
+                  {Math.round(data.billing.ai_cost_this_month_uzs / data.billing.ai_monthly_budget_uzs * 100 || 0)}%
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -112,8 +207,12 @@ export default function AdminDashboardPage() {
                 <s.icon size={28} className={s.color} />
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-xs font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg flex items-center gap-1">
-                  <TrendingUp size={12} /> +12%
+                <span className={cn(
+                  "text-xs font-black px-2.5 py-1 rounded-xl flex items-center gap-1",
+                  s.growth >= 0 ? "bg-emerald-50 text-emerald-500" : "bg-red-50 text-red-500"
+                )}>
+                  <TrendingUp size={12} className={s.growth >= 0 ? "" : "rotate-180"} /> 
+                  {s.growth >= 0 ? '+' : ''}{s.growth}%
                 </span>
               </div>
             </div>

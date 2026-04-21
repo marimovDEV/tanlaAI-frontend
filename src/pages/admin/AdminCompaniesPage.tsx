@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { 
   Search, Trash2, Building2, 
   X, ExternalLink, Calendar, Package, 
   CheckCircle2, AlertCircle, MapPin, 
-  Settings2, Plus, ArrowRight, Phone, Play, MessageCircle
+  Settings2, Plus, ArrowRight, Phone, Play, MessageCircle, CreditCard
 } from 'lucide-react';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
@@ -17,6 +17,8 @@ type Company = {
   logo: string | null;
   is_active: boolean;
   subscription_deadline: string | null;
+  plan_name?: string;
+  plan_price?: number;
   owner_name: string;
   owner_username: string;
   product_count: number;
@@ -27,9 +29,31 @@ type Company = {
   youtube_link?: string;
 };
 
+type StatusType = 'active' | 'warning' | 'expired';
+
+export const getCompanyStatus = (deadline: string | null): StatusType => {
+  if (!deadline) return 'expired';
+  const now = new Date();
+  const due = new Date(deadline);
+  const diff = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+  
+  if (diff <= 0) return 'expired';
+  if (diff <= 3) return 'warning';
+  return 'active';
+};
+
+export const getDaysLeft = (deadline: string | null) => {
+  if (!deadline) return 0;
+  const now = new Date();
+  const due = new Date(deadline);
+  const diff = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return diff < 0 ? 0 : diff;
+};
+
 export default function AdminCompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [search, setSearch] = useState('');
+  const [filterMode, setFilterMode] = useState<'all'|'unpaid'|'warning'>('all');
   const [loading, setLoading] = useState(true);
 
   // Edit Form state
@@ -142,28 +166,79 @@ export default function AdminCompaniesPage() {
     }
   };
 
+  const handleAcceptPayment = async (id: number) => {
+    if (!confirm("To'lov qabul qilinganini tasdiqlaysizmi? Obuna 1 oyga uzaytiriladi.")) return;
+    try {
+      const { data } = await apiClient.post(`/admin/companies/${id}/accept-payment/`);
+      setCompanies(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
+    } catch (err) {
+      console.error('Error processing payment:', err);
+    }
+  };
+
+  const filteredCompanies = useMemo(() => {
+    return companies.filter(c => {
+      if (filterMode === 'all') return true;
+      const status = getCompanyStatus(c.subscription_deadline);
+      if (filterMode === 'unpaid') return status === 'expired';
+      if (filterMode === 'warning') return status === 'warning';
+      return true;
+    });
+  }, [companies, filterMode]);
+
+  const unpaidCount = companies.filter(c => getCompanyStatus(c.subscription_deadline) === 'expired').length;
+  const warningCount = companies.filter(c => getCompanyStatus(c.subscription_deadline) === 'warning').length;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Search & Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Kompaniyalar</h1>
-          <p className="text-sm text-slate-500 font-medium mt-1">Sizning platformangizdagi brendlar va hamkorlar</p>
+          <p className="text-sm text-slate-500 font-medium mt-1">Hamkorlar obunalari va biznes nazorati</p>
+          
+          {/* Top Alerts */}
+          {(unpaidCount > 0 || warningCount > 0) && (
+            <div className="flex flex-wrap gap-4 mt-4">
+              {unpaidCount > 0 && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 rounded-full text-[11px] font-black uppercase tracking-widest border border-red-100">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  {unpaidCount} ta to'lamagan
+                </div>
+              )}
+              {warningCount > 0 && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-full text-[11px] font-black uppercase tracking-widest border border-amber-100">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  {warningCount} ta muddati tugayapti
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative w-full sm:w-80 group">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0067a5] transition-colors" />
-            <input
-              type="text"
-              placeholder="Brend nomi yoki shahar bo'yicha qidiruv..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-[20px] text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all shadow-sm"
-            />
+
+        <div className="flex flex-col items-end gap-3">
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <div className="relative w-full sm:w-80 group">
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0067a5] transition-colors" />
+              <input
+                type="text"
+                placeholder="Brend nomi yoki shahar bo'yicha qidiruv..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-[20px] text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all shadow-sm"
+              />
+            </div>
+            <button className="px-6 py-3.5 bg-slate-900 text-white rounded-[20px] font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95 shrink-0">
+              <Plus size={18} /> Qo'shish
+            </button>
           </div>
-          <button className="px-6 py-3.5 bg-slate-900 text-white rounded-[20px] font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95">
-            <Plus size={18} /> Qo'shish
-          </button>
+          
+          {/* Filters */}
+          <div className="flex gap-2 bg-slate-50 p-1 rounded-full border border-slate-200">
+            <button onClick={() => setFilterMode('all')} className={cn("px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all", filterMode === 'all' ? "bg-white text-slate-900 shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700")}>Barchasi</button>
+            <button onClick={() => setFilterMode('unpaid')} className={cn("px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all", filterMode === 'unpaid' ? "bg-red-50 text-red-600 shadow-sm border border-red-100" : "text-slate-500 hover:text-slate-700")}>To'lamagan</button>
+            <button onClick={() => setFilterMode('warning')} className={cn("px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all", filterMode === 'warning' ? "bg-amber-50 text-amber-600 shadow-sm border border-amber-100" : "text-slate-500 hover:text-slate-700")}>Tugayotgan</button>
+          </div>
         </div>
       </div>
 
@@ -182,17 +257,17 @@ export default function AdminCompaniesPage() {
               <div className="h-24 bg-slate-50 rounded-2xl" />
             </div>
           ))
-        ) : companies.length === 0 ? (
+        ) : filteredCompanies.length === 0 ? (
           <div className="col-span-full py-24 bg-white rounded-[40px] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-6">
               <Building2 size={40} />
             </div>
             <h3 className="text-xl font-black text-slate-900">Kompaniyalar topilmadi</h3>
-            <p className="text-slate-400 mt-2">Qidiruv kriteriyalarini o'zgartirib ko'ring yoki yangi kompaniya qo'shing.</p>
+            <p className="text-slate-400 mt-2">Qidiruv kriteriyalarini yoki filtringizni o'zgartirib ko'ring.</p>
           </div>
         ) : (
-          companies.map((c) => (
-            <div key={c.id} className="group bg-white rounded-[40px] p-8 border border-slate-100/60 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 relative overflow-hidden">
+          filteredCompanies.map((c) => (
+            <div key={c.id} className="group bg-white rounded-[40px] p-8 border border-slate-100/60 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 relative overflow-hidden flex flex-col">
               {/* Background Decoration */}
               <div className="absolute -top-12 -right-12 w-48 h-48 bg-slate-50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none" />
               
@@ -204,14 +279,13 @@ export default function AdminCompaniesPage() {
                       <img src={getMediaUrl(c.logo)} alt={c.name} className="w-full h-full object-contain" />
                     ) : (
                       <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300">
-                        <Building2 size={24} />
+                         <Building2 size={24} />
                       </div>
                     )}
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2 py-1">
                       {c.name}
-                      {c.is_active && <CheckCircle2 size={16} className="text-emerald-500" />}
                     </h3>
                     <div className="flex items-center gap-2 text-slate-400">
                       <MapPin size={12} />
@@ -220,91 +294,111 @@ export default function AdminCompaniesPage() {
                   </div>
                 </div>
                 
-                <button
-                  onClick={() => toggleActive(c.id)}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all",
-                    c.is_active 
-                      ? "bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100" 
-                      : "bg-slate-50 text-slate-400 border border-slate-100 hover:bg-slate-100"
-                  )}
-                >
-                  {c.is_active ? 'Faol' : 'Oʻchirilgan'}
-                </button>
-              </div>
-
-              {/* Stats & Description */}
-              <div className="relative grid grid-cols-2 gap-4 mb-8">
-                <div className="p-4 bg-slate-50/80 rounded-[24px] border border-slate-100/50">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Mahsulotlar</p>
-                  <div className="flex items-center gap-2">
-                    <Package size={14} className="text-sky-500" />
-                    <span className="text-lg font-black text-slate-900">{c.product_count}</span>
-                  </div>
-                </div>
-                <div className="p-4 bg-slate-50/80 rounded-[24px] border border-slate-100/50">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Tarix</p>
-                  <div className="flex items-center gap-2">
-                    <Calendar size={14} className="text-indigo-500" />
-                    <span className="text-[13px] font-black text-slate-900">
-                      {new Date(c.created_at).toLocaleDateString([], { month: 'short', year: 'numeric' })}
-                    </span>
+                <div className="flex flex-col items-end gap-1.5">
+                  <button
+                    onClick={() => toggleActive(c.id)}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all",
+                      c.is_active 
+                        ? "bg-slate-900 text-white hover:bg-slate-800 shadow-md shadow-slate-900/10" 
+                        : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                    )}
+                  >
+                    {c.is_active ? '✅ System Active' : '❌ System Block'}
+                  </button>
+                  <div className={cn(
+                    "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest",
+                    getCompanyStatus(c.subscription_deadline) === 'active' ? "bg-emerald-50 text-emerald-600" :
+                    getCompanyStatus(c.subscription_deadline) === 'warning' ? "bg-amber-50 text-amber-600" :
+                    "bg-red-50 text-red-600"
+                  )}>
+                    {getCompanyStatus(c.subscription_deadline) === 'active' ? '🟢 Aktiv' :
+                     getCompanyStatus(c.subscription_deadline) === 'warning' ? '🟡 Muddati Yaqin' :
+                     '🔴 To\'lanmagan'}
                   </div>
                 </div>
               </div>
 
-              {/* Owner Info */}
-              <div className="relative bg-white border border-slate-100 rounded-[28px] p-5 mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center text-[11px] font-black text-white">
-                    {c.owner_name?.charAt(0)}
+              {/* Payment Details Block */}
+              <div className="relative mb-6 p-5 rounded-[24px] bg-slate-50 border border-slate-100">
+                <div className="flex items-center justify-between mb-3 border-b border-slate-200/50 pb-3">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">💰 Keyingi To'lov</span>
+                  <span className="text-[10px] font-black text-slate-700 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100">{c.plan_name || 'Tarif yoq'}</span>
+                </div>
+                <div className="flex items-center justify-between font-black">
+                  <span className="text-xl tracking-tight text-slate-900">{c.plan_price ? `${c.plan_price.toLocaleString()} so'm` : '0 so\'m'}</span>
+                  <span className={cn("text-xs flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100", getCompanyStatus(c.subscription_deadline) === 'expired' ? "text-red-500" : getCompanyStatus(c.subscription_deadline) === 'warning' ? "text-amber-500" : "text-emerald-500")}>
+                    ⏳ {getDaysLeft(c.subscription_deadline)} kun qoldi
+                  </span>
+                </div>
+              </div>
+
+              {/* Owner Info & Socials */}
+              <div className="relative bg-white border border-slate-100 rounded-[24px] p-4 mb-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center text-[10px] font-black text-white">
+                    {c.owner_name?.charAt(0) || <Building2 size={12}/>}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-black text-slate-800 truncate">{c.owner_name}</p>
-                    <p className="text-[10px] text-slate-400 font-bold">{c.owner_username}</p>
+                    <p className="text-xs font-black text-slate-800 truncate">{c.owner_name || 'Owner'}</p>
+                    <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1 opacity-80"><Package size={10}/> {c.product_count} ta mahsulot</p>
                   </div>
-                  {(c.telegram_link || c.instagram_link) && (
-                    <div className="flex items-center gap-2">
-                      {c.telegram_link && (
-                        <a href={c.telegram_link} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center hover:bg-sky-100 transition-colors">
-                          <ExternalLink size={12} />
-                        </a>
-                      )}
-                    </div>
-                  )}
                 </div>
+                {(c.phone || c.telegram_link) && (
+                  <div className="flex items-center gap-2">
+                    {c.phone && (
+                      <a href={`tel:${c.phone}`} title="Qo'ng'iroq qilish" className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors shadow-sm">
+                        <Phone size={12} />
+                      </a>
+                    )}
+                    {c.telegram_link && (
+                      <a href={c.telegram_link} target="_blank" rel="noreferrer" title="Telegramda yozish" className="w-8 h-8 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center hover:bg-sky-100 transition-colors shadow-sm">
+                        <MessageCircle size={12} />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Deadline & Settings */}
-              <div className="relative flex items-center justify-between pt-2">
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Obuna muddati</span>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="date"
-                      value={c.subscription_deadline?.slice(0, 10) || ''}
-                      onChange={(e) => updateDeadline(c.id, e.target.value)}
-                      className="bg-transparent text-xs font-black text-slate-800 focus:outline-none cursor-pointer hover:text-sky-600 transition-colors"
-                    />
-                    {!c.subscription_deadline && <AlertCircle size={12} className="text-amber-500" />}
-                  </div>
-                </div>
+              <div className="mt-auto">
+                <button
+                  onClick={() => handleAcceptPayment(c.id)}
+                  className="w-full h-12 bg-emerald-500 text-white rounded-[20px] text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20 active:scale-[0.98] flex items-center justify-center gap-2 mb-4"
+                >
+                  <CreditCard size={16} /> To'lov qabul qilindi
+                </button>
                 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => openEdit(c)}
-                    className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-sky-600 hover:border-sky-100 hover:bg-sky-50 transition-all shadow-sm"
-                    title="Tahrirlash"
-                  >
-                    <Settings2 size={18} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(c.id)}
-                    className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50 transition-all shadow-sm"
-                    title="O'chirish"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                {/* Deadline & Settings */}
+                <div className="relative flex items-center justify-between pt-4 border-t border-slate-100/60">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Obuna muddati</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="date"
+                        value={c.subscription_deadline?.slice(0, 10) || ''}
+                        onChange={(e) => updateDeadline(c.id, e.target.value)}
+                        className="bg-transparent text-[11px] font-black text-slate-700 focus:outline-none cursor-pointer hover:text-sky-600 transition-colors p-0 border-none"
+                      />
+                      {!c.subscription_deadline && <AlertCircle size={12} className="text-red-500" />}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openEdit(c)}
+                      className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-sky-600 hover:border-sky-100 hover:bg-sky-50 transition-all shadow-sm"
+                      title="Tahrirlash"
+                    >
+                      <Settings2 size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(c.id)}
+                      className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50 transition-all shadow-sm"
+                      title="O'chirish"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
