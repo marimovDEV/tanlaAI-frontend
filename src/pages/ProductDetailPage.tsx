@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Heart, User, Calculator, Stars, RefreshCcw, Clock,
-  ShoppingBag, Phone, Send, ChevronLeft, Flame,
+  ShoppingBag, Phone, Send, ChevronLeft, Flame, Plus, Minus,
 } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
@@ -27,6 +27,8 @@ const ProductDetailPage: React.FC = () => {
   const [calcH, setCalcH] = useState(200);
   const [calcW, setCalcW] = useState(80);
   const [activeImg, setActiveImg] = useState(0);
+  const [qty, setQty] = useState(1);
+  const touchStartX = useRef<number>(0);
   const { haptic, webApp } = useTelegram();
 
   useEffect(() => {
@@ -108,18 +110,28 @@ const ProductDetailPage: React.FC = () => {
     <div style={{ background: '#FFFBF6', minHeight: '100vh' }}>
       <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`}</style>
 
-      {/* Hero Image */}
+      {/* Hero Image — swipeable gallery */}
       <div className="relative">
-        <div className="w-full overflow-hidden" style={{ height: '340px', background: '#f5f0eb' }}>
+        <div
+          className="w-full overflow-hidden select-none"
+          style={{ height: '340px', background: '#f5f0eb' }}
+          onTouchStart={e => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={e => {
+            const dx = e.changedTouches[0].clientX - touchStartX.current;
+            if (Math.abs(dx) < 40) return;
+            if (dx < 0 && activeImg < gallery.length - 1) { setActiveImg(i => i + 1); haptic('light'); }
+            if (dx > 0 && activeImg > 0) { setActiveImg(i => i - 1); haptic('light'); }
+          }}
+        >
           <img
             src={getMediaUrl(gallery[activeImg]) || getMediaUrl(product.image) || 'https://via.placeholder.com/800'}
             alt={product.name}
-            className="w-full h-full object-contain mix-blend-multiply"
+            className="w-full h-full object-contain mix-blend-multiply transition-opacity duration-200"
           />
           <div className="absolute bottom-0 left-0 right-0 h-24"
             style={{ background: 'linear-gradient(to top,#FFFBF6,transparent)' }} />
 
-          {/* Back button */}
+          {/* Back */}
           <button
             onClick={() => navigate(-1)}
             className="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform"
@@ -146,6 +158,7 @@ const ProductDetailPage: React.FC = () => {
             </div>
           )}
 
+          {/* Badges */}
           <div className="absolute top-4 left-16 flex flex-col gap-1.5">
             {hasSale && (
               <span className="text-white text-[10px] font-black px-2.5 py-1 rounded-full"
@@ -160,9 +173,27 @@ const ProductDetailPage: React.FC = () => {
               </span>
             )}
           </div>
+
+          {/* Dot indicators */}
+          {gallery.length > 1 && (
+            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-1.5">
+              {gallery.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImg(i)}
+                  className="transition-all duration-300 rounded-full"
+                  style={{
+                    width: activeImg === i ? '20px' : '6px',
+                    height: '6px',
+                    background: activeImg === i ? '#FF6B35' : 'rgba(255,255,255,0.6)',
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Thumbnails */}
+        {/* Thumbnail strip (tap to jump) */}
         {gallery.length > 1 && (
           <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 pb-2 mt-3">
             {gallery.map((src, i) => (
@@ -190,39 +221,74 @@ const ProductDetailPage: React.FC = () => {
           <h1 className="text-[22px] font-black text-[#1A1A2E] leading-tight tracking-tight">{product.name}</h1>
         </div>
 
-        {/* Price */}
+        {/* Price + Quantity */}
         <div
-          className="flex items-center justify-between p-4 rounded-[20px]"
+          className="p-4 rounded-[20px] space-y-3"
           style={{ background: hasSale ? 'rgba(255,107,53,0.06)' : '#fff', boxShadow: '0 4px 16px rgba(26,26,46,0.06)' }}
         >
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#B0B0BF] mb-1">Narx</p>
-            {product.price ? (
-              <>
-                <p className="text-[24px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
-                  {fmt(hasSale ? product.discount_price : product.price)}
-                </p>
-                {hasSale && <p className="text-[12px] text-[#C0C0CE] line-through mt-0.5">{fmt(product.price)}</p>}
-              </>
-            ) : product.price_per_m2 ? (
-              <>
-                <p className="text-[20px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
-                  {fmt(hasSale ? product.discount_price : product.price_per_m2)} / m2
-                </p>
-                {hasSale && <p className="text-[12px] text-[#C0C0CE] line-through mt-0.5">{fmt(product.price_per_m2)} / m2</p>}
-              </>
-            ) : (
-              <p className="text-[18px] font-black text-[#8A8A99]">Kelishilgan narx</p>
+          {/* Price row */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#B0B0BF] mb-1">Narx</p>
+              {product.price ? (
+                <>
+                  <p className="text-[24px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
+                    {fmt(hasSale ? product.discount_price : product.price)}
+                  </p>
+                  {hasSale && <p className="text-[12px] text-[#C0C0CE] line-through mt-0.5">{fmt(product.price)}</p>}
+                </>
+              ) : product.price_per_m2 ? (
+                <>
+                  <p className="text-[20px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
+                    {fmt(hasSale ? product.discount_price : product.price_per_m2)} / m²
+                  </p>
+                  {hasSale && <p className="text-[12px] text-[#C0C0CE] line-through mt-0.5">{fmt(product.price_per_m2)} / m²</p>}
+                </>
+              ) : (
+                <p className="text-[18px] font-black text-[#8A8A99]">Kelishilgan narx</p>
+              )}
+            </div>
+            {hasSale && product.price && product.discount_price && (
+              <div className="w-14 h-14 rounded-[18px] flex items-center justify-center"
+                style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', boxShadow: '0 6px 18px rgba(255,107,53,0.32)' }}>
+                <div className="text-center">
+                  <p className="text-white text-[9px] font-black leading-none">MINUS</p>
+                  <p className="text-white text-[16px] font-black leading-none mt-0.5">
+                    {Math.round((1 - Number(product.discount_price)/Number(product.price))*100)}%
+                  </p>
+                </div>
+              </div>
             )}
           </div>
-          {hasSale && product.price && product.discount_price && (
-            <div className="w-14 h-14 rounded-[18px] flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', boxShadow: '0 6px 18px rgba(255,107,53,0.32)' }}>
-              <div className="text-center">
-                <p className="text-white text-[9px] font-black leading-none">MINUS</p>
-                <p className="text-white text-[16px] font-black leading-none mt-0.5">
-                  {Math.round((1 - Number(product.discount_price)/Number(product.price))*100)}%
-                </p>
+
+          {/* Quantity selector — only for fixed-price products */}
+          {product.price && (
+            <div className="flex items-center justify-between pt-1 border-t border-[rgba(26,26,46,0.07)]">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#B0B0BF]">Miqdor</p>
+                {qty > 1 && (
+                  <p className="text-[13px] font-black mt-0.5" style={{ color: '#FF6B35' }}>
+                    Jami: {(Number(hasSale ? product.discount_price : product.price) * qty).toLocaleString()} so'm
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { setQty(q => Math.max(1, q - 1)); haptic('light'); }}
+                  disabled={qty <= 1}
+                  className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform disabled:opacity-30"
+                  style={{ background: 'rgba(26,26,46,0.06)' }}
+                >
+                  <Minus size={14} color="#1A1A2E" />
+                </button>
+                <span className="text-[20px] font-black text-[#1A1A2E] min-w-[24px] text-center">{qty}</span>
+                <button
+                  onClick={() => { setQty(q => q + 1); haptic('light'); }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+                  style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', boxShadow: '0 4px 12px rgba(255,107,53,0.30)' }}
+                >
+                  <Plus size={14} color="white" />
+                </button>
               </div>
             </div>
           )}
@@ -376,9 +442,21 @@ const ProductDetailPage: React.FC = () => {
         <LeadForm
           productId={product.id}
           leadType={leadType}
-          initialPriceInfo={product.price_per_m2 ? `${calcH}x${calcW} sm - ${calcTotal().toLocaleString()} so'm` : ''}
+          initialPriceInfo={
+            product.price_per_m2
+              ? `${calcH}x${calcW} sm - ${calcTotal().toLocaleString()} so'm`
+              : product.price && qty > 1
+                ? `${qty} dona × ${Number(product.price).toLocaleString()} so'm`
+                : ''
+          }
           widthCm={product.price_per_m2 ? calcW : undefined}
           heightCm={product.price_per_m2 ? calcH : undefined}
+          quantity={product.price ? qty : undefined}
+          totalPrice={
+            product.price
+              ? Number(product.price) * qty
+              : product.price_per_m2 ? calcTotal() : undefined
+          }
           onClose={() => setShowLeadForm(false)}
         />
       )}

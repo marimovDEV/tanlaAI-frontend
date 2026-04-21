@@ -22,6 +22,7 @@ import WishlistPage from './pages/WishlistPage';
 import CompanyDetailPage from './pages/CompanyDetailPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminSystemPage from './pages/AdminSystemPage';
+import VisualizePickerPage from './pages/VisualizePickerPage';
 
 // Admin pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -73,6 +74,7 @@ function App() {
             <Route path="/visualizations" element={<VisualizationsPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
+            <Route path="/visualize/new" element={<VisualizePickerPage />} />
             <Route path="/product/:id/visualize" element={<AIVisualizePage />} />
             <Route path="/product/:id/ai-generate" element={<AIVisualizePage />} />
             <Route path="/product/:id/edit" element={<ProductFormPage />} />

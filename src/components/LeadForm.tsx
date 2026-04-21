@@ -14,6 +14,8 @@ interface Props {
   heightCm?: number;
   source?: string;
   sharedId?: string;
+  quantity?: number;
+  totalPrice?: number;
 }
 
 // Per-type copy so we don't branch inside JSX.
@@ -45,7 +47,7 @@ interface AxiosLikeErr {
 
 const LeadForm: React.FC<Props> = ({
   productId, onClose, leadType, initialPriceInfo,
-  widthCm, heightCm, source, sharedId,
+  widthCm, heightCm, source, sharedId, quantity, totalPrice,
 }) => {
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
@@ -124,6 +126,8 @@ const LeadForm: React.FC<Props> = ({
         height_cm: heightCm ?? null,
         source: source || "",
         shared_id: sharedId || null,
+        quantity: quantity ?? 1,
+        total_price: totalPrice ?? null,
       };
       if (addressMode === 'location' && hasCoords) {
         payload.latitude = lat;
