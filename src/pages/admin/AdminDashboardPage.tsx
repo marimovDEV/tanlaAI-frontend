@@ -90,17 +90,17 @@ export default function AdminDashboardPage() {
   }
 
   const chartData = [
-    { name: 'Tayyor', value: data.ai_status.completed || 0 },
-    { name: 'Jarayonda', value: data.ai_status.processing || 0 },
-    { name: 'Xato', value: data.ai_status.error || 0 },
-    { name: 'Kutilmoqda', value: data.ai_status.none || 0 },
+    { name: 'Tayyor', value: data.ai_status?.completed || 0 },
+    { name: 'Jarayonda', value: data.ai_status?.processing || 0 },
+    { name: 'Xato', value: data.ai_status?.error || 0 },
+    { name: 'Kutilmoqda', value: data.ai_status?.none || 0 },
   ].filter(d => d.value > 0);
 
   const stats = [
-    { label: 'Mahsulotlar', value: data.counts.product_count, growth: data.growth.products, icon: Package, color: 'text-sky-600', bg: 'bg-sky-50' },
-    { label: 'Kompaniyalar', value: data.counts.company_count, growth: data.growth.companies, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Lidlar (Leads)', value: data.counts.lead_count, growth: data.growth.leads, icon: MousePointer2, color: 'text-rose-600', bg: 'bg-rose-50' },
-    { label: 'Foydalanuvchilar', value: data.counts.user_count, growth: data.growth.users, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Mahsulotlar', value: data.counts?.product_count ?? 0, growth: data.growth?.products ?? 0, icon: Package, color: 'text-sky-600', bg: 'bg-sky-50' },
+    { label: 'Kompaniyalar', value: data.counts?.company_count ?? 0, growth: data.growth?.companies ?? 0, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Lidlar (Leads)', value: data.counts?.lead_count ?? 0, growth: data.growth?.leads ?? 0, icon: MousePointer2, color: 'text-rose-600', bg: 'bg-rose-50' },
+    { label: 'Foydalanuvchilar', value: data.counts?.user_count ?? 0, growth: data.growth?.users ?? 0, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
   ];
 
   const getStatusColor = (days: number | null) => {
@@ -139,24 +139,24 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Server Status Card */}
         <div className="bg-white p-7 rounded-[32px] shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-8 group">
-          <div className={cn("w-20 h-20 rounded-3xl flex items-center justify-center shrink-0 transition-transform duration-500 group-hover:rotate-6", getStatusBg(data.billing.server_days_left))}>
-            <Activity size={36} className={getStatusColor(data.billing.server_days_left)} />
+          <div className={cn("w-20 h-20 rounded-3xl flex items-center justify-center shrink-0 transition-transform duration-500 group-hover:rotate-6", getStatusBg(data.billing?.server_days_left ?? null))}>
+            <Activity size={36} className={getStatusColor(data.billing?.server_days_left ?? null)} />
           </div>
           <div className="flex-1 text-center md:text-left">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">💻 Server holati</p>
             <h3 className="text-2xl font-black text-slate-900 mb-2">
-              {data.billing.server_cost.toLocaleString()} <span className="text-sm font-medium text-slate-400">uzs/oy</span>
+              {(data.billing?.server_cost ?? 0).toLocaleString()} <span className="text-sm font-medium text-slate-400">uzs/oy</span>
             </h3>
             <div className="flex items-center justify-center md:justify-start gap-4">
               <div className="flex flex-col">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Keyingi to'lov</span>
-                <span className="text-sm font-black text-slate-700">{data.billing.server_due_date || "Noma'lum"}</span>
+                <span className="text-sm font-black text-slate-700">{data.billing?.server_due_date || "Noma'lum"}</span>
               </div>
               <div className="w-px h-8 bg-slate-100" />
               <div className="flex flex-col">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Status</span>
-                <span className={cn("text-sm font-black", getStatusColor(data.billing.server_days_left))}>
-                  {data.billing.server_days_left === null ? 'Noma\'lum' : 
+                <span className={cn("text-sm font-black", getStatusColor(data.billing?.server_days_left ?? null))}>
+                  {data.billing?.server_days_left === null || data.billing?.server_days_left === undefined ? 'Noma\'lum' : 
                    data.billing.server_days_left <= 0 ? '🔴 BUGUN TO\'LASH KERAK' :
                    data.billing.server_days_left <= 3 ? `🟡 ${data.billing.server_days_left} kun qoldi` :
                    `🟢 ${data.billing.server_days_left} kun qoldi`}
@@ -174,21 +174,21 @@ export default function AdminDashboardPage() {
           <div className="flex-1 text-center md:text-left">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">🤖 AI Xarajatlar (Oylik)</p>
             <h3 className="text-2xl font-black text-slate-900 mb-2">
-              {data.billing.ai_cost_this_month_uzs.toLocaleString()} <span className="text-sm font-medium text-slate-400">uzs</span>
+              {(data.billing?.ai_cost_this_month_uzs ?? 0).toLocaleString()} <span className="text-sm font-medium text-slate-400">uzs</span>
             </h3>
             <div className="flex items-center justify-center md:justify-start gap-6">
               <div className="flex flex-col">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Bugun</span>
-                <span className="text-sm font-black text-emerald-500">{data.billing.ai_cost_today_uzs.toLocaleString()} uzs</span>
+                <span className="text-sm font-black text-emerald-500">{(data.billing?.ai_cost_today_uzs ?? 0).toLocaleString()} uzs</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Jami so'rov</span>
-                <span className="text-sm font-black text-slate-700">{data.billing.ai_total_requests.toLocaleString()}</span>
+                <span className="text-sm font-black text-slate-700">{(data.billing?.ai_total_requests ?? 0).toLocaleString()}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Limit</span>
                 <span className="text-sm font-black text-indigo-600">
-                  {Math.round(data.billing.ai_cost_this_month_uzs / data.billing.ai_monthly_budget_uzs * 100 || 0)}%
+                  {Math.round((data.billing?.ai_cost_this_month_uzs ?? 0) / (data.billing?.ai_monthly_budget_uzs || 1) * 100)}%
                 </span>
               </div>
             </div>
@@ -268,7 +268,7 @@ export default function AdminDashboardPage() {
               />
             </PieChart>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none translate-y-[-5px]">
-              <span className="text-4xl font-black text-slate-900 tracking-tighter">{data.ai_performance.success_rate || 100}%</span>
+              <span className="text-4xl font-black text-slate-900 tracking-tighter">{data.ai_performance?.success_rate ?? 100}%</span>
               <span className="text-[10px] text-emerald-500 font-black uppercase tracking-[0.2em] mt-1">Success</span>
             </div>
           </div>
@@ -280,7 +280,7 @@ export default function AdminDashboardPage() {
                 <div className="w-8 h-8 bg-sky-100 text-sky-600 rounded-lg flex items-center justify-center">
                   <Clock size={16} />
                 </div>
-                <span className="text-xl font-black">{data.ai_performance.avg_time}s</span>
+                <span className="text-xl font-black">{data.ai_performance?.avg_time ?? 0}s</span>
               </div>
             </div>
             <div className="p-5 bg-slate-50/80 rounded-[24px] border border-slate-100">
@@ -289,7 +289,7 @@ export default function AdminDashboardPage() {
                 <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center">
                   <CheckCircle2 size={16} />
                 </div>
-                <span className="text-xl font-black">{data.counts.ai_result_count}</span>
+                <span className="text-xl font-black">{data.counts?.ai_result_count ?? 0}</span>
               </div>
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function AdminDashboardPage() {
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.recent_activity.products.length > 0 ? (
+              {(data.recent_activity?.products?.length ?? 0) > 0 ? (
                 data.recent_activity.products.map((p) => {
                   const imageUrl = p.image; // Now guaranteed to be absolute from backend context
 
