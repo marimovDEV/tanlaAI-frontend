@@ -49,12 +49,20 @@ const LeadForm: React.FC<Props> = ({
   productId, onClose, leadType, initialPriceInfo,
   widthCm, heightCm, source, sharedId, quantity, totalPrice,
 }) => {
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+998 ');
+  const [qty, setQty] = useState(quantity ?? 1);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const { haptic } = useTelegram();
+
+  // Price calculation
+  // NOTE: In a production app, we'd fetch the latest product price here.
+  // For this UI, we assume price info is passed or we could pass the whole product object.
+  // Since we only have productId, we'll try to use totalPrice/quantity props if available.
+  const unitPrice = quantity && totalPrice ? totalPrice / quantity : 0;
+  const currentTotal = unitPrice > 0 ? unitPrice * qty : 0;
 
   // Address state — user picks exactly one mode, but we only send whichever is filled.
   const [addressMode, setAddressMode] = useState<AddressMode>('location');
@@ -100,7 +108,8 @@ const LeadForm: React.FC<Props> = ({
 
   const hasCoords = lat !== null && lng !== null;
   const hasManual = addressText.trim().length > 0;
-  const canSubmit = !loading && (
+  const isPhoneValid = phone.replace(/\s/g, '').length >= 12; // +998 + 9 digits
+  const canSubmit = !loading && isPhoneValid && (
     (addressMode === 'location' && hasCoords) ||
     (addressMode === 'manual' && hasManual)
   );
@@ -113,9 +122,6 @@ const LeadForm: React.FC<Props> = ({
     haptic('medium');
 
     try {
-      // NOTE: `calculated_price` intentionally NOT sent — server always
-      // recomputes it from product.price_per_m2 × (width*height/10000)
-      // so clients can't quote themselves a discount.
       const payload: Record<string, unknown> = {
         product: productId,
         lead_type: leadType,
@@ -126,8 +132,8 @@ const LeadForm: React.FC<Props> = ({
         height_cm: heightCm ?? null,
         source: source || "",
         shared_id: sharedId || null,
-        quantity: quantity ?? 1,
-        total_price: totalPrice ?? null,
+        quantity: qty,
+        total_price: currentTotal || totalPrice || null,
       };
       if (addressMode === 'location' && hasCoords) {
         payload.latitude = lat;
@@ -160,10 +166,14 @@ const LeadForm: React.FC<Props> = ({
       active ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-outline'
     }`;
 
+  const formatPrice = (p: number) => {
+    return p.toLocaleString('ru-RU').replace(/,/g, ' ') + " so'm";
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center px-4" onClick={onClose}>
       <div
-        className="bg-surface w-full max-w-lg rounded-t-[32px] p-8 pb-10 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom duration-300"
+        className="bg-surface w-full max-w-lg rounded-t-[32px] p-6 pb-12 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 relative"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-12 h-1.5 bg-outline/20 rounded-full mx-auto mb-6" />
@@ -210,7 +220,33 @@ const LeadForm: React.FC<Props> = ({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5 pb-4">
+              {/* Quantity selector for Direct orders */}
+              {leadType === 'direct' && unitPrice > 0 && (
+                <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Eshiklar soni</p>
+                    <div className="flex items-center gap-4">
+                      <button 
+                        type="button"
+                        onClick={() => { setQty(Math.max(1, qty - 1)); haptic('light'); }}
+                        className="w-8 h-8 rounded-full bg-white border border-primary/20 flex items-center justify-center text-primary font-bold shadow-sm"
+                      >-</button>
+                      <span className="text-lg font-black text-on-surface">{qty}</span>
+                      <button 
+                        type="button"
+                        onClick={() => { setQty(qty + 1); haptic('light'); }}
+                        className="w-8 h-8 rounded-full bg-white border border-primary/20 flex items-center justify-center text-primary font-bold shadow-sm"
+                      >+</button>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Umumiy summa</p>
+                    <p className="text-lg font-black text-primary">{formatPrice(currentTotal)}</p>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="text-[10px] font-black uppercase tracking-widest text-outline ml-1 mb-1.5 block">
                   Telefon raqam
@@ -218,7 +254,14 @@ const LeadForm: React.FC<Props> = ({
                 <input
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.startsWith('+998')) {
+                      setPhone(val);
+                    } else if (val === '' || val === '+') {
+                      setPhone('+998 ');
+                    }
+                  }}
                   placeholder="+998 90 123 45 67"
                   required
                   className="w-full bg-white border border-outline/10 rounded-2xl py-4 px-5 text-on-surface focus:ring-2 focus:ring-primary/20 outline-none font-bold"

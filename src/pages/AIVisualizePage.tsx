@@ -293,35 +293,19 @@ const AIVisualizePage: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!resultImage || !product) return;
-    setIsSaving(true);
+    if (!resultImage) return;
     haptic("medium");
-
-    try {
-      // 1. Fetch image as blob
-      const blob = await fetch(resultImage).then((r) => r.blob());
-      const formData = new FormData();
-      formData.append("image", blob, `ai_result_${Date.now()}.png`);
-      formData.append("product", product.id.toString());
-      formData.append("status", "done");
-
-      if (image) {
-        formData.append("input_image", image);
-      }
-
-      // 2. Save to backend
-      await apiClient.post("/ai-results/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      alert("✅ Vizualizatsiya kutubxonangizga saqlandi!");
-      navigate("/visualizations");
-    } catch (err) {
-      console.error("Save error:", err);
-      alert("Saqlashda xatolik yuz berdi");
-    } finally {
-      setIsSaving(false);
+    
+    // Result is already saved on server by the background task.
+    // We just provide a way to 'view/download' it or simply confirm it's in the library.
+    if (webApp?.openLink) {
+      webApp.openLink(resultImage);
+    } else {
+      window.open(resultImage, "_blank");
     }
+    
+    // Optimistic feedback
+    alert("✅ Vizualizatsiya kutubxonangizga saqlandi! Rasmni bosib turib galereyaga saqlashingiz mumkin.");
   };
 
   const handleShare = async () => {
@@ -330,26 +314,17 @@ const AIVisualizePage: React.FC = () => {
     haptic("medium");
 
     try {
-      // 1. Prepare images as blobs
-      const resultBlob = await fetch(resultImage).then((r) => r.blob());
-      const formData = new FormData();
-      formData.append("image", resultBlob, `share_${Date.now()}.png`);
-
-      if (preview) {
-        const previewBlob = await fetch(preview).then((r) => r.blob());
-        formData.append("original_image", previewBlob, `original_${Date.now()}.png`);
-      }
-
-      formData.append("product", product.id.toString());
-
-      // 2. Create SharedDesign
-      const res = await apiClient.post<{ id: string }>("/shared-designs/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // 1. Create SharedDesign on backend directly (without client-side blob fetch to avoid CORS)
+      // We pass the result Image URL and product ID
+      const res = await apiClient.post<{ id: string }>("/shared-designs/", {
+        product: product.id,
+        image_url: resultImage, // Backend should handle fetching its own local file
+        original_image_url: preview,
       });
 
       const shareUrl = `${window.location.origin}/share/${res.data.id}`;
 
-      // 3. Share flow
+      // 2. Share flow
       if (webApp?.openTelegramLink) {
         webApp.openTelegramLink(
           `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(
@@ -367,7 +342,17 @@ const AIVisualizePage: React.FC = () => {
       }
     } catch (err) {
       console.error("Share error:", err);
-      alert("Ulashishda xatolik yuz berdi");
+      
+      // Fallback: simple share if design creation fails
+      if (navigator.share) {
+        await navigator.share({
+          title: "Tanla AI",
+          text: `${product.name} vizualizatsiyasi`,
+          url: window.location.href
+        });
+      } else {
+        alert("Ulashishda xatolik yuz berdi");
+      }
     } finally {
       setIsSharing(false);
     }
@@ -378,7 +363,7 @@ const AIVisualizePage: React.FC = () => {
     LOADING_STEPS[loadingStep]?.label ?? "Ishlanmoqda...";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-32">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-44">
       {/* ─── HEADER ─── */}
       <div className="px-5 pt-8 pb-4 text-center space-y-1">
         <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-3">
@@ -912,6 +897,8 @@ const AIVisualizePage: React.FC = () => {
           productId={product.id}
           leadType={leadType}
           initialPriceInfo="AI vizualizatsiyasi"
+          quantity={1}
+          totalPrice={Number(product.price)}
           onClose={() => setShowLeadForm(false)}
         />
       )}
