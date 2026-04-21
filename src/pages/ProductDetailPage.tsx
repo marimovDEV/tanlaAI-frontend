@@ -50,7 +50,9 @@ const ProductDetailPage: React.FC = () => {
         .sort((a, b) => (a.is_main === b.is_main ? 0 : a.is_main ? -1 : 1))
         .map(i => i.image);
     }
-    return product?.image ? [product.image] : [];
+    // Fallback: original image (before AI processing) or main image
+    const fallback = product?.original_image || product?.image;
+    return fallback ? [fallback] : [];
   }, [product]);
 
   const toggleWishlist = async () => {

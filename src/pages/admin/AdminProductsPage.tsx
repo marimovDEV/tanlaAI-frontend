@@ -154,9 +154,14 @@ export default function AdminProductsPage() {
     setShowForm(true);
   };
 
+  const MAX_GALLERY = 4;
+
   const handleGalleryAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const newFiles = [...formGalleryFiles, ...files].slice(0, 4);
+    const existing = formGalleryFiles.length;
+    const allowed = MAX_GALLERY - existing;
+    if (allowed <= 0) { alert(`Maksimal ${MAX_GALLERY} ta rasm yuklash mumkin`); return; }
+    const newFiles = [...formGalleryFiles, ...files.slice(0, allowed)];
     setFormGalleryFiles(newFiles);
     setFormGalleryPreviews(newFiles.map(f => URL.createObjectURL(f)));
     if (galleryInputRef.current) galleryInputRef.current.value = '';
@@ -479,18 +484,24 @@ export default function AdminProductsPage() {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-4">
                         <div className="flex flex-col gap-1">
-                          {/* Main image */}
-                          <div className="w-[72px] h-[80px] rounded-xl bg-[#f5f5f7] border border-slate-100 flex items-center justify-center p-1 flex-shrink-0 shadow-sm overflow-hidden relative">
-                            {p.image ? (
-                              <img
-                                src={p.image.startsWith('http') ? p.image : `${MEDIA_BASE}${p.image}`}
-                                alt={p.name}
-                                className="w-full h-full object-contain mix-blend-multiply"
-                              />
-                            ) : (
-                              <Package size={20} className="text-slate-200" />
-                            )}
-                          </div>
+                          {/* Main image — prefer gallery is_main, fallback original_image, then image */}
+                          {(() => {
+                            const mainImg = p.images?.find(i => i.is_main)?.image
+                              || (p as any).original_image
+                              || p.image;
+                            const src = mainImg
+                              ? (mainImg.startsWith('http') ? mainImg : `${MEDIA_BASE}${mainImg}`)
+                              : null;
+                            return (
+                              <div className="w-[72px] h-[80px] rounded-xl bg-[#f5f5f7] border border-slate-100 flex items-center justify-center p-1 flex-shrink-0 shadow-sm overflow-hidden relative">
+                                {src ? (
+                                  <img src={src} alt={p.name} className="w-full h-full object-contain mix-blend-multiply" />
+                                ) : (
+                                  <Package size={20} className="text-slate-200" />
+                                )}
+                              </div>
+                            );
+                          })()}
                           {/* Gallery strip */}
                           {p.images && p.images.length > 0 && (
                             <div className="flex gap-1">

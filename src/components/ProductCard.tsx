@@ -23,6 +23,12 @@ const ProductCard: React.FC<Props> = ({
   const hasSale = product.is_on_sale && Boolean(product.discount_price);
   const company = product.company_details;
 
+  // PRIMARY image: is_main from gallery → original_image → image (may be AI-processed)
+  const primaryImage =
+    product.images?.find(i => i.is_main)?.image ||
+    product.original_image ||
+    product.image;
+
   const fmt = (v?: string, suffix = '') =>
     v ? `${Number(v).toLocaleString()} so'm${suffix}` : null;
 
@@ -59,7 +65,7 @@ const ProductCard: React.FC<Props> = ({
       >
         <div className="relative h-[130px] overflow-hidden bg-[#f5f0eb]">
           <img
-            src={getMediaUrl(product.image) || 'https://via.placeholder.com/300'}
+            src={getMediaUrl(primaryImage) || 'https://via.placeholder.com/300'}
             alt={product.name}
             className="w-full h-full object-cover"
           />
@@ -120,7 +126,7 @@ const ProductCard: React.FC<Props> = ({
       <NavLink to={`/product/${product.id}`} className="block">
         <div className="relative h-[160px] sm:h-[180px] overflow-hidden bg-[#f5f0eb]">
           <img
-            src={getMediaUrl(product.image) || 'https://via.placeholder.com/300'}
+            src={getMediaUrl(primaryImage) || 'https://via.placeholder.com/300'}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
           />

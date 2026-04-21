@@ -73,6 +73,8 @@ export interface Product {
   price_per_m2?: string;
   lead_time_days?: number;
   ai_status: 'none' | 'processing' | 'completed' | 'error';
+  original_image?: string;   // original before AI bg-removal
+  image_no_bg?: string;      // AI-processed (bg removed)
   company_details?: Company;
   owner_details?: TelegramUser;
   images?: ProductImage[];
