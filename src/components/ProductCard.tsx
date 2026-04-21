@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Heart, Phone, Flame } from 'lucide-react';
+import { Heart, Phone, Flame, Building2 } from 'lucide-react';
 import type { Product } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import { getMediaUrl } from '../utils/media';
@@ -185,8 +185,19 @@ const ProductCard: React.FC<Props> = ({
       {/* Body */}
       <div className="p-3.5 flex flex-col flex-1">
         <NavLink to={`/product/${product.id}`}>
-          <h3 className="text-[13px] font-bold text-[#1A1A2E] leading-snug line-clamp-2 mb-2">{product.name}</h3>
+          <h3 className="text-[13px] font-bold text-[#1A1A2E] leading-snug line-clamp-2 mb-1">{product.name}</h3>
         </NavLink>
+
+        {/* Company name */}
+        {company && (
+          <button
+            onClick={() => { haptic('light'); navigate(`/company/${company.id}`); }}
+            className="flex items-center gap-1 mb-2 active:opacity-70 transition-opacity text-left w-fit"
+          >
+            <Building2 size={10} color="#FF6B35" />
+            <span className="text-[11px] font-bold text-[#FF6B35] truncate max-w-[120px]">{company.name}</span>
+          </button>
+        )}
 
         <div className="mb-3">
           <p className="text-[15px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
