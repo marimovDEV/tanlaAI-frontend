@@ -15,7 +15,7 @@ const OrderPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { haptic, webApp } = useTelegram();
+  const { haptic } = useTelegram();
 
   // Parse initial state from nav extras if available
   const queryParams = new URLSearchParams(location.search);
@@ -84,7 +84,7 @@ const OrderPage: React.FC = () => {
         setGeoBusy(false);
         haptic('medium');
       },
-      (err) => {
+      () => {
         setGeoBusy(false);
         setGeoError("Lokatsiyani olishning imkoni bo'lmadi.");
       },

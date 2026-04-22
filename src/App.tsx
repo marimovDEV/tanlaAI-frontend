@@ -12,8 +12,6 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import AIVisualizePage from './pages/AIVisualizePage';
 import VisualizationsPage from './pages/VisualizationsPage';
 import SharePage from './pages/SharePage';
-import CompanyCreatePage from './pages/CompanyCreatePage';
-import ProductCreatePage from './pages/ProductCreatePage';
 import CreatorDashboard from './pages/CreatorDashboard';
 import ProductFormPage from './pages/ProductFormPage';
 import CompanyEditPage from './pages/CompanyEditPage';

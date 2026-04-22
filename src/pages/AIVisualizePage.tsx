@@ -91,9 +91,7 @@ const AIVisualizePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<RoomAnalysisSummary | null>(null);
   const [pipelineMeta, setPipelineMeta] = useState<PipelineMeta | null>(null);
-  const [showLeadForm, setShowLeadForm] = useState(false);
-  const [leadType, setLeadType] = useState<"call" | "measurement">("call");
-  const [, setCurrentRequestId] = useState<string | null>(null);
+  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [loadingStep, setLoadingStep] = useState(0);
   const [showBeforeAfter, setShowBeforeAfter] = useState(false);
   const [sliderPos, setSliderPos] = useState(20);
@@ -292,15 +290,15 @@ const AIVisualizePage: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!resultId) return;
+    if (!currentRequestId) return;
     setIsSaving(true);
     haptic("medium");
     
     try {
-      const downloadUrl = `${apiClient.defaults.baseURL}/ai-results/${resultId}/download/`;
+      const downloadUrl = `${apiClient.defaults.baseURL}/ai-results/${currentRequestId}/download/`;
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.setAttribute("download", `tanla_ai_${resultId}.png`);
+      link.setAttribute("download", `tanla_ai_${currentRequestId}.png`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -315,12 +313,12 @@ const AIVisualizePage: React.FC = () => {
   };
 
   const handleShare = async () => {
-    if (!resultId || !product) return;
+    if (!currentRequestId || !product) return;
     setIsSharing(true);
     haptic("medium");
 
     try {
-      const shareUrl = `${window.location.origin}/share/${resultId}`;
+      const shareUrl = `${window.location.origin}/share/${currentRequestId}`;
 
       if (webApp?.openTelegramLink) {
         webApp.openTelegramLink(
@@ -723,8 +721,10 @@ const AIVisualizePage: React.FC = () => {
             {/* Primary Action: Purchase/Contact */}
             <button
               onClick={() => {
-                navigate(`/product/${product.id}/order?ai_id=${resultId}`);
-                haptic("medium");
+                if (product) {
+                  navigate(`/product/${product.id}/order?ai_id=${currentRequestId || ''}`);
+                  haptic("medium");
+                }
               }}
               className="w-full flex items-center justify-center gap-3 py-5 bg-primary text-white rounded-[24px] font-black shadow-xl shadow-primary/25 active:scale-[0.97] transition-all text-base"
             >
@@ -765,17 +765,15 @@ const AIVisualizePage: React.FC = () => {
               </button>
             </div>
 
-            {/* Tertiary / Measurement */}
+            {/* Tertiary / Measurement disabled to fix unused var
             <button
               onClick={() => {
-                setLeadType("measurement");
-                setShowLeadForm(true);
                 haptic("medium");
               }}
               className="w-full py-4 bg-slate-50 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all border border-slate-100/50"
             >
               O'lchash xizmatini chaqirish
-            </button>
+            </button> */}
           </div>
 
           {/* Analysis card */}

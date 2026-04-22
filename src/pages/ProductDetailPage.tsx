@@ -23,7 +23,7 @@ const ProductDetailPage: React.FC = () => {
   const [loading,      setLoading]      = useState(true);
   const [wishlistBusy, setWishlistBusy] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
-  const [leadType,     setLeadType]     = useState<LeadFormType>('call');
+  const [leadType]              = useState<LeadFormType>('call');
   const [calcH, setCalcH] = useState(200);
   const [calcW, setCalcW] = useState(80);
   const [activeImg, setActiveImg] = useState(0);
