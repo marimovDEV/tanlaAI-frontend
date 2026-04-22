@@ -189,21 +189,13 @@ const MainLayout: React.FC = () => {
 
         {/* Bottom link */}
         <div className="p-4 border-t border-white/5">
-          {isSeller ? (
+          {isSeller && (
             <NavLink
               to="/creator/studio/edit"
               className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-[12px] font-black transition-all hover:bg-white/15 bg-white/8 text-white/70 hover:text-white"
             >
               <Building2 size={16} />
               Kompaniyani tahrirlash
-            </NavLink>
-          ) : (
-            <NavLink
-              to="/creator"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-[12px] font-black transition-all hover:bg-white/15 bg-white/8 text-white/70 hover:text-white"
-            >
-              <Building2 size={16} />
-              {profile?.has_company ? 'Studiyam' : 'Studio oching'}
             </NavLink>
           )}
         </div>
@@ -255,7 +247,7 @@ const MainLayout: React.FC = () => {
                   <Sparkles size={13} /> AI
                 </NavLink>
               )}
-              {isSeller ? (
+              {isSeller && (
                 <button
                   onClick={() => { haptic('medium'); navigate('/creator/product/add'); }}
                   className="hidden md:flex lg:hidden items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-black text-white"
@@ -263,14 +255,6 @@ const MainLayout: React.FC = () => {
                 >
                   <PlusCircle size={13} /> Qo'shish
                 </button>
-              ) : (
-                <NavLink
-                  to="/creator"
-                  className="hidden md:flex lg:hidden items-center gap-1.5 px-3 py-2 bg-[#1A1A2E] text-white rounded-xl text-[11px] font-black"
-                >
-                  <Building2 size={13} />
-                  {profile?.has_company ? 'Studiya' : 'Studio'}
-                </NavLink>
               )}
             </div>
           </div>

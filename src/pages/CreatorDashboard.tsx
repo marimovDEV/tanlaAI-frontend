@@ -109,7 +109,8 @@ const CreatorDashboard: React.FC = () => {
         setLeads(Array.isArray(leadsRes.data) ? leadsRes.data : leadsRes.data.results ?? []);
       } catch (err: unknown) {
         if (isAxiosError(err) && err.response?.status === 404) {
-          navigate('/company/create');
+          // If company not found, user is not a seller, redirect to home
+          navigate('/');
         }
       } finally {
         setLoading(false);

@@ -91,8 +91,10 @@ function App() {
             <Route path="/creator/leads" element={<LeadListView />} />
             
             {/* Legacy Compatibility / Fallbacks */}
+            {/* Disabled to prevent regular users from creating companies/products
             <Route path="/company/create" element={<CompanyCreatePage />} />
             <Route path="/product/create" element={<ProductCreatePage />} />
+            */}
           </Route>
 
           {/* Catch-all: unknown routes -> home */}
