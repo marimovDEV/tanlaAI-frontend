@@ -61,7 +61,7 @@ export default function AdminLeadsPage() {
     setUpdatingId(id);
     try {
       await apiClient.post(`/admin/leads/${id}/set-status/`, { status: newStatus });
-      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: newStatus } : l)));
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: newStatus as Lead['status'] } : l)));
     } catch (e) {
       console.error('Error updating status:', e);
     } finally {
