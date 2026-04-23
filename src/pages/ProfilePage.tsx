@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, User, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Heart, User, ChevronRight, ShieldCheck, LayoutDashboard, Store } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import type { ApiListResponse, Product, WishlistItem } from '../types';
@@ -12,7 +12,7 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { user: tgUser, haptic, profile } = useTelegram();
 
-  const isSeller = profile?.role === 'COMPANY' || Boolean(profile?.has_company);
+  const isSeller = profile?.role === 'COMPANY' && Boolean(profile?.has_company);
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -124,6 +124,48 @@ const ProfilePage: React.FC = () => {
         </button>
 
 
+        {/* Seller/Company Actions */}
+        {isSeller ? (
+          <button
+            onClick={() => { haptic('light'); navigate('/creator'); }}
+            className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform"
+            style={{ background: '#fff', boxShadow: '0 4px 16px rgba(26,26,46,0.06)' }}
+          >
+            <div className="flex items-center gap-3.5">
+              <div
+                className="w-11 h-11 rounded-[14px] flex items-center justify-center"
+                style={{ background: 'rgba(255,107,53,0.08)' }}
+              >
+                <LayoutDashboard size={20} color="#FF6B35" />
+              </div>
+              <div>
+                <p className="text-[14px] font-black text-[#1A1A2E]">Dashboardga kirish</p>
+                <p className="text-[10px] font-bold text-[#B0B0BF] uppercase tracking-widest">Sotuvchi paneli</p>
+              </div>
+            </div>
+            <ChevronRight size={16} color="#C0C0CE" />
+          </button>
+        ) : (
+          <button
+            onClick={() => { haptic('light'); navigate('/company/create'); }}
+            className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform"
+            style={{ background: '#fff', boxShadow: '0 4px 16px rgba(26,26,46,0.06)' }}
+          >
+            <div className="flex items-center gap-3.5">
+              <div
+                className="w-11 h-11 rounded-[14px] flex items-center justify-center"
+                style={{ background: 'rgba(0,201,177,0.08)' }}
+              >
+                <Store size={20} color="#00C9B1" />
+              </div>
+              <div>
+                <p className="text-[14px] font-black text-[#1A1A2E]">Kampaniya ochish</p>
+                <p className="text-[10px] font-bold text-[#B0B0BF] uppercase tracking-widest">Biz bilan ishlashni boshlang</p>
+              </div>
+            </div>
+            <ChevronRight size={16} color="#C0C0CE" />
+          </button>
+        )}
       </div>
 
       {/* ── Wishlist preview ── */}
