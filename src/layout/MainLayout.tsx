@@ -167,25 +167,7 @@ const MainLayout: React.FC = () => {
           )}
         </nav>
 
-        {/* AI Banner */}
-        {!isSeller && (
-          <div
-            className="mx-4 mb-4 p-4 rounded-2xl relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #00C9B1, #0096FF)' }}
-          >
-            <div className="absolute right-2 top-2 opacity-10">
-              <Sparkles size={44} className="text-white" />
-            </div>
-            <p className="text-[12px] font-black text-white mb-0.5">AI Visualizer ✨</p>
-            <p className="text-[10px] text-white/75 leading-snug">Uyingizni virtual bezang</p>
-            <NavLink
-              to="/visualize/new"
-              className="mt-3 inline-block bg-white text-[#00A896] text-[11px] font-black px-4 py-1.5 rounded-xl hover:scale-105 transition-transform"
-            >
-              Sinab ko'ring →
-            </NavLink>
-          </div>
-        )}
+
 
         {/* Bottom link */}
         <div className="p-4 border-t border-white/5">

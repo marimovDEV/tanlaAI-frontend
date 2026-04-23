@@ -120,41 +120,7 @@ const HomePage: React.FC = () => {
         @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
       `}</style>
 
-      {/* ─── AI Visualizer Hero ─── */}
-      <div className="px-4 pt-4 mb-5">
-        <div
-          onClick={() => { haptic('medium'); navigate('/visualize/new'); }}
-          className="relative overflow-hidden rounded-[24px] p-5 cursor-pointer active:scale-[0.98] transition-transform"
-          style={{
-            background: 'linear-gradient(135deg, #FF6B35 0%, #FF2D55 55%, #C0175A 100%)',
-            boxShadow: '0 12px 40px rgba(255,107,53,0.38)',
-          }}
-        >
-          {/* BG blobs */}
-          <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20"
-            style={{ background: 'white', transform: 'translate(30%,-30%)' }} />
-          <div className="absolute bottom-0 left-1/2 w-20 h-20 rounded-full opacity-10"
-            style={{ background: 'white', transform: 'translate(-50%,40%)' }} />
 
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center">
-                <Sparkles size={15} className="text-white" />
-              </div>
-              <span className="text-white/80 text-[11px] font-black uppercase tracking-widest">AI Visualizer</span>
-            </div>
-            <h2 className="text-white text-[20px] font-black leading-tight mb-1">
-              Uyingizni virtual<br/>bezating ✨
-            </h2>
-            <p className="text-white/75 text-[12px] font-medium">
-              AI yordamida ideal dizaynni toping
-            </p>
-            <div className="mt-4 inline-flex items-center gap-1.5 bg-white text-[#FF6B35] text-[12px] font-black px-4 py-2 rounded-[14px]">
-              Sinab ko'ring <ChevronRight size={14} />
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* ─── Search Bar ─── */}
       <div className="px-4 mb-6">
