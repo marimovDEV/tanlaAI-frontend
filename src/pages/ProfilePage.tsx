@@ -12,7 +12,8 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { user: tgUser, haptic, profile } = useTelegram();
 
-  const isSeller = profile?.role === 'COMPANY' && Boolean(profile?.has_company);
+  const hasCompany = Boolean(profile?.has_company);
+  const isVerifiedSeller = profile?.role === 'COMPANY' && hasCompany;
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -77,15 +78,15 @@ const ProfilePage: React.FC = () => {
               <div
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white"
                 style={{
-                  background: isSeller
+                  background: isVerifiedSeller
                     ? 'linear-gradient(135deg, #FF6B35, #FF2D55)'
                     : 'linear-gradient(135deg, #00C9B1, #0096FF)',
                 }}
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
-                {isSeller ? 'Sotuvchi' : 'Xaridor'}
+                {isVerifiedSeller ? 'Sotuvchi' : 'Xaridor'}
               </div>
-              {isSeller && (
+              {isVerifiedSeller && (
                 <div
                   className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-black uppercase"
                   style={{ background: 'rgba(255,107,53,0.08)', color: '#FF6B35' }}
@@ -125,7 +126,7 @@ const ProfilePage: React.FC = () => {
 
 
         {/* Seller/Company Actions */}
-        {isSeller ? (
+        {hasCompany ? (
           <button
             onClick={() => { haptic('light'); navigate('/creator'); }}
             className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform"
@@ -140,7 +141,9 @@ const ProfilePage: React.FC = () => {
               </div>
               <div>
                 <p className="text-[14px] font-black text-[#1A1A2E]">Dashboardga kirish</p>
-                <p className="text-[10px] font-bold text-[#B0B0BF] uppercase tracking-widest">Sotuvchi paneli</p>
+                <p className="text-[10px] font-bold text-[#B0B0BF] uppercase tracking-widest">
+                  {isVerifiedSeller ? 'Sotuvchi paneli' : 'Tekshirilmoqda...'}
+                </p>
               </div>
             </div>
             <ChevronRight size={16} color="#C0C0CE" />
