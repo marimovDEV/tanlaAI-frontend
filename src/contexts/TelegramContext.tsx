@@ -39,15 +39,16 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (webApp) {
       webApp.ready();
       webApp.expand();
-      
+
       // Features supported since v6.1+
       if (webApp.isVersionAtLeast('6.1')) {
         webApp.setHeaderColor('#f9f9f9');
         webApp.setBackgroundColor('#f9f9f9');
       }
     }
- 
-    void authenticate().finally(() => setReady(true));
+
+    authenticate().finally(() => setReady(true));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [webApp]);
  
   const haptic = (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft' = 'light') => {

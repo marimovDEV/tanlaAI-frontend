@@ -51,10 +51,11 @@ const CompanyCreatePage: React.FC = () => {
       haptic('medium');
       // Wait a tick then go to creator dashboard
       setTimeout(() => navigate('/creator', { replace: true }), 500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating company:', error);
       haptic('heavy');
-      alert("Kompaniya yaratishda xato: " + JSON.stringify(error?.response?.data || error.message));
+      const errData = (error as { response?: { data?: unknown }; message?: string });
+      alert("Kompaniya yaratishda xato: " + JSON.stringify(errData?.response?.data || errData?.message));
     } finally {
       setLoading(false);
     }

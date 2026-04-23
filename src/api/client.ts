@@ -44,7 +44,7 @@ apiClient.interceptors.request.use((config) => {
   }
 
   // Add Telegram init data for regular user auth
-  const telegramInitData = (window as any).Telegram?.WebApp?.initData;
+  const telegramInitData = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp?.initData;
   if (telegramInitData) {
     config.headers['X-Telegram-Init-Data'] = telegramInitData;
   }

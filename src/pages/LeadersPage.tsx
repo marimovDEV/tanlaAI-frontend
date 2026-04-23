@@ -7,9 +7,14 @@ import type { ApiListResponse, Company } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
 import { cn } from '../utils/cn';
 
+interface LeaderboardCompany extends Company {
+  converted_leads?: number;
+  total_leads?: number;
+}
+
 const LeadersPage: React.FC = () => {
   const navigate = useNavigate();
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companies, setCompanies] = useState<LeaderboardCompany[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const { haptic } = useTelegram();
@@ -20,11 +25,11 @@ const LeadersPage: React.FC = () => {
       try {
         if (query.trim()) {
            const suffix = `?search=${encodeURIComponent(query.trim())}`;
-           const response = await apiClient.get<ApiListResponse<any> | any[]>(`/companies/${suffix}`);
+           const response = await apiClient.get<ApiListResponse<LeaderboardCompany> | LeaderboardCompany[]>(`/companies/${suffix}`);
            setCompanies(Array.isArray(response.data) ? response.data : response.data.results);
         } else {
            // Base state shows the leaderboard !
-           const response = await apiClient.get<any[]>(`/companies/leaderboard/`);
+           const response = await apiClient.get<LeaderboardCompany[]>(`/companies/leaderboard/`);
            setCompanies(response.data);
         }
       } catch (error) {
@@ -100,11 +105,11 @@ const LeadersPage: React.FC = () => {
             <div className="flex-1">
               <h4 className="font-extrabold text-on-surface">{company.name}</h4>
               <div className="flex items-center gap-2 mt-1">
-                {(company as any).converted_leads !== undefined ? (
+                {company.converted_leads !== undefined ? (
                   <>
-                    <span className="text-[10px] font-bold text-emerald-500">{(company as any).converted_leads} sotuv</span>
+                    <span className="text-[10px] font-bold text-emerald-500">{company.converted_leads} sotuv</span>
                     <span className="w-1 h-1 bg-outline/20 rounded-full" />
-                    <span className="text-[10px] font-bold text-outline">{(company as any).total_leads} ta lead</span>
+                    <span className="text-[10px] font-bold text-outline">{company.total_leads} ta lead</span>
                   </>
                 ) : (
                   <>

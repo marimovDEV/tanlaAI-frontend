@@ -166,7 +166,7 @@ const SearchPage: React.FC = () => {
     const t = setTimeout(() => {
       if (searchTerm !== (searchParams.get('search') || '')) {
         const p = new URLSearchParams(searchParams);
-        searchTerm ? p.set('search', searchTerm) : p.delete('search');
+        if (searchTerm) { p.set('search', searchTerm); } else { p.delete('search'); }
         setSearchParams(p);
       }
     }, 480);
@@ -192,7 +192,7 @@ const SearchPage: React.FC = () => {
 
   const toggleCategory = (id: number) => {
     const p = new URLSearchParams(searchParams);
-    activeCategory === id.toString() ? p.delete('category') : p.set('category', id.toString());
+    if (activeCategory === id.toString()) { p.delete('category'); } else { p.set('category', id.toString()); }
     setSearchParams(p);
     haptic('light');
   };

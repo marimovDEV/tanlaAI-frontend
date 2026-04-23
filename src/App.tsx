@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
+import RequireCompany from './components/RequireCompany';
 import { TelegramProvider } from './contexts/TelegramContext';
 import MainLayout from './layout/MainLayout';
 import AdminLayout from './layout/AdminLayout';
@@ -76,17 +77,17 @@ function App() {
             <Route path="/visualize/new" element={<VisualizePickerPage />} />
             <Route path="/product/:id/visualize" element={<AIVisualizePage />} />
             <Route path="/product/:id/ai-generate" element={<AIVisualizePage />} />
-            <Route path="/product/:id/edit" element={<ProductFormPage />} />
+            <Route path="/product/:id/edit" element={<RequireCompany><ProductFormPage /></RequireCompany>} />
             <Route path="/product/:id/order" element={<OrderPage />} />
             <Route path="/company/:id" element={<CompanyDetailPage />} />
             
-            {/* Creator Dashboard Routes */}
-            <Route path="/creator" element={<CreatorDashboard />} />
-            <Route path="/creator/studio" element={<CreatorDashboard />} />
-            <Route path="/creator/studio/edit" element={<CompanyEditPage />} />
-            <Route path="/creator/product/add" element={<ProductFormPage />} />
-            <Route path="/creator/product/edit/:id" element={<ProductFormPage />} />
-            <Route path="/creator/leads" element={<LeadListView />} />
+            {/* Creator Dashboard Routes — faqat kompaniyasi bor foydalanuvchilar uchun */}
+            <Route path="/creator" element={<RequireCompany><CreatorDashboard /></RequireCompany>} />
+            <Route path="/creator/studio" element={<RequireCompany><CreatorDashboard /></RequireCompany>} />
+            <Route path="/creator/studio/edit" element={<RequireCompany><CompanyEditPage /></RequireCompany>} />
+            <Route path="/creator/product/add" element={<RequireCompany><ProductFormPage /></RequireCompany>} />
+            <Route path="/creator/product/edit/:id" element={<RequireCompany><ProductFormPage /></RequireCompany>} />
+            <Route path="/creator/leads" element={<RequireCompany><LeadListView /></RequireCompany>} />
             
             {/* Legacy Compatibility / Fallbacks */}
             {/* Disabled to prevent regular users from creating companies/products

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Settings,
@@ -109,7 +109,7 @@ export default function AdminSettingsPage() {
 
   const updateSetting = (
     key: keyof SettingsState,
-    value: any,
+    value: SettingsState[keyof SettingsState],
   ) => {
     setSettings((prev) => (prev ? { ...prev, [key]: value } : null));
   };
@@ -477,7 +477,7 @@ function Field({
   type?: string;
   step?: string;
   placeholder?: string;
-  icon?: any;
+  icon?: React.ElementType;
 }) {
   return (
     <div className="space-y-2.5">

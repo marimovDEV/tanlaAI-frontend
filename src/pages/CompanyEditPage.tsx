@@ -166,7 +166,7 @@ const CompanyEditPage: React.FC = () => {
     haptic('medium');
     
     if (!validate()) {
-      haptic('error' as any);
+      haptic('heavy');
       return;
     }
     
@@ -222,7 +222,7 @@ const CompanyEditPage: React.FC = () => {
         <input
           name={name}
           type={type}
-          value={(formData as any)[name] || ''}
+          value={String((formData as Record<string, unknown>)[name] ?? '')}
           onChange={handleInputChange}
           placeholder={placeholder}
           required={required}

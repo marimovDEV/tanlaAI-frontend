@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 interface ImageSliderProps {
   before: string;
@@ -18,6 +18,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
   aspectRatio = 'aspect-[4/3]'
 }) => {
   const [sliderPos, setSliderPos] = useState(50);
+  const [containerWidth, setContainerWidth] = useState<number | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
@@ -46,10 +47,21 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
     isDragging.current = false;
   };
 
+  const updateWidth = useCallback(() => {
+    if (containerRef.current) {
+      setContainerWidth(containerRef.current.offsetWidth);
+    }
+  }, []);
+
   useEffect(() => {
     window.addEventListener('mouseup', onEnd);
-    return () => window.removeEventListener('mouseup', onEnd);
-  }, []);
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => {
+      window.removeEventListener('mouseup', onEnd);
+      window.removeEventListener('resize', updateWidth);
+    };
+  }, [updateWidth]);
 
   return (
     <div 
@@ -75,7 +87,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
         <img 
           src={before} 
           className="absolute inset-0 h-full object-cover max-w-none pointer-events-none" 
-          style={{ width: containerRef.current?.offsetWidth }} 
+          style={{ width: containerWidth }}
           alt="Before" 
         />
       </div>

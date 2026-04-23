@@ -16,6 +16,7 @@ type Product = {
   name: string;
   description: string;
   price: string | null;
+  price_per_m2: string | null;
   image: string | null;
   images: ProductImage[];
   category: number | null;
@@ -27,6 +28,13 @@ type Product = {
   company: number | null;
   original_image: string | null;
   image_no_bg: string | null;
+  height: string | null;
+  width: string | null;
+  lead_time_days: number | null;
+  is_featured: boolean;
+  is_on_sale: boolean;
+  discount_price: string | null;
+  sale_end_date: string | null;
 };
 
 type Category = { id: number; name: string };
@@ -142,15 +150,15 @@ export default function AdminProductsPage() {
     setFormComp(String(p.company || ''));
     setFormImage(null);
     resetGallery();
-    setFormPricingType((p as any).price_per_m2 && !p.price ? 'per_m2' : 'total');
-    setFormPricePerM2((p as any).price_per_m2 || '');
-    setFormHeight((p as any).height || '');
-    setFormWidth((p as any).width || '');
-    setFormLeadTime((p as any).lead_time_days != null ? String((p as any).lead_time_days) : '3');
-    setFormIsFeatured(Boolean((p as any).is_featured));
-    setFormIsOnSale(Boolean((p as any).is_on_sale));
-    setFormDiscountPrice((p as any).discount_price || '');
-    setFormSaleEndDate((p as any).sale_end_date || '');
+    setFormPricingType(p.price_per_m2 && !p.price ? 'per_m2' : 'total');
+    setFormPricePerM2(p.price_per_m2 || '');
+    setFormHeight(p.height || '');
+    setFormWidth(p.width || '');
+    setFormLeadTime(p.lead_time_days != null ? String(p.lead_time_days) : '3');
+    setFormIsFeatured(Boolean(p.is_featured));
+    setFormIsOnSale(Boolean(p.is_on_sale));
+    setFormDiscountPrice(p.discount_price || '');
+    setFormSaleEndDate(p.sale_end_date || '');
     setShowForm(true);
   };
 
@@ -259,7 +267,7 @@ export default function AdminProductsPage() {
       fetchProducts(search);
       setSelectedIds([]);
       showToast("Mahsulotlar o'chirildi.");
-    } catch (e) {
+    } catch {
       showToast("Ba'zi mahsulotlarni o'chirishda xatolik yuz berdi", "error");
     } finally {
       setLoading(false);
@@ -274,7 +282,7 @@ export default function AdminProductsPage() {
       fetchProducts(search);
       setSelectedIds([]);
       showToast("SI qayta ishlash boshlandi.");
-    } catch (e) {
+    } catch {
       showToast("Xatolik yuz berdi", "error");
     } finally {
       setLoading(false);
@@ -323,7 +331,7 @@ export default function AdminProductsPage() {
             showToast("AI ishlashida xatolik yuz berdi", "error");
           }
         }
-      } catch (e) {
+      } catch {
         if (pollInterval.current) clearInterval(pollInterval.current);
       }
     }, 3000);
@@ -487,7 +495,7 @@ export default function AdminProductsPage() {
                           {/* Main image — prefer gallery is_main, fallback original_image, then image */}
                           {(() => {
                             const mainImg = p.images?.find(i => i.is_main)?.image
-                              || (p as any).original_image
+                              || p.original_image
                               || p.image;
                             const src = mainImg
                               ? (mainImg.startsWith('http') ? mainImg : `${MEDIA_BASE}${mainImg}`)
@@ -905,15 +913,15 @@ export default function AdminProductsPage() {
               <div>
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
                   Gallery rasmlari (max 4)
-                  {editing && (editing as any).images?.length > 0 && (
-                    <span className="ml-2 text-emerald-500">• Mavjud: {(editing as any).images.length} ta</span>
+                  {editing && editing.images?.length > 0 && (
+                    <span className="ml-2 text-emerald-500">• Mavjud: {editing.images.length} ta</span>
                   )}
                 </label>
 
                 {/* Existing gallery (edit mode) */}
-                {editing && (editing as any).images?.length > 0 && (
+                {editing && editing.images?.length > 0 && (
                   <div className="flex gap-2 flex-wrap mb-3">
-                    {((editing as any).images as ProductImage[]).map(img => (
+                    {editing.images.map(img => (
                       <div key={img.id} className="relative w-16 h-16">
                         <img
                           src={img.image.startsWith('http') ? img.image : `${MEDIA_BASE}${img.image}`}

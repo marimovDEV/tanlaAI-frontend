@@ -46,6 +46,7 @@ const VisualizationsPage: React.FC = () => {
 
   useEffect(() => {
     fetchResults();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDelete = async (id: number) => {

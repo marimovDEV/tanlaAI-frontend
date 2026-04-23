@@ -62,8 +62,8 @@ export default function AdminPromotionsPage() {
     try {
       const { data } = await apiClient.post(`admin/promotions/${id}/broadcast/`);
       showToast(`📢 ${data.sent} ta foydalanuvchiga yuborildi!`, 'success');
-    } catch (error: any) {
-      const msg = error.response?.data?.detail || "Broadcast xatosi";
+    } catch (error: unknown) {
+      const msg = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "Broadcast xatosi";
       showToast(msg, 'error');
     } finally {
       setBroadcasting(null);

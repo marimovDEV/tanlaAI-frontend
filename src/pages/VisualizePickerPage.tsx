@@ -50,7 +50,7 @@ const VisualizePickerPage: React.FC = () => {
     if (roomFile) {
       const reader = new FileReader();
       reader.onload = () => {
-        try { sessionStorage.setItem('visualizer_room_b64', reader.result as string); } catch {}
+        try { sessionStorage.setItem('visualizer_room_b64', reader.result as string); } catch { /* storage unavailable */ }
         navigate(`/product/${selected}/visualize`);
       };
       reader.readAsDataURL(roomFile);

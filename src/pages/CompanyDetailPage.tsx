@@ -12,7 +12,7 @@ import { getMediaUrl } from '../utils/media';
 
 const openLink = (url: string) => {
   try {
-    const tg = (window as any).Telegram?.WebApp;
+    const tg = (window as Window & { Telegram?: { WebApp?: { openLink?: (url: string) => void } } }).Telegram?.WebApp;
     if (tg?.openLink) tg.openLink(url);
     else window.open(url, '_blank');
   } catch { window.open(url, '_blank'); }

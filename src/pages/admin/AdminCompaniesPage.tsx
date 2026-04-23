@@ -31,18 +31,18 @@ type Company = {
 
 type StatusType = 'active' | 'warning' | 'expired';
 
-export const getCompanyStatus = (deadline: string | null): StatusType => {
+const getCompanyStatus = (deadline: string | null): StatusType => {
   if (!deadline) return 'expired';
   const now = new Date();
   const due = new Date(deadline);
   const diff = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-  
+
   if (diff <= 0) return 'expired';
   if (diff <= 3) return 'warning';
   return 'active';
 };
 
-export const getDaysLeft = (deadline: string | null) => {
+const getDaysLeft = (deadline: string | null) => {
   if (!deadline) return 0;
   const now = new Date();
   const due = new Date(deadline);
