@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Store, Search, Percent, User, Building2, Heart,
+  Store, Search, Percent, User, Building2,
   LayoutDashboard, Inbox, PlusCircle, Building,
 } from 'lucide-react';
 import { useTelegram } from '../contexts/useTelegram';
