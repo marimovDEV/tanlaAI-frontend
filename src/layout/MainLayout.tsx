@@ -14,7 +14,7 @@ function cn(...inputs: ClassValue[]) {
 
 /* ── Root paths per role ──────────────────────────────────────── */
 const USER_ROOT_PATHS   = new Set(['/', '/search', '/discounts', '/wishlist', '/profile']);
-const SELLER_ROOT_PATHS = new Set(['/creator', '/creator/leads', '/visualizations', '/profile']);
+const SELLER_ROOT_PATHS = new Set(['/creator', '/creator/leads', '/profile']);
 
 /* ── Nav items ────────────────────────────────────────────────── */
 const userNavItems = [
@@ -31,7 +31,6 @@ const sellerNavLeft  = [
   { to: '/creator/leads', icon: Inbox,           label: 'Leadlar'   },
 ];
 const sellerNavRight = [
-  { to: '/visualizations', icon: ImagePlay, label: 'AI' },
   { to: '/profile',        icon: User,      label: 'Profil' },
 ];
 
@@ -220,15 +219,7 @@ const MainLayout: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              {!isSeller && (
-                <NavLink
-                  to="/visualize/new"
-                  className="hidden md:flex lg:hidden items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-black text-white"
-                  style={{ background: 'linear-gradient(135deg, #00C9B1, #0096FF)' }}
-                >
-                  <Sparkles size={13} /> AI
-                </NavLink>
-              )}
+
               {isSeller && (
                 <button
                   onClick={() => { haptic('medium'); navigate('/creator/product/add'); }}

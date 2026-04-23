@@ -312,23 +312,7 @@ const CreatorDashboard: React.FC = () => {
           {newLeads === 0 && <ChevronRight size={18} color="#C0C0CE" />}
         </button>
 
-        {/* AI results */}
-        <button
-          onClick={() => { haptic('light'); navigate('/visualizations'); }}
-          className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform bg-white"
-          style={{ boxShadow: '0 4px 16px rgba(26,26,46,0.06)' }}
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-[14px] flex items-center justify-center" style={{ background: 'rgba(0,201,177,0.1)' }}>
-              <Sparkles size={20} color="#00C9B1" />
-            </div>
-            <div className="text-left">
-              <p className="text-[14px] font-black text-[#1A1A2E]">AI natijalar</p>
-              <p className="text-[10px] text-[#8A8A99] font-bold uppercase tracking-wider">Mijozlar sinab ko'rgan</p>
-            </div>
-          </div>
-          <ChevronRight size={18} color="#C0C0CE" />
-        </button>
+
 
         {/* View my company page */}
         {company && (

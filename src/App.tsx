@@ -71,10 +71,10 @@ function App() {
             <Route path="/leaders" element={<LeadersPage />} />
             <Route path="/discounts" element={<DiscountsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/visualizations" element={<VisualizationsPage />} />
+
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
-            <Route path="/visualize/new" element={<VisualizePickerPage />} />
+
             <Route path="/product/:id/visualize" element={<AIVisualizePage />} />
             <Route path="/product/:id/ai-generate" element={<AIVisualizePage />} />
             <Route path="/product/:id/edit" element={<RequireCompany><ProductFormPage /></RequireCompany>} />
