@@ -22,6 +22,7 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import AdminSystemPage from './pages/AdminSystemPage';
 import OrderPage from './pages/OrderPage';
 import CompanyCreatePage from './pages/CompanyCreatePage';
+import SubscriptionPage from './pages/SubscriptionPage';
 
 // Admin pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -70,6 +71,7 @@ function App() {
             <Route path="/companies" element={<CompanyListPage />} />
             <Route path="/discounts" element={<DiscountsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/subscription" element={<SubscriptionPage />} />
 
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />

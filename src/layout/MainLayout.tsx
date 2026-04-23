@@ -80,7 +80,7 @@ const MainLayout: React.FC = () => {
   const location = useLocation();
   const navigate  = useNavigate();
 
-  const isSeller  = profile?.role === 'COMPANY' && Boolean(profile?.has_company);
+  const isSeller  = profile?.role === 'COMPANY' && Boolean(profile?.has_company) && profile?.company_status === 'active';
   const rootPaths = isSeller ? SELLER_ROOT_PATHS : USER_ROOT_PATHS;
 
   /* ── Telegram native Back Button ── */

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, User, ChevronRight, ShieldCheck, LayoutDashboard, Store } from 'lucide-react';
+import { Heart, User, ChevronRight, ShieldCheck, LayoutDashboard, Store, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import type { ApiListResponse, Product, WishlistItem } from '../types';
@@ -13,7 +13,7 @@ const ProfilePage: React.FC = () => {
   const { user: tgUser, haptic, profile } = useTelegram();
 
   const hasCompany = Boolean(profile?.has_company);
-  const isVerifiedSeller = profile?.role === 'COMPANY' && hasCompany;
+  const isVerifiedSeller = profile?.role === 'COMPANY' && hasCompany && profile?.company_status === 'active';
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -127,27 +127,52 @@ const ProfilePage: React.FC = () => {
 
         {/* Seller/Company Actions */}
         {hasCompany ? (
-          <button
-            onClick={() => { haptic('light'); navigate('/creator'); }}
-            className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform"
-            style={{ background: '#fff', boxShadow: '0 4px 16px rgba(26,26,46,0.06)' }}
-          >
-            <div className="flex items-center gap-3.5">
-              <div
-                className="w-11 h-11 rounded-[14px] flex items-center justify-center"
-                style={{ background: 'rgba(255,107,53,0.08)' }}
+          <div className="space-y-2.5">
+            <button
+              onClick={() => { haptic('light'); navigate('/creator'); }}
+              className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform"
+              style={{ background: '#fff', boxShadow: '0 4px 16px rgba(26,26,46,0.06)' }}
+            >
+              <div className="flex items-center gap-3.5">
+                <div
+                  className="w-11 h-11 rounded-[14px] flex items-center justify-center"
+                  style={{ background: 'rgba(255,107,53,0.08)' }}
+                >
+                  <LayoutDashboard size={20} color="#FF6B35" />
+                </div>
+                <div>
+                  <p className="text-[14px] font-black text-[#1A1A2E]">Dashboardga kirish</p>
+                  <p className="text-[10px] font-bold text-[#B0B0BF] uppercase tracking-widest">
+                    {isVerifiedSeller ? 'Sotuvchi paneli' : 
+                     profile?.company_status === 'review' ? 'To\'lov tekshirilmoqda' : 'Kompaniya paneli'}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight size={16} color="#C0C0CE" />
+            </button>
+
+            {profile?.company_status === 'pending' && (
+              <button
+                onClick={() => { haptic('light'); navigate('/subscription'); }}
+                className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform border-2 border-dashed border-orange-200"
+                style={{ background: 'rgba(255,107,53,0.02)' }}
               >
-                <LayoutDashboard size={20} color="#FF6B35" />
-              </div>
-              <div>
-                <p className="text-[14px] font-black text-[#1A1A2E]">Dashboardga kirish</p>
-                <p className="text-[10px] font-bold text-[#B0B0BF] uppercase tracking-widest">
-                  {isVerifiedSeller ? 'Sotuvchi paneli' : 'Tekshirilmoqda...'}
-                </p>
-              </div>
-            </div>
-            <ChevronRight size={16} color="#C0C0CE" />
-          </button>
+                <div className="flex items-center gap-3.5">
+                  <div
+                    className="w-11 h-11 rounded-[14px] flex items-center justify-center"
+                    style={{ background: 'rgba(255,107,53,0.1)' }}
+                  >
+                    <CreditCard size={20} color="#FF6B35" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[14px] font-black text-[#1A1A2E]">Obunani faollashtirish</p>
+                    <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest">To'lov qilish kerak</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} color="#FF6B35" />
+              </button>
+            )}
+          </div>
         ) : (
           <button
             onClick={() => { haptic('light'); navigate('/company/create'); }}

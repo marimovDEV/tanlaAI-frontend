@@ -49,8 +49,8 @@ const CompanyCreatePage: React.FC = () => {
         await apiClient.post('companies/', formData);
       }
       haptic('medium');
-      // Wait a tick then go to creator dashboard
-      setTimeout(() => navigate('/creator', { replace: true }), 500);
+      // Wait a tick then go to subscription page
+      setTimeout(() => navigate('/subscription', { replace: true }), 500);
     } catch (error: unknown) {
       console.error('Error creating company:', error);
       haptic('heavy');
