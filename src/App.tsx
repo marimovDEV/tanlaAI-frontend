@@ -21,6 +21,7 @@ import CompanyDetailPage from './pages/CompanyDetailPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminSystemPage from './pages/AdminSystemPage';
 import OrderPage from './pages/OrderPage';
+import CompanyCreatePage from './pages/CompanyCreatePage';
 
 // Admin pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -77,6 +78,8 @@ function App() {
             <Route path="/product/:id/ai-generate" element={<AIVisualizePage />} />
             <Route path="/product/:id/edit" element={<RequireCompany><ProductFormPage /></RequireCompany>} />
             <Route path="/product/:id/order" element={<OrderPage />} />
+            
+            <Route path="/company/create" element={<CompanyCreatePage />} />
             <Route path="/company/:id" element={<CompanyDetailPage />} />
             
             {/* Creator Dashboard Routes — faqat kompaniyasi bor foydalanuvchilar uchun */}
@@ -86,12 +89,6 @@ function App() {
             <Route path="/creator/product/add" element={<RequireCompany><ProductFormPage /></RequireCompany>} />
             <Route path="/creator/product/edit/:id" element={<RequireCompany><ProductFormPage /></RequireCompany>} />
             <Route path="/creator/leads" element={<RequireCompany><LeadListView /></RequireCompany>} />
-            
-            {/* Legacy Compatibility / Fallbacks */}
-            {/* Disabled to prevent regular users from creating companies/products
-            <Route path="/company/create" element={<CompanyCreatePage />} />
-            <Route path="/product/create" element={<ProductCreatePage />} />
-            */}
           </Route>
 
           {/* Catch-all: unknown routes -> home */}
