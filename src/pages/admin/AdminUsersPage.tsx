@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
+import { useTelegram } from '../../contexts/useTelegram';
 
 type TgUser = {
   id: number;
@@ -31,6 +32,7 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const { profile, refreshProfile } = useTelegram();
 
   const fetchUsers = useCallback(async (q = '') => {
     setLoading(true);
@@ -60,6 +62,11 @@ export default function AdminUsersPage() {
     try {
       const { data } = await apiClient.post(`/admin/users/${id}/set-role/`, { role });
       setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)));
+      
+      // If we are updating our own role, refresh the profile to update UI permissions
+      if (profile && profile.id === id) {
+        await refreshProfile();
+      }
     } catch (err) {
       console.error('Error updating role:', err);
       alert('Rolni yangilashda xatolik yuz berdi.');
