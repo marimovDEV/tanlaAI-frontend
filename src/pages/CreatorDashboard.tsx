@@ -3,7 +3,7 @@ import { isAxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
   Package, Inbox, Settings, PlusCircle, ChevronRight,
-  TrendingUp, Sparkles, Phone, MessageCircle, Play,
+  TrendingUp, Phone, MessageCircle, Play,
   MapPin, Edit3, Eye,
 } from 'lucide-react';
 import apiClient from '../api/client';

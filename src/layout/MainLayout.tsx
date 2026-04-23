@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Store, Search, Percent, User, Building2, Sparkles, Heart,
-  LayoutDashboard, Inbox, PlusCircle, ImagePlay,
+  Store, Search, Percent, User, Building2, Heart,
+  LayoutDashboard, Inbox, PlusCircle,
 } from 'lucide-react';
 import { useTelegram } from '../contexts/useTelegram';
 import { clsx, type ClassValue } from 'clsx';
@@ -80,7 +80,7 @@ const MainLayout: React.FC = () => {
   const location = useLocation();
   const navigate  = useNavigate();
 
-  const isSeller  = Boolean(profile?.has_company);
+  const isSeller  = profile?.role === 'COMPANY' && Boolean(profile?.has_company);
   const rootPaths = isSeller ? SELLER_ROOT_PATHS : USER_ROOT_PATHS;
 
   /* ── Telegram native Back Button ── */

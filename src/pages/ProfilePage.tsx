@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, User, ChevronRight, Sparkles, ShieldCheck } from 'lucide-react';
+import { Heart, User, ChevronRight, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import type { ApiListResponse, Product, WishlistItem } from '../types';

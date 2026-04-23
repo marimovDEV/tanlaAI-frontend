@@ -11,7 +11,6 @@ import DiscountsPage from './pages/DiscountsPage';
 import ProfilePage from './pages/ProfilePage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import AIVisualizePage from './pages/AIVisualizePage';
-import VisualizationsPage from './pages/VisualizationsPage';
 import SharePage from './pages/SharePage';
 import CreatorDashboard from './pages/CreatorDashboard';
 import ProductFormPage from './pages/ProductFormPage';
@@ -21,7 +20,6 @@ import WishlistPage from './pages/WishlistPage';
 import CompanyDetailPage from './pages/CompanyDetailPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminSystemPage from './pages/AdminSystemPage';
-import VisualizePickerPage from './pages/VisualizePickerPage';
 import OrderPage from './pages/OrderPage';
 
 // Admin pages

@@ -34,8 +34,8 @@ const RequireCompany: React.FC<{ children: React.ReactNode }> = ({ children }) =
     );
   }
 
-  // Auth tayyor, lekin kompaniya yo'q → bosh sahifaga qaytaramiz
-  if (!profile?.has_company) {
+  // Auth tayyor, lekin kompaniya roli yo'q yoki tasdiqlanmagan → bosh sahifaga qaytaramiz
+  if (profile?.role !== 'COMPANY' || !profile?.has_company) {
     return <Navigate to="/" replace />;
   }
 
