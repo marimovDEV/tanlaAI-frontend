@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Store, Search, Percent, User, Building2, Heart,
-  LayoutDashboard, Inbox, PlusCircle,
+  LayoutDashboard, Inbox, PlusCircle, Building,
 } from 'lucide-react';
 import { useTelegram } from '../contexts/useTelegram';
 import { clsx, type ClassValue } from 'clsx';
@@ -13,16 +13,16 @@ function cn(...inputs: ClassValue[]) {
 }
 
 /* ── Root paths per role ──────────────────────────────────────── */
-const USER_ROOT_PATHS   = new Set(['/', '/search', '/discounts', '/wishlist', '/profile']);
+const USER_ROOT_PATHS   = new Set(['/', '/search', '/discounts', '/companies', '/profile']);
 const SELLER_ROOT_PATHS = new Set(['/creator', '/creator/leads', '/profile']);
 
 /* ── Nav items ────────────────────────────────────────────────── */
 const userNavItems = [
-  { to: '/',          icon: Store,   label: "Do'kon"  },
-  { to: '/search',    icon: Search,  label: 'Qidiruv' },
-  { to: '/discounts', icon: Percent, label: 'Aksiya'  },
-  { to: '/wishlist',  icon: Heart,   label: 'Sevimli' },
-  { to: '/profile',   icon: User,    label: 'Profil'  },
+  { to: '/',          icon: Store,     label: "Do'kon"  },
+  { to: '/search',    icon: Search,    label: 'Qidiruv' },
+  { to: '/discounts', icon: Percent,   label: 'Aksiya'  },
+  { to: '/companies', icon: Building,  label: 'Kampaniyalar' },
+  { to: '/profile',   icon: User,      label: 'Profil'  },
 ];
 
 /* Seller nav — 5 items with ➕ center */

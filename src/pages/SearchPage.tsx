@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, X, LayoutGrid, SlidersHorizontal, Building2, MapPin, Package } from 'lucide-react';
+import { Search, X, LayoutGrid, SlidersHorizontal, Building2, MapPin, Package, Heart } from 'lucide-react';
 import apiClient from '../api/client';
 import type { ApiListResponse, Product, Category, Company } from '../types';
 import { useTelegram } from '../contexts/useTelegram';
@@ -128,8 +128,10 @@ const SearchPage: React.FC = () => {
       let url = '/products/?';
       const cat = searchParams.get('category');
       const q   = searchParams.get('search');
+      const wish = searchParams.get('is_wishlisted');
       if (cat) url += `category=${cat}&`;
       if (q)   url += `search=${q}&`;
+      if (wish) url += `is_wishlisted=${wish}&`;
       const res = await apiClient.get<ApiListResponse<Product> | Product[]>(url);
       setProducts(Array.isArray(res.data) ? res.data : res.data.results);
     } catch (e) {
@@ -283,6 +285,22 @@ const SearchPage: React.FC = () => {
               }
             >
               Barchasi
+            </button>
+            <button
+              onClick={() => {
+                const p = new URLSearchParams(searchParams);
+                if (p.get('is_wishlisted')) { p.delete('is_wishlisted'); } else { p.set('is_wishlisted', 'true'); }
+                setSearchParams(p);
+                haptic('light');
+              }}
+              className="flex-shrink-0 snap-start px-4 py-2 rounded-full text-[12px] font-black whitespace-nowrap transition-all active:scale-95 flex items-center gap-1.5"
+              style={searchParams.get('is_wishlisted') === 'true'
+                ? { background: 'rgba(255,45,85,0.12)', color: '#FF2D55', border: '1.5px solid #FF2D55' }
+                : { background: '#fff', color: '#8A8A99', border: '1.5px solid rgba(26,26,46,0.08)' }
+              }
+            >
+              <Heart size={14} fill={searchParams.get('is_wishlisted') === 'true' ? '#FF2D55' : 'transparent'} />
+              Sevimli
             </button>
             {categories.map(cat => (
               <button

@@ -6,7 +6,7 @@ import MainLayout from './layout/MainLayout';
 import AdminLayout from './layout/AdminLayout';
 import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
-import LeadersPage from './pages/LeadersPage';
+import CompanyListPage from './pages/CompanyListPage';
 import DiscountsPage from './pages/DiscountsPage';
 import ProfilePage from './pages/ProfilePage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -66,7 +66,7 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="/leaders" element={<LeadersPage />} />
+            <Route path="/companies" element={<CompanyListPage />} />
             <Route path="/discounts" element={<DiscountsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
 

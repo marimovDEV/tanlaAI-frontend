@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Star, ArrowUpRight, Search } from 'lucide-react';
+import { Building, Star, ArrowUpRight, Search } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
 import type { ApiListResponse, Company } from '../types';
@@ -12,7 +12,7 @@ interface LeaderboardCompany extends Company {
   total_leads?: number;
 }
 
-const LeadersPage: React.FC = () => {
+const CompanyListPage: React.FC = () => {
   const navigate = useNavigate();
   const [companies, setCompanies] = useState<LeaderboardCompany[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,10 +50,10 @@ const LeadersPage: React.FC = () => {
     <div className="p-6 pb-24 space-y-8">
       <div className="text-center space-y-2">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
-          <Trophy size={32} />
+          <Building size={32} />
         </div>
-        <h2 className="text-2xl font-extrabold text-on-surface">Eng yaxshi ustalar</h2>
-        <p className="text-xs text-outline font-medium">Eng yaxshi mahsulotlarni yaratuvchi top studiyalar.</p>
+        <h2 className="text-2xl font-extrabold text-on-surface">Kampaniyalar</h2>
+        <p className="text-xs text-outline font-medium">Barcha studiyalar va do'konlar katalogi.</p>
       </div>
 
       <div className="relative">
@@ -135,4 +135,4 @@ const LeadersPage: React.FC = () => {
   );
 };
 
-export default LeadersPage;
+export default CompanyListPage;
