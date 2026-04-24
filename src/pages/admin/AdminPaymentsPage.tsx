@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   Search, CheckCircle2, XCircle, Clock, 
   Eye, FileText, Building2, Calendar, 
@@ -11,6 +12,7 @@ import { getMediaUrl } from '../../utils/media';
 import type { Payment } from '../../types';
 
 export default function AdminPaymentsPage() {
+  const { search: urlSearch } = useLocation();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -28,20 +30,29 @@ export default function AdminPaymentsPage() {
       if (statusFilter !== 'all') params.status = statusFilter;
       
       const { data } = await apiClient.get('admin/payments/', { params });
-      setPayments(data.results ?? data);
+      const results = data.results ?? data;
+      setPayments(results);
+
+      // Auto-open modal if ID is in URL
+      const urlParams = new URLSearchParams(urlSearch);
+      const paymentId = urlParams.get('id');
+      if (paymentId) {
+        const p = results.find((item: Payment) => item.id === Number(paymentId));
+        if (p) setSelectedPayment(p);
+      }
     } catch (err) {
       console.error('Error fetching payments:', err);
     } finally {
       setLoading(false);
     }
-  }, [statusFilter]);
+  }, [statusFilter, urlSearch]);
 
   useEffect(() => {
     fetchPayments();
   }, [fetchPayments]);
 
-  const handleApprove = async (id: number) => {
-    if (!window.confirm("Ushbu to'lovni tasdiqlaysizmi? Kompaniya obunasi uzaytiriladi.")) return;
+  const handleApprove = async (id: number, skipConfirm = false) => {
+    if (!skipConfirm && !window.confirm("Ushbu to'lovni tasdiqlaysizmi? Kompaniya obunasi uzaytiriladi.")) return;
     
     setSubmitting(true);
     try {
@@ -342,7 +353,7 @@ export default function AdminPaymentsPage() {
                           </button>
                           <button 
                             disabled={submitting}
-                            onClick={() => handleApprove(selectedPayment.id)}
+                            onClick={() => handleApprove(selectedPayment.id, true)}
                             className="h-14 bg-emerald-500 text-white rounded-[20px] text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
                           >
                             {submitting ? "Yuklanmoqda..." : <><CheckCircle2 size={18} /> Tasdiqlash</>}

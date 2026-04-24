@@ -28,6 +28,8 @@ type Company = {
   phone?: string;
   youtube_link?: string;
   is_vip: boolean;
+  status: string;
+  pending_payment_id?: number | null;
 };
 
 type StatusType = 'active' | 'warning' | 'expired';
@@ -389,12 +391,21 @@ export default function AdminCompaniesPage() {
               </div>
 
               <div className="mt-auto">
-                <button
-                  onClick={() => handleAcceptPayment(c.id)}
-                  className="w-full h-12 bg-emerald-500 text-white rounded-[20px] text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20 active:scale-[0.98] flex items-center justify-center gap-2 mb-4"
-                >
-                  <CreditCard size={16} /> To'lov qabul qilindi
-                </button>
+                {c.pending_payment_id ? (
+                  <button
+                    onClick={() => navigate(`/adminka/payments?id=${c.pending_payment_id}`)}
+                    className="w-full h-12 bg-sky-500 text-white rounded-[20px] text-[11px] font-black uppercase tracking-widest hover:bg-sky-600 transition-colors shadow-lg shadow-sky-500/20 active:scale-[0.98] flex items-center justify-center gap-2 mb-4"
+                  >
+                    <Search size={16} /> To'lovni tekshirish
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleAcceptPayment(c.id)}
+                    className="w-full h-12 bg-emerald-500 text-white rounded-[20px] text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20 active:scale-[0.98] flex items-center justify-center gap-2 mb-4"
+                  >
+                    <CreditCard size={16} /> To'lov qabul qilindi
+                  </button>
+                )}
                 
                 {/* Deadline & Settings */}
                 <div className="relative flex items-center justify-between pt-4 border-t border-slate-100/60">
