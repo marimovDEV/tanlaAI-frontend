@@ -104,25 +104,25 @@ const CompanyListPage: React.FC = () => {
 
             <div className="flex-1">
               <h4 className="font-extrabold text-on-surface">{company.name}</h4>
-              <div className="flex items-center gap-2 mt-1">
-                {company.converted_leads !== undefined ? (
-                  <>
-                    <span className="text-[10px] font-bold text-emerald-500">{company.converted_leads} sotuv</span>
-                    <span className="w-1 h-1 bg-outline/20 rounded-full" />
-                    <span className="text-[10px] font-bold text-outline">{company.total_leads} ta lead</span>
-                  </>
-                ) : (
-                  <>
-                      <span className="text-[10px] font-bold text-outline truncate max-w-[120px]">{company.location}</span>
-                      <span className="w-1 h-1 bg-outline/20 rounded-full" />
-                      {company.is_vip ? (
-                        <span className="text-[10px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">Hamkor</span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-primary">Tasdiqlangan do'kon</span>
-                      )}
-                   </>
-                )}
+              <div className="flex flex-col gap-1 mt-1">
+                <div className="flex items-center gap-2 text-[10px] font-bold">
+                  <span className="text-emerald-500">{company.converted_leads || 0} sotuv</span>
+                  <span className="w-1 h-1 bg-outline/20 rounded-full" />
+                  <span className="text-outline">{company.total_leads || 0} ta lead</span>
+                  <span className="w-1 h-1 bg-outline/20 rounded-full" />
+                  <span className="text-sky-500">{company.ai_usage || 0} visual</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-outline truncate max-w-[120px]">{company.location}</span>
+                  <span className="w-1 h-1 bg-outline/20 rounded-full" />
+                  {company.is_vip ? (
+                    <span className="text-[10px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">Hamkor</span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-primary">Tasdiqlangan do'kon</span>
+                  )}
+                </div>
               </div>
+            </div>
             </div>
 
             <span className="w-10 h-10 rounded-full bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
