@@ -112,6 +112,7 @@ const CompanyListPage: React.FC = () => {
                     <span className="text-[10px] font-bold text-outline">{company.total_leads} ta lead</span>
                   </>
                 ) : (
+                  <>
                       <span className="text-[10px] font-bold text-outline truncate max-w-[120px]">{company.location}</span>
                       <span className="w-1 h-1 bg-outline/20 rounded-full" />
                       {company.is_vip ? (
