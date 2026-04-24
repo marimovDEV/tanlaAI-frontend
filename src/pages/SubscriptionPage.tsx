@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  CreditCard, 
   Upload, 
   ChevronLeft, 
   CheckCircle2, 
   Clock, 
   ShieldCheck, 
   Copy,
-  ExternalLink,
-  Info
 } from 'lucide-react';
 import apiClient from '../api/client';
 import { useTelegram } from '../contexts/useTelegram';
