@@ -7,7 +7,7 @@ import { cn } from '../utils/cn';
 
 const CompanyCreatePage: React.FC = () => {
   const navigate = useNavigate();
-  const { haptic } = useTelegram();
+  const { haptic, refreshProfile } = useTelegram();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -48,6 +48,11 @@ const CompanyCreatePage: React.FC = () => {
       } else {
         await apiClient.post('companies/', formData);
       }
+      haptic('medium');
+      
+      // Refresh profile to get the new has_company and role state
+      await refreshProfile();
+      
       haptic('medium');
       // Wait a tick then go to subscription page
       setTimeout(() => navigate('/subscription', { replace: true }), 500);
