@@ -83,6 +83,22 @@ const MainLayout: React.FC = () => {
   const isSeller  = profile?.role === 'COMPANY' && Boolean(profile?.has_company);
   const rootPaths = isSeller ? SELLER_ROOT_PATHS : USER_ROOT_PATHS;
 
+  /* ── Subscription Guard ── */
+  useEffect(() => {
+    if (!ready || !profile) return;
+    
+    // If company hasn't paid, force them to subscription page
+    // (Excluding those in review status or VIPs)
+    const isUnpaid = profile.role === 'COMPANY' && 
+                     profile.has_company && 
+                     (profile.company_status === 'pending_payment' || profile.company_status === 'expired') && 
+                     !profile.company_is_vip;
+
+    if (isUnpaid && location.pathname !== '/subscription') {
+      navigate('/subscription', { replace: true });
+    }
+  }, [ready, profile, location.pathname, navigate]);
+
   /* ── Telegram native Back Button ── */
   useEffect(() => {
     if (!webApp?.isVersionAtLeast?.('6.1')) return;
@@ -239,7 +255,54 @@ const MainLayout: React.FC = () => {
           style={{ paddingTop: 'calc(4rem + var(--sat))' }}
         >
           <div className="max-w-screen-xl mx-auto w-full">
-            <Outlet />
+            {/* Status-based blocking overlays for Companies */}
+            {profile?.role === 'COMPANY' && 
+             profile.has_company && 
+             !profile.company_is_vip && 
+             profile.company_status !== 'active' && 
+             location.pathname !== '/subscription' ? (
+              <div className="px-6 py-20 flex flex-col items-center justify-center text-center">
+                 {profile.company_status === 'review' || profile.company_status === 'waiting_confirmation' ? (
+                   <>
+                     <div className="w-20 h-20 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                     </div>
+                     <h2 className="text-xl font-black text-slate-800 mb-2">Tasdiqlanish kutilmoqda</h2>
+                     <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">
+                       To'lovingiz tekshirilmoqda. Admin tasdiqlashi bilan barcha imkoniyatlar ochiladi.
+                     </p>
+                   </>
+                 ) : profile.company_status === 'blocked' ? (
+                   <>
+                     <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6">
+                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                     </div>
+                     <h2 className="text-xl font-black text-slate-800 mb-2">Kirish cheklangan</h2>
+                     <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">
+                       Sizning do'koningiz admin tomonidan bloklangan.
+                     </p>
+                   </>
+                 ) : (
+                   <div className="flex flex-col items-center">
+                     <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-6">
+                        <CreditCard size={32} />
+                     </div>
+                     <h2 className="text-xl font-black text-slate-800 mb-2">Obuna faol emas</h2>
+                     <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">
+                       Davom etish uchun obunani faollashtiring.
+                     </p>
+                     <button 
+                       onClick={() => navigate('/subscription')}
+                       className="px-8 py-3 bg-[#FF6B35] text-white rounded-xl font-bold active:scale-95 transition-all shadow-lg shadow-orange-500/20"
+                     >
+                       To'lov sahifasiga o'tish
+                     </button>
+                   </div>
+                 )}
+              </div>
+            ) : (
+              <Outlet />
+            )}
           </div>
         </main>
 
