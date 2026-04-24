@@ -147,6 +147,14 @@ const CompanyDetailPage: React.FC = () => {
         {/* Name + badges */}
         <div className="flex items-center justify-center gap-2 mb-1">
           <h1 className="text-[22px] font-black text-[#1A1A2E]">{company.name}</h1>
+          {company.is_vip && (
+            <span
+              className="text-[9px] font-black text-white px-2 py-0.5 rounded-full"
+              style={{ background: 'linear-gradient(135deg,#FFB800,#FF9500)' }}
+            >
+              HAMKOR
+            </span>
+          )}
           {company.is_currently_active && (
             <span
               className="text-[9px] font-black text-white px-2 py-0.5 rounded-full"
