@@ -82,13 +82,27 @@ export default function AdminSettingsPage() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const [settingsRes, billingRes] = await Promise.all([
+      const [settingsRes, billingRes] = await Promise.allSettled([
         apiClient.get("/admin/system-settings/"),
         apiClient.get("/admin/billing/")
       ]);
-      setSettings({ ...settingsRes.data, ...billingRes.data });
+
+      const data: any = {};
+      if (settingsRes.status === 'fulfilled') {
+        Object.assign(data, settingsRes.value.data);
+      } else {
+        console.error("Settings load failed", settingsRes.reason);
+      }
+
+      if (billingRes.status === 'fulfilled') {
+        Object.assign(data, billingRes.value.data);
+      } else {
+        console.error("Billing load failed", billingRes.reason);
+      }
+
+      setSettings(data);
     } catch (e) {
-      console.error("Settings load failed", e);
+      console.error("Critical settings load error", e);
     } finally {
       setLoading(false);
     }
