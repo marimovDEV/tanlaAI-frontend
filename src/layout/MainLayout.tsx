@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Store, Search, Percent, User, Building2,
-  LayoutDashboard, Inbox, PlusCircle, Building,
+  LayoutDashboard, Inbox, PlusCircle, Building, CreditCard
 } from 'lucide-react';
 import { useTelegram } from '../contexts/useTelegram';
 import { clsx, type ClassValue } from 'clsx';
@@ -76,7 +76,7 @@ const NavItem: React.FC<{
 
 /* ── Main Layout ──────────────────────────────────────────────── */
 const MainLayout: React.FC = () => {
-  const { haptic, profile, webApp } = useTelegram();
+  const { haptic, profile, webApp, ready } = useTelegram();
   const location = useLocation();
   const navigate  = useNavigate();
 
