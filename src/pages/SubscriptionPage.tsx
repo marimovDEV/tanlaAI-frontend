@@ -27,12 +27,13 @@ const SubscriptionPage: React.FC = () => {
   const PRICE = "100 000";
 
   useEffect(() => {
-    // If company is already active, go to dashboard
+    // If company is already active or is VIP, go to dashboard
     if (profile?.has_company && profile?.role === 'COMPANY') {
-      // We could redirect, but maybe they want to extend? 
-      // For now, let's allow them to stay if they just came from Create.
+      if (profile.company_status === 'active' || profile.company_is_vip) {
+        navigate('/creator', { replace: true });
+      }
     }
-  }, [profile]);
+  }, [profile, navigate]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

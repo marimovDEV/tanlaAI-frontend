@@ -45,6 +45,8 @@ export interface TelegramUser {
   role: 'USER' | 'COMPANY';
   has_company: boolean;
   company_status?: 'pending' | 'review' | 'active' | 'blocked' | null;
+  company_is_vip?: boolean;
+  company_id?: number | null;
 }
 
 

@@ -40,7 +40,8 @@ const RequireCompany: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
 
   // Kompaniya bor, lekin statusga qarab check qilamiz
-  if (profile.company_status === 'pending') {
+  // VIP hamkorlar to'lov sahifasidan o'tib keta oladi
+  if (profile.company_status === 'pending' && !profile.company_is_vip) {
     return <Navigate to="/subscription" replace />;
   }
 

@@ -27,6 +27,7 @@ type Company = {
   instagram_link?: string;
   phone?: string;
   youtube_link?: string;
+  is_vip: boolean;
 };
 
 type StatusType = 'active' | 'warning' | 'expired';
@@ -67,6 +68,7 @@ export default function AdminCompaniesPage() {
     instagram_link: '',
     phone: '',
     youtube_link: '',
+    is_vip: false,
     logo: null as File | null
   });
   const [saving, setSaving] = useState(false);
@@ -104,6 +106,7 @@ export default function AdminCompaniesPage() {
       instagram_link: c.instagram_link || '',
       phone: c.phone || '',
       youtube_link: c.youtube_link || '',
+      is_vip: c.is_vip || false,
       logo: null
     });
     setShowForm(true);
@@ -121,6 +124,7 @@ export default function AdminCompaniesPage() {
       fd.append('instagram_link', formData.instagram_link.trim());
       fd.append('phone', formData.phone.trim());
       fd.append('youtube_link', formData.youtube_link.trim());
+      fd.append('is_vip', String(formData.is_vip));
       if (formData.logo) fd.append('logo', formData.logo);
 
       const { data } = await apiClient.patch(`/admin/companies/${editing.id}/`, fd, {
@@ -133,6 +137,17 @@ export default function AdminCompaniesPage() {
       console.error('Error updating company:', err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const toggleVIP = async (id: number) => {
+    try {
+      const company = companies.find(c => c.id === id);
+      if (!company) return;
+      const { data } = await apiClient.patch(`/admin/companies/${id}/`, { is_vip: !company.is_vip });
+      setCompanies(prev => prev.map(c => c.id === id ? { ...c, is_vip: data.is_vip } : c));
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -295,27 +310,40 @@ export default function AdminCompaniesPage() {
                 </div>
                 
                 <div className="flex flex-col items-end gap-1.5">
-                  <button
-                    onClick={() => toggleActive(c.id)}
-                    className={cn(
-                      "px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all",
-                      c.is_active 
-                        ? "bg-slate-900 text-white hover:bg-slate-800 shadow-md shadow-slate-900/10" 
-                        : "bg-slate-100 text-slate-400 hover:bg-slate-200"
-                    )}
-                  >
-                    {c.is_active ? '✅ System Active' : '❌ System Block'}
-                  </button>
-                  <div className={cn(
-                    "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest",
-                    getCompanyStatus(c.subscription_deadline) === 'active' ? "bg-emerald-50 text-emerald-600" :
-                    getCompanyStatus(c.subscription_deadline) === 'warning' ? "bg-amber-50 text-amber-600" :
-                    "bg-red-50 text-red-600"
-                  )}>
-                    {getCompanyStatus(c.subscription_deadline) === 'active' ? '🟢 Aktiv' :
-                     getCompanyStatus(c.subscription_deadline) === 'warning' ? '🟡 Muddati Yaqin' :
-                     '🔴 To\'lanmagan'}
-                  </div>
+                    <button
+                      onClick={() => toggleActive(c.id)}
+                      className={cn(
+                        "px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all",
+                        c.is_active 
+                          ? "bg-slate-900 text-white hover:bg-slate-800 shadow-md shadow-slate-900/10" 
+                          : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                      )}
+                    >
+                      {c.is_active ? '✅ System Active' : '❌ System Block'}
+                    </button>
+                    <button
+                      onClick={() => toggleVIP(c.id)}
+                      className={cn(
+                        "px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all",
+                        c.is_vip 
+                          ? "bg-amber-100 text-amber-700 border border-amber-200 shadow-sm" 
+                          : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                      )}
+                    >
+                      {c.is_vip ? '💎 VIP Hamkor' : '🤝 Oddiy'}
+                    </button>
+                    <div className={cn(
+                      "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest",
+                      c.is_vip ? "bg-emerald-50 text-emerald-600" :
+                      getCompanyStatus(c.subscription_deadline) === 'active' ? "bg-emerald-50 text-emerald-600" :
+                      getCompanyStatus(c.subscription_deadline) === 'warning' ? "bg-amber-50 text-amber-600" :
+                      "bg-red-50 text-red-600"
+                    )}>
+                      {c.is_vip ? '🟢 VIP (Doimiy)' : 
+                       getCompanyStatus(c.subscription_deadline) === 'active' ? '🟢 Aktiv' :
+                       getCompanyStatus(c.subscription_deadline) === 'warning' ? '🟡 Muddati Yaqin' :
+                       '🔴 To\'lanmagan'}
+                    </div>
                 </div>
               </div>
 
@@ -326,9 +354,9 @@ export default function AdminCompaniesPage() {
                   <span className="text-[10px] font-black text-slate-700 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100">{c.plan_name || 'Tarif yoq'}</span>
                 </div>
                 <div className="flex items-center justify-between font-black">
-                  <span className="text-xl tracking-tight text-slate-900">{c.plan_price ? `${c.plan_price.toLocaleString()} so'm` : '0 so\'m'}</span>
-                  <span className={cn("text-xs flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100", getCompanyStatus(c.subscription_deadline) === 'expired' ? "text-red-500" : getCompanyStatus(c.subscription_deadline) === 'warning' ? "text-amber-500" : "text-emerald-500")}>
-                    ⏳ {getDaysLeft(c.subscription_deadline)} kun qoldi
+                  <span className="text-xl tracking-tight text-slate-900">{c.is_vip ? '∞' : (c.plan_price ? `${c.plan_price.toLocaleString()} so'm` : '0 so\'m')}</span>
+                  <span className={cn("text-xs flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100", c.is_vip ? "text-emerald-500" : getCompanyStatus(c.subscription_deadline) === 'expired' ? "text-red-500" : getCompanyStatus(c.subscription_deadline) === 'warning' ? "text-amber-500" : "text-emerald-500")}>
+                    {c.is_vip ? '💎 VIP Cheksiz' : `⏳ ${getDaysLeft(c.subscription_deadline)} kun qoldi`}
                   </span>
                 </div>
               </div>
@@ -499,6 +527,19 @@ export default function AdminCompaniesPage() {
                   className="w-full bg-slate-50 border border-slate-100 rounded-[20px] px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
                   placeholder="https://youtube.com/..."
                 />
+              </div>
+
+              <div className="flex items-center gap-3 p-5 bg-amber-50 rounded-[24px] border border-amber-100">
+                <input
+                  type="checkbox"
+                  id="is_vip"
+                  checked={formData.is_vip}
+                  onChange={(e) => setFormData(prev => ({ ...prev, is_vip: e.target.checked }))}
+                  className="w-5 h-5 rounded-md border-amber-300 text-amber-500 focus:ring-amber-500"
+                />
+                <label htmlFor="is_vip" className="text-sm font-black text-amber-900 cursor-pointer">
+                  💎 VIP Hamkor (Tolovsiz eshik qo'shish)
+                </label>
               </div>
 
               <div>
