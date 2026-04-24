@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Search, Trash2, Building2, 
   X, Package, 
@@ -56,6 +57,7 @@ const getDaysLeft = (deadline: string | null, is_vip: boolean = false) => {
 };
 
 export default function AdminCompaniesPage() {
+  const navigate = useNavigate();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [search, setSearch] = useState('');
   const [filterMode, setFilterMode] = useState<'all'|'unpaid'|'warning'>('all');
