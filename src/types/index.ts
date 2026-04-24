@@ -23,7 +23,7 @@ export interface Company {
   instagram_link?: string;
   youtube_link?: string;
   logo?: string;
-  status: 'pending' | 'review' | 'active' | 'blocked';
+  status: 'pending' | 'review' | 'active' | 'blocked' | 'pending_payment' | 'waiting_confirmation' | 'expired';
   is_currently_active: boolean;
   is_active?: boolean;
   subscription_deadline?: string | null;
@@ -44,7 +44,7 @@ export interface TelegramUser {
   photo_url?: string;
   role: 'USER' | 'COMPANY';
   has_company: boolean;
-  company_status?: 'pending' | 'review' | 'active' | 'blocked' | null;
+  company_status?: 'pending' | 'review' | 'active' | 'blocked' | 'pending_payment' | 'waiting_confirmation' | 'expired' | null;
   company_is_vip?: boolean;
   company_id?: number | null;
 }
