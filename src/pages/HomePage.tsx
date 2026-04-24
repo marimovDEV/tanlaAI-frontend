@@ -51,14 +51,20 @@ const SectionHeader: React.FC<{
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { haptic, profile, ready } = useTelegram();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [onSaleProducts, setOnSaleProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const { haptic } = useTelegram();
 
   useEffect(() => {
+    // If user is a company owner, redirect them to their dashboard
+    if (ready && profile?.role === 'COMPANY' && profile?.has_company) {
+      navigate('/creator', { replace: true });
+      return;
+    }
+
     const fetch = async () => {
       try {
         const [bRes, cRes, pRes, sRes] = await Promise.all([
