@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, FolderTree, Tag, Building2, Users, Image, Settings, LogOut, Menu, TrendingUp, Eye, FlaskConical as Beaker } from 'lucide-react';
+import { LayoutDashboard, Package, FolderTree, Tag, Building2, Users, Image, Settings, LogOut, Menu, TrendingUp, Eye, FlaskConical as Beaker, CreditCard } from 'lucide-react';
 import apiClient from '../api/client';
 import { cn } from '../utils/cn';
 

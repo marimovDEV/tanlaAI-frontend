@@ -4,7 +4,7 @@ import {
   Package, Users, Image,
   TrendingUp, Eye, Plus, RefreshCw, 
   CheckCircle2, Clock, MousePointer2, ChevronRight,
-  Activity, Building2, DollarSign, ArrowUpRight, Trophy
+  Activity, Building2, DollarSign, ArrowUpRight, Trophy, CreditCard
 } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, CartesianGrid } from 'recharts';
 import apiClient from '../../api/client';

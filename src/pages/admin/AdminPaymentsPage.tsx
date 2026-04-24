@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { 
   Search, CheckCircle2, XCircle, Clock, 
   Eye, FileText, Building2, Calendar, 
-  ArrowRight, CreditCard, ExternalLink,
+  CreditCard, ExternalLink,
   AlertCircle, MessageSquare
 } from 'lucide-react';
 import apiClient from '../../api/client';
