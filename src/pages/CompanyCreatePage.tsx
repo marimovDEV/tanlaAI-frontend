@@ -12,7 +12,7 @@ const CompanyCreatePage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    phone: '',
+    phone: '+998',
     location: '',
     instagram_link: '',
     telegram_link: '',
@@ -147,7 +147,12 @@ const CompanyCreatePage: React.FC = () => {
                   type="tel" 
                   name="phone"
                   value={formData.phone}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (!val.startsWith('+998')) val = '+998';
+                    const digits = val.slice(4).replace(/\D/g, '').slice(0, 9);
+                    setFormData({ ...formData, phone: '+998' + digits });
+                  }}
                   placeholder="+998 90 123 45 67" 
                   className="w-full h-14 bg-slate-50 rounded-2xl border-none focus:ring-[#FF6B35] pl-11 pr-4 text-[15px] font-bold text-slate-800 transition-all placeholder:font-medium placeholder:text-slate-400"
                 />

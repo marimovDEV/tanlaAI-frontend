@@ -24,7 +24,7 @@ interface CompanyFormData extends Partial<Company> {
 const emptyCompanyForm: CompanyFormData = {
   name: '',
   description: '',
-  phone: '',
+  phone: '+998',
   location: '',
   telegram_link: '',
   instagram_link: '',
@@ -113,7 +113,16 @@ const CompanyEditPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (name === 'phone') {
+      let val = value;
+      if (!val.startsWith('+998')) val = '+998';
+      const digits = val.slice(4).replace(/\D/g, '').slice(0, 9);
+      setFormData(prev => ({ ...prev, phone: '+998' + digits }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+
     // Clear field error on change
     if (fieldErrors[name]) {
       setFieldErrors(prev => { const n = { ...prev }; delete n[name]; return n; });
