@@ -17,7 +17,7 @@ const NAV_ITEMS = [
   { to: '/adminka/leads', icon: TrendingUp, label: 'Leads' },
   { to: '/adminka/ai-results', icon: Eye, label: 'AI Results' },
   { to: '/adminka/ai-lab', icon: Beaker, label: 'AI Lab' },
-  { to: '/adminka/system', icon: Settings, label: 'System' },
+  { to: '/adminka/system', icon: Settings, label: 'Tizim / Billing' },
 ];
 
 export default function AdminLayout() {

@@ -32,7 +32,8 @@ type Company = {
 
 type StatusType = 'active' | 'warning' | 'expired';
 
-const getCompanyStatus = (deadline: string | null): StatusType => {
+const getCompanyStatus = (deadline: string | null, is_vip: boolean = false): StatusType => {
+  if (is_vip) return 'active';
   if (!deadline) return 'expired';
   const now = new Date();
   const due = new Date(deadline);
@@ -43,7 +44,8 @@ const getCompanyStatus = (deadline: string | null): StatusType => {
   return 'active';
 };
 
-const getDaysLeft = (deadline: string | null) => {
+const getDaysLeft = (deadline: string | null, is_vip: boolean = false) => {
+  if (is_vip) return 9999; // Represents infinity for UI
   if (!deadline) return 0;
   const now = new Date();
   const due = new Date(deadline);
@@ -192,15 +194,15 @@ export default function AdminCompaniesPage() {
   const filteredCompanies = useMemo(() => {
     return companies.filter(c => {
       if (filterMode === 'all') return true;
-      const status = getCompanyStatus(c.subscription_deadline);
+      const status = getCompanyStatus(c.subscription_deadline, c.is_vip);
       if (filterMode === 'unpaid') return status === 'expired';
       if (filterMode === 'warning') return status === 'warning';
       return true;
     });
   }, [companies, filterMode]);
 
-  const unpaidCount = companies.filter(c => getCompanyStatus(c.subscription_deadline) === 'expired').length;
-  const warningCount = companies.filter(c => getCompanyStatus(c.subscription_deadline) === 'warning').length;
+  const unpaidCount = companies.filter(c => getCompanyStatus(c.subscription_deadline, c.is_vip) === 'expired').length;
+  const warningCount = companies.filter(c => getCompanyStatus(c.subscription_deadline, c.is_vip) === 'warning').length;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
