@@ -4,9 +4,9 @@ import {
   Package, Users, Image,
   TrendingUp, Eye, Plus, RefreshCw, 
   CheckCircle2, Clock, MousePointer2, ChevronRight,
-  Activity, Building2
+  Activity, Building2, DollarSign, ArrowDownRight, ArrowUpRight, Trophy
 } from 'lucide-react';
-import { PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
 
@@ -61,6 +61,24 @@ type DashboardData = {
     ai_cost_this_month_uzs: number;
     ai_cost_today_uzs: number;
     ai_days_left: number | null;
+  };
+  financials: {
+    income_today: number;
+    income_month: number;
+    income_total: number;
+    profit_today: number;
+    profit_month: number;
+    profit_total: number;
+    top_companies: {
+      id: number;
+      name: string;
+      total_paid: number;
+      logo: string | null;
+    }[];
+    chart_data: {
+      date: string;
+      income: number;
+    }[];
   };
   ai_status: Record<string, number>;
   ai_performance: {
@@ -148,7 +166,104 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* ── SaaS Financial & Status Row ────────────────────────── */}
+      {/* ── SaaS Financial Overview ────────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Income Card */}
+        <div className="xl:col-span-2 bg-slate-900 rounded-[40px] p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <DollarSign size={160} />
+          </div>
+          
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Jami Daromad</p>
+              <h2 className="text-4xl font-black">{data.financials?.income_total?.toLocaleString() ?? 0} <span className="text-sm font-medium text-slate-500">uzs</span></h2>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                 <ArrowUpRight size={12} /> {(data.growth?.companies ?? 0 + data.growth?.leads ?? 0).toFixed(1)}% Trend
+              </div>
+            </div>
+            
+            <div className="md:col-span-2 flex flex-col md:flex-row gap-6 md:items-end justify-between">
+               <div className="flex-1 space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Bugun</p>
+                      <p className="text-lg font-black text-white">{data.financials?.income_today?.toLocaleString() ?? 0}</p>
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Bu oy</p>
+                      <p className="text-lg font-black text-emerald-400">{data.financials?.income_month?.toLocaleString() ?? 0}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="h-32 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={data.financials?.chart_data ?? []}>
+                        <defs>
+                          <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#475569', fontSize: 10, fontWeight: 'bold'}} dy={10} />
+                        <Tooltip 
+                           contentStyle={{backgroundColor: '#0f172a', border: 'none', borderRadius: '12px', fontSize: '10px', color: '#fff'}}
+                           itemStyle={{color: '#10b981'}}
+                        />
+                        <Bar dataKey="income" fill="url(#barGradient)" radius={[4, 4, 0, 0]} barSize={20} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Profit Card */}
+        <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm flex flex-col space-y-8">
+           <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Foyda Tahlili</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">SaaS Net Profit</p>
+              </div>
+              <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm">
+                <TrendingUp size={24} />
+              </div>
+           </div>
+
+           <div className="flex-1 flex flex-col justify-center space-y-6">
+              <div className="text-center">
+                 <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Bu oydagi foyda</p>
+                 <h2 className="text-5xl font-black text-slate-900 tracking-tighter">
+                   {(data.financials?.profit_month ?? 0) > 0 ? '+' : ''}{(data.financials?.profit_month ?? 0).toLocaleString()}
+                 </h2>
+                 <p className="text-xs font-bold text-slate-400 mt-2">Xarajatlar ayirilgan holda</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 text-center">
+                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Bugun</p>
+                    <p className={cn("text-base font-black", (data.financials?.profit_today ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                      {(data.financials?.profit_today ?? 0) > 0 ? '+' : ''}{(data.financials?.profit_today ?? 0).toLocaleString()}
+                    </p>
+                 </div>
+                 <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 text-center">
+                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Umumiy</p>
+                    <p className={cn("text-base font-black", (data.financials?.profit_total ?? 0) >= 0 ? "text-[#0067a5]" : "text-rose-600")}>
+                      {(data.financials?.profit_total ?? 0) > 0 ? '+' : ''}{(data.financials?.profit_total ?? 0).toLocaleString()}
+                    </p>
+                 </div>
+              </div>
+           </div>
+
+           <button className="w-full py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 active:scale-95">
+              Hisobotni yuklash (.pdf)
+           </button>
+        </div>
+      </div>
+
+      {/* ── SaaS Operational Rows ───────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Server Status Card */}
         <div className="bg-white p-7 rounded-[32px] shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-8 group">
@@ -323,7 +438,51 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Content & Actions */}
+        {/* Top Companies Widget */}
+        <div className="lg:col-span-2 bg-white p-8 rounded-[40px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60 flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 shadow-sm">
+                <Trophy size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight">Top Kompaniyalar</h2>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Daromad keltirish (LTV) bo'yicha</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex-1 space-y-4">
+            {data.financials?.top_companies?.length ? data.financials.top_companies.map((c, i) => (
+              <div key={c.id} className="flex items-center justify-between p-5 bg-slate-50 hover:bg-slate-100/80 rounded-[28px] transition-all group">
+                <div className="flex items-center gap-5">
+                   <div className="w-12 h-12 bg-white rounded-2xl shadow-md border border-slate-100 flex items-center justify-center text-slate-400 font-black relative overflow-hidden">
+                      {c.logo ? <img src={c.logo} alt="" className="w-full h-full object-contain p-2" /> : c.name.charAt(0)}
+                      <div className="absolute top-0 left-0 w-6 h-6 bg-slate-900 text-white text-[10px] flex items-center justify-center rounded-br-xl border-b border-r border-white/20 font-black">{i+1}</div>
+                   </div>
+                   <div>
+                      <p className="text-base font-black text-slate-800">{c.name}</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest opacity-70">Hamkor Kompaniya</p>
+                   </div>
+                </div>
+                <div className="text-right">
+                   <p className="text-lg font-black text-slate-900">{(c.total_paid || 0).toLocaleString()} <span className="text-xs font-medium text-slate-400">uzs</span></p>
+                   <div className="inline-flex items-center gap-1 text-[9px] text-emerald-500 font-black uppercase tracking-widest mt-1">
+                      <CheckCircle2 size={10} /> Tasdiqlangan
+                   </div>
+                </div>
+              </div>
+            )) : (
+              <div className="flex flex-col items-center justify-center py-12 text-slate-300">
+                <Building2 size={48} className="mb-4 opacity-20" />
+                <p className="text-sm font-bold uppercase tracking-widest">Ma'lumotlar mavjud emas</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content & Actions (Original Recent Activity) */}
         <div className="lg:col-span-2 space-y-8">
           {/* Recent Products */}
           <div className="bg-white p-8 rounded-[40px] shadow-[0_8_30px_rgb(0,0,0,0.04)] border border-slate-100/60">
