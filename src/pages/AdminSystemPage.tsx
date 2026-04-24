@@ -32,7 +32,13 @@ type SettingsState = {
   bg_removal_mode: string;
   max_image_size: number;
   
-  // Billing
+  // Billing & SaaS
+  monthly_price: number;
+  subscription_days: number;
+  card_number: string;
+  card_holder: string;
+  require_manual_approval: boolean;
+
   server_due_date: string | null;
   server_cost: number;
   server_note: string;
@@ -250,10 +256,55 @@ export default function AdminSettingsPage() {
                   </header>
                   
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    {/* SaaS Monetization */}
+                    <div className="p-8 bg-blue-50/30 rounded-[32px] border border-blue-100/50 space-y-8">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                          <Activity size={20} className="text-blue-600" />
+                        </div>
+                        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-500">SaaS Monetizatsiya</h3>
+                      </div>
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          <Field
+                            label="Obuna Narxi (so'm)"
+                            type="number"
+                            value={settings.monthly_price}
+                            onChange={(v) => updateSetting("monthly_price", Number(v))}
+                          />
+                          <Field
+                            label="Muddati (Kun)"
+                            type="number"
+                            value={settings.subscription_days}
+                            onChange={(v) => updateSetting("subscription_days", Number(v))}
+                          />
+                        </div>
+                        <Field
+                          label="Admin Karta Raqami"
+                          value={settings.card_number}
+                          onChange={(v) => updateSetting("card_number", v)}
+                          placeholder="8600 ...."
+                        />
+                        <Field
+                          label="Karta Egasi"
+                          value={settings.card_holder}
+                          onChange={(v) => updateSetting("card_holder", v)}
+                          placeholder="F.I.SH"
+                        />
+                        <ToggleField
+                          label="Admin Tasdiqlashi"
+                          sub="To'lovdan keyin admin tasdiqlashi shartmi?"
+                          value={settings.require_manual_approval}
+                          onChange={(v) => updateSetting("require_manual_approval", v)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Server tracking */}
                     <div className="p-8 bg-slate-50/50 rounded-[32px] border border-slate-100 space-y-8">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                          <Activity size={20} className="text-rose-500" />
+                          <Settings size={20} className="text-slate-600" />
                         </div>
                         <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-500">Kompaniya Serveri</h3>
                       </div>
@@ -278,36 +329,36 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
 
-                    <div className="p-8 bg-slate-50/50 rounded-[32px] border border-slate-100 space-y-8">
+                    <div className="p-8 bg-slate-50/50 rounded-[32px] border border-slate-100 space-y-8 xl:col-span-2">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
                           <Bot size={20} className="text-indigo-500" />
                         </div>
-                        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-500">AI & Monetizatsiya</h3>
+                        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-500">AI & Budjet</h3>
                       </div>
-                      <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <Field
-                          label="Bitta AI so'rov (USD)"
+                          label="AI so'rov (USD)"
                           type="number"
                           step="0.0001"
                           value={settings.ai_cost_per_request}
                           onChange={(v) => updateSetting("ai_cost_per_request", Number(v))}
                         />
                         <Field
-                          label="Oylik AI Budjeti (UZS)"
+                          label="Oylik AI Limit (UZS)"
                           type="number"
                           value={settings.ai_monthly_budget_uzs}
                           onChange={(v) => updateSetting("ai_monthly_budget_uzs", Number(v))}
                         />
                         <Field
-                          label="Bitta Lead Narxi (USD)"
+                          label="Lead Narxi (USD)"
                           type="number"
                           step="0.1"
                           value={settings.lead_price_usd}
                           onChange={(v) => updateSetting("lead_price_usd", Number(v))}
                         />
                         <Field
-                          label="USD kursi (1$ = X UZS)"
+                          label="USD kursi (1$)"
                           type="number"
                           value={settings.usd_to_uzs_rate}
                           onChange={(v) => updateSetting("usd_to_uzs_rate", Number(v))}

@@ -14,17 +14,13 @@ import { cn } from '../utils/cn';
 
 const SubscriptionPage: React.FC = () => {
   const navigate = useNavigate();
-  const { haptic, profile, refreshProfile } = useTelegram();
   const [loading, setLoading] = useState(false);
   const [screenshot, setScreenshot] = useState<File | null>(null);
+  const { haptic, profile, refreshProfile } = useTelegram();
   const [preview, setPreview] = useState<string | null>(null);
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
-
-  // Card details (Hardcoded for now as per UX requirement)
-  const CARD_NUMBER = "8600 1404 1234 5678";
-  const CARD_HOLDER = "MARIMOV D.";
-  const PRICE = "100 000";
+  const [billingInfo, setBillingInfo] = useState<{ monthly_price: number; card_number: string; card_holder: string } | null>(null);
 
   useEffect(() => {
     // If company is already active or is VIP, go to dashboard
@@ -33,6 +29,11 @@ const SubscriptionPage: React.FC = () => {
         navigate('/creator', { replace: true });
       }
     }
+
+    // Fetch billing info
+    apiClient.get('/system-billing/')
+      .then(res => setBillingInfo(res.data))
+      .catch(err => console.error("Billing fetch error:", err));
   }, [profile, navigate]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,19 +47,19 @@ const SubscriptionPage: React.FC = () => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text.replace(/\s/g, ''));
     haptic('light');
-    alert("Nusxa olindi!");
+    // alert("Nusxa olindi!");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!screenshot) return;
+    if (!screenshot || !billingInfo) return;
 
     setLoading(true);
     haptic('medium');
 
     try {
       const fd = new FormData();
-      fd.append('amount', '100000'); // Fixed price for 1 month
+      fd.append('amount', billingInfo.monthly_price.toString());
       fd.append('months', '1');
       fd.append('screenshot', screenshot);
       fd.append('note', note);
@@ -127,8 +128,8 @@ const SubscriptionPage: React.FC = () => {
               </p>
               
               <div className="flex items-baseline gap-1">
-                 <span className="text-4xl font-black">{PRICE}</span>
-                 <span className="text-slate-400 font-bold">UZS / oy</span>
+                 <span className="text-4xl font-black">{billingInfo?.monthly_price?.toLocaleString() || "..."}</span>
+                 <span className="text-slate-400 font-bold">so'm / oy</span>
               </div>
            </div>
         </div>
@@ -144,8 +145,8 @@ const SubscriptionPage: React.FC = () => {
               <div className="space-y-1.5">
                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Karta raqami</label>
                  <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <span className="text-[15px] font-black text-slate-800 tracking-wider">{CARD_NUMBER}</span>
-                    <button onClick={() => copyToClipboard(CARD_NUMBER)} className="text-orange-600 active:scale-90 transition-transform">
+                    <span className="text-[15px] font-black text-slate-800 tracking-wider">{billingInfo?.card_number || ".... .... .... ...."}</span>
+                    <button onClick={() => billingInfo && copyToClipboard(billingInfo.card_number)} className="text-orange-600 active:scale-90 transition-transform">
                        <Copy size={20} />
                     </button>
                  </div>
@@ -155,7 +156,7 @@ const SubscriptionPage: React.FC = () => {
                  <div className="flex-1 space-y-1.5">
                     <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Ega</label>
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-[13px] font-bold text-slate-800">
-                       {CARD_HOLDER}
+                       {billingInfo?.card_holder || "—"}
                     </div>
                  </div>
                  <div className="w-1/3 space-y-1.5">

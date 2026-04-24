@@ -33,6 +33,12 @@ type DashboardData = {
     ai_error_count: number;
     active_promotions: number;
   };
+  monetization: {
+    pending_payment: number;
+    waiting_confirmation: number;
+    active: number;
+    expired: number;
+  };
   growth: {
     products: number;
     companies: number;
@@ -95,6 +101,13 @@ export default function AdminDashboardPage() {
     { name: 'Xato', value: data.ai_status?.error || 0 },
     { name: 'Kutilmoqda', value: data.ai_status?.none || 0 },
   ].filter(d => d.value > 0);
+
+  const monetizationStats = [
+    { label: 'Aktiv Komp.', value: data.monetization?.active ?? 0, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Kutilmoqda', value: data.monetization?.waiting_confirmation ?? 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'To\'lamagan', value: data.monetization?.pending_payment ?? 0, icon: Users, color: 'text-rose-600', bg: 'bg-rose-50' },
+    { label: 'Muddati o\'tgan', value: data.monetization?.expired ?? 0, icon: Activity, color: 'text-slate-600', bg: 'bg-slate-50' },
+  ];
 
   const stats = [
     { label: 'Mahsulotlar', value: data.counts?.product_count ?? 0, growth: data.growth?.products ?? 0, icon: Package, color: 'text-sky-600', bg: 'bg-sky-50' },
@@ -196,7 +209,22 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* Monetization Statuses */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {monetizationStats.map((stat) => (
+          <div key={stat.label} className={cn("p-4 rounded-3xl border border-transparent shadow-sm flex items-center gap-4", stat.bg)}>
+            <div className={cn("p-2.5 rounded-2xl bg-white/80", stat.color)}>
+              <stat.icon size={20} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{stat.label}</p>
+              <p className="text-xl font-black text-slate-900">{stat.value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((s, i) => (
           <div key={i} className="relative bg-white p-7 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60 overflow-hidden group hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500">
