@@ -142,9 +142,7 @@ export default function AdminCompaniesPage() {
 
   const toggleVIP = async (id: number) => {
     try {
-      const company = companies.find(c => c.id === id);
-      if (!company) return;
-      const { data } = await apiClient.patch(`admin/companies/${id}/`, { is_vip: !company.is_vip });
+      const { data } = await apiClient.post(`admin/companies/${id}/toggle-vip/`);
       setCompanies(prev => prev.map(c => c.id === id ? { ...c, is_vip: data.is_vip } : c));
     } catch (e) {
       console.error(e);
