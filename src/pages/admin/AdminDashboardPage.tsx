@@ -4,9 +4,9 @@ import {
   Package, Users, Image,
   TrendingUp, Eye, Plus, RefreshCw, 
   CheckCircle2, Clock, MousePointer2, ChevronRight,
-  Activity, Building2, DollarSign, ArrowDownRight, ArrowUpRight, Trophy
+  Activity, Building2, DollarSign, ArrowUpRight, Trophy
 } from 'lucide-react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, CartesianGrid } from 'recharts';
 import apiClient from '../../api/client';
 import { cn } from '../../utils/cn';
 
@@ -179,7 +179,7 @@ export default function AdminDashboardPage() {
               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Jami Daromad</p>
               <h2 className="text-4xl font-black">{data.financials?.income_total?.toLocaleString() ?? 0} <span className="text-sm font-medium text-slate-500">uzs</span></h2>
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
-                 <ArrowUpRight size={12} /> {(data.growth?.companies ?? 0 + data.growth?.leads ?? 0).toFixed(1)}% Trend
+                 <ArrowUpRight size={12} /> {(data.growth?.companies ?? 0).toFixed(1)}% Trend
               </div>
             </div>
             
@@ -383,7 +383,6 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           
-          {/* Fixed Chart Container */}
           <div className="h-[280px] w-full flex items-center justify-center relative bg-slate-50/30 rounded-[32px] overflow-hidden">
             <PieChart width={320} height={280}>
               <Pie
@@ -483,9 +482,10 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Content & Actions (Original Recent Activity) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           {/* Recent Products */}
-          <div className="bg-white p-8 rounded-[40px] shadow-[0_8_30px_rgb(0,0,0,0.04)] border border-slate-100/60">
+          <div className="bg-white p-8 rounded-[40px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center">
@@ -500,7 +500,7 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(data.recent_activity?.products?.length ?? 0) > 0 ? (
                 data.recent_activity.products.map((p) => {
-                  const imageUrl = p.image; // Now guaranteed to be absolute from backend context
+                  const imageUrl = p.image;
 
                   return (
                     <div key={p.id} className="flex items-center gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-white hover:shadow-lg transition-all duration-300">
@@ -577,5 +577,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-
