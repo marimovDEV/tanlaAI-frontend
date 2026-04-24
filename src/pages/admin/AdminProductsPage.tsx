@@ -232,7 +232,7 @@ export default function AdminProductsPage() {
       });
 
       if (editing) {
-        await apiClient.patch(`/admin/products/${editing.id}/`, fd, {
+        await apiClient.patch(`admin/products/${editing.id}/`, fd, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
@@ -251,7 +251,7 @@ export default function AdminProductsPage() {
     if (!confirm("Bu mahsulotni o'chirmoqchimisiz?")) return;
     setDeleting(id);
     try {
-      await apiClient.delete(`/admin/products/${id}/`);
+      await apiClient.delete(`admin/products/${id}/`);
       setProducts((p) => p.filter((x) => x.id !== id));
       setSelectedIds(prev => prev.filter(x => x !== id));
     } finally {
@@ -263,7 +263,7 @@ export default function AdminProductsPage() {
     if (!confirm(`${selectedIds.length} ta mahsulotni o'chirmoqchimisiz?`)) return;
     setLoading(true);
     try {
-      await Promise.all(selectedIds.map(id => apiClient.delete(`/admin/products/${id}/`)));
+      await Promise.all(selectedIds.map(id => apiClient.delete(`admin/products/${id}/`)));
       fetchProducts(search);
       setSelectedIds([]);
       showToast("Mahsulotlar o'chirildi.");
@@ -278,7 +278,7 @@ export default function AdminProductsPage() {
     if (!confirm(`${selectedIds.length} ta mahsulotni SI orqali qayta ishlamoqchimisiz?`)) return;
     setLoading(true);
     try {
-      await Promise.all(selectedIds.map(id => apiClient.post(`/admin/products/${id}/reprocess_ai/`)));
+      await Promise.all(selectedIds.map(id => apiClient.post(`admin/products/${id}/reprocess_ai/`)));
       fetchProducts(search);
       setSelectedIds([]);
       showToast("SI qayta ishlash boshlandi.");
@@ -292,7 +292,7 @@ export default function AdminProductsPage() {
   const handleReprocess = async (id: number) => {
     setReprocessing(id);
     try {
-      await apiClient.post(`/admin/products/${id}/reprocess_ai/`);
+      await apiClient.post(`admin/products/${id}/reprocess_ai/`);
       setProducts(prev => prev.map(p => p.id === id ? { ...p, ai_status: 'processing', ai_error: null } : p));
       if (viewingProduct?.id === id) {
         setViewingProduct({ ...viewingProduct, ai_status: 'processing', ai_error: null });
@@ -316,7 +316,7 @@ export default function AdminProductsPage() {
     if (pollInterval.current) clearInterval(pollInterval.current);
     pollInterval.current = setInterval(async () => {
       try {
-        const { data } = await apiClient.get(`/admin/products/${id}/`);
+        const { data } = await apiClient.get(`admin/products/${id}/`);
         if (data.ai_status !== 'processing') {
           if (pollInterval.current) clearInterval(pollInterval.current);
           

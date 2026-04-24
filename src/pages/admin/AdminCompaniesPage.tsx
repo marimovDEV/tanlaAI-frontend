@@ -127,7 +127,7 @@ export default function AdminCompaniesPage() {
       fd.append('is_vip', String(formData.is_vip));
       if (formData.logo) fd.append('logo', formData.logo);
 
-      const { data } = await apiClient.patch(`/admin/companies/${editing.id}/`, fd, {
+      const { data } = await apiClient.patch(`admin/companies/${editing.id}/`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       
@@ -144,7 +144,7 @@ export default function AdminCompaniesPage() {
     try {
       const company = companies.find(c => c.id === id);
       if (!company) return;
-      const { data } = await apiClient.patch(`/admin/companies/${id}/`, { is_vip: !company.is_vip });
+      const { data } = await apiClient.patch(`admin/companies/${id}/`, { is_vip: !company.is_vip });
       setCompanies(prev => prev.map(c => c.id === id ? { ...c, is_vip: data.is_vip } : c));
     } catch (e) {
       console.error(e);
@@ -153,7 +153,7 @@ export default function AdminCompaniesPage() {
 
   const toggleActive = async (id: number) => {
     try {
-      const { data } = await apiClient.post(`/admin/companies/${id}/toggle-active/`);
+      const { data } = await apiClient.post(`admin/companies/${id}/toggle-active/`);
       setCompanies(prev => prev.map(c => c.id === id ? { ...c, is_active: data.is_active } : c));
     } catch (e) {
       console.error(e);
@@ -162,7 +162,7 @@ export default function AdminCompaniesPage() {
 
   const updateDeadline = async (id: number, date: string) => {
     try {
-      const { data } = await apiClient.post(`/admin/companies/${id}/update-deadline/`, {
+      const { data } = await apiClient.post(`admin/companies/${id}/update-deadline/`, {
         subscription_deadline: date || null,
       });
       setCompanies(prev => prev.map(c => c.id === id ? { ...c, subscription_deadline: data.subscription_deadline } : c));
@@ -174,7 +174,7 @@ export default function AdminCompaniesPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("Ushbu kompaniyani o'chirishni xohlaysizmi? Bu amalni ortga qaytarib bo'lmaydi.")) return;
     try {
-      await apiClient.delete(`/admin/companies/${id}/`);
+      await apiClient.delete(`admin/companies/${id}/`);
       setCompanies(prev => prev.filter(x => x.id !== id));
     } catch (err) {
       console.error('Error deleting company:', err);
@@ -184,7 +184,7 @@ export default function AdminCompaniesPage() {
   const handleAcceptPayment = async (id: number) => {
     if (!confirm("To'lov qabul qilinganini tasdiqlaysizmi? Obuna 1 oyga uzaytiriladi.")) return;
     try {
-      const { data } = await apiClient.post(`/admin/companies/${id}/accept-payment/`);
+      const { data } = await apiClient.post(`admin/companies/${id}/accept-payment/`);
       setCompanies(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
     } catch (err) {
       console.error('Error processing payment:', err);

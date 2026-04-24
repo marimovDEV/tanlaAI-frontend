@@ -60,7 +60,7 @@ export default function AdminLeadsPage() {
   const handleStatusChange = async (id: number, newStatus: string) => {
     setUpdatingId(id);
     try {
-      await apiClient.post(`/admin/leads/${id}/set-status/`, { status: newStatus });
+      await apiClient.post(`admin/leads/${id}/set-status/`, { status: newStatus });
       setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: newStatus as Lead['status'] } : l)));
     } catch (e) {
       console.error('Error updating status:', e);
@@ -72,7 +72,7 @@ export default function AdminLeadsPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("Ushbu leadni o'chirmoqchimisiz?")) return;
     try {
-      await apiClient.delete(`/admin/leads/${id}/`);
+      await apiClient.delete(`admin/leads/${id}/`);
       setLeads((prev) => prev.filter((l) => l.id !== id));
     } catch (err) {
       console.error('Error deleting lead:', err);

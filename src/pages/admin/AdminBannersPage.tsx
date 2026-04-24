@@ -86,7 +86,7 @@ export default function AdminBannersPage() {
       if (formImage) fd.append('image', formImage);
 
       if (editing) {
-        await apiClient.patch(`/admin/banners/${editing.id}/`, fd, {
+        await apiClient.patch(`admin/banners/${editing.id}/`, fd, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
@@ -105,10 +105,10 @@ export default function AdminBannersPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Bu bannerni o'chirmoqchimisiz?")) return;
+    if (!confirm("Ushbu bannerni o'chirishni xohlaysizmi?")) return;
     try {
-      await apiClient.delete(`/admin/banners/${id}/`);
-      setBanners((b) => b.filter((x) => x.id !== id));
+      await apiClient.delete(`admin/banners/${id}/`);
+      setBanners(prev => prev.filter(x => x.id !== id));
     } catch (err) {
       console.error('Error deleting banner:', err);
     }
@@ -117,7 +117,7 @@ export default function AdminBannersPage() {
   const toggleStatus = async (b: Banner) => {
     setTogglingId(b.id);
     try {
-      const { data } = await apiClient.patch(`/admin/banners/${b.id}/`, { 
+      const { data } = await apiClient.patch(`admin/banners/${b.id}/`, { 
         is_active: !b.is_active 
       });
       setBanners((prev) => prev.map((item) => (item.id === b.id ? { ...item, ...data } : item)));

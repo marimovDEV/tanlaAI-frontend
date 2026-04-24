@@ -57,7 +57,7 @@ export default function AdminCategoriesPage() {
       if (formIcon) fd.append('icon', formIcon);
 
       if (editing) {
-        await apiClient.patch(`/admin/categories/${editing.id}/`, fd, {
+        await apiClient.patch(`admin/categories/${editing.id}/`, fd, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
@@ -67,15 +67,21 @@ export default function AdminCategoriesPage() {
       }
       setShowForm(false);
       fetchCategories();
+    } catch (err) {
+      console.error('Error saving category:', err);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Bu kategoriyani o'chirmoqchimisiz?")) return;
-    await apiClient.delete(`/admin/categories/${id}/`);
-    setCategories((c) => c.filter((x) => x.id !== id));
+    if (!confirm("Ushbu kategoriyani o'chirishni xohlaysizmi?")) return;
+    try {
+      await apiClient.delete(`admin/categories/${id}/`);
+      setCategories((c) => c.filter((x) => x.id !== id));
+    } catch (err) {
+      console.error('Error deleting category:', err);
+    }
   };
 
   return (

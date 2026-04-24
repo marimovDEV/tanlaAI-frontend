@@ -60,7 +60,7 @@ export default function AdminUsersPage() {
   const handleRoleChange = async (id: number, role: string) => {
     setUpdatingId(id);
     try {
-      const { data } = await apiClient.post(`/admin/users/${id}/set-role/`, { role });
+      const { data } = await apiClient.post(`admin/users/${id}/set-role/`, { role });
       setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)));
       
       // If we are updating our own role, refresh the profile to update UI permissions
