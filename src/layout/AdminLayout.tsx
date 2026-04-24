@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { to: '/adminka/categories', icon: FolderTree, label: 'Categories' },
   { to: '/adminka/promotions', icon: Tag, label: 'Promotions' },
   { to: '/adminka/companies', icon: Building2, label: 'Companies' },
+  { to: '/adminka/payments', icon: CreditCard, label: 'To\'lovlar' },
   { to: '/adminka/users', icon: Users, label: 'Users' },
   { to: '/adminka/banners', icon: Image, label: 'Banners' },
   { to: '/adminka/leads', icon: TrendingUp, label: 'Leads' },

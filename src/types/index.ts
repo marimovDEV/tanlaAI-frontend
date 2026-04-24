@@ -138,3 +138,18 @@ export interface AIResult {
   created_at: string;
   product_details?: Product;
 }
+
+export interface Payment {
+  id: number;
+  company: number;
+  company_name?: string;
+  amount: number;
+  months: number;
+  screenshot: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string;
+  note?: string;
+  reviewed_at?: string;
+  reviewed_by_name?: string;
+  created_at: string;
+}

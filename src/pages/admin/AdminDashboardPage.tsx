@@ -157,6 +157,9 @@ export default function AdminDashboardPage() {
           <p className="text-sm text-slate-500 font-medium mt-1">Real-vaqt tizim monitoringi va moliyaviy tahlil</p>
         </div>
         <div className="flex items-center gap-3">
+          <Link to="/adminka/payments" className="px-5 py-2.5 bg-[#0067a5] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-[#005a91] transition-all shadow-lg shadow-blue-900/10 flex items-center gap-2">
+            <CreditCard size={16} /> To'lovlarni Boshqarish
+          </Link>
           <Link to="/adminka/system" className="px-5 py-2.5 bg-white border border-slate-100 rounded-2xl text-[11px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2">
             <Plus size={16} /> Tizim Sozlamalari
           </Link>
