@@ -10,12 +10,14 @@ const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user: tgUser, haptic, profile } = useTelegram();
+  const { user: tgUser, haptic, profile, refreshProfile } = useTelegram();
 
   const hasCompany = Boolean(profile?.has_company);
   const isVerifiedSeller = profile?.role === 'COMPANY' && hasCompany && profile?.company_status === 'active';
 
   useEffect(() => {
+    refreshProfile();
+    
     const fetchWishlist = async () => {
       try {
         const response = await apiClient.get<ApiListResponse<WishlistItem> | WishlistItem[]>('/wishlist/');
