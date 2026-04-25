@@ -40,116 +40,198 @@ const LeadSkeleton = () => (
 /* ── Lead Card ───────────────────────────────────────────────── */
 const LeadCard: React.FC<{
   lead: LeadRequest;
-  onToggle: () => void;
-}> = ({ lead, onToggle }) => {
+  onUpdate: (id: number, data: Partial<LeadRequest>) => void;
+}> = ({ lead, onUpdate }) => {
   const meta  = LEAD_META[lead.lead_type] ?? LEAD_META.call;
   const phone = lead.phone;
+  const username = lead.user_details?.username;
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'converted': return '#34C759';
+      case 'rejected': return '#FF3B30';
+      case 'active': return '#007AFF';
+      default: return '#8A8A99';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'converted': return 'Sotildi';
+      case 'rejected': return 'Rad etildi';
+      case 'active': return 'Jarayonda';
+      case 'contacted': return 'Bog\'lanildi';
+      default: return 'Yangi';
+    }
+  };
 
   return (
     <div
-      className="bg-white rounded-[20px] p-4 transition-all duration-300"
+      className="bg-white rounded-[24px] p-5 transition-all duration-300"
       style={{
         boxShadow: lead.is_processed
           ? '0 2px 8px rgba(26,26,46,0.04)'
-          : '0 6px 24px rgba(26,26,46,0.10)',
-        opacity: lead.is_processed ? 0.65 : 1,
-        border: lead.is_processed ? '1.5px solid rgba(26,26,46,0.05)' : `1.5px solid ${meta.color}22`,
+          : '0 8px 32px rgba(26,26,46,0.08)',
+        opacity: lead.status === 'rejected' ? 0.7 : 1,
+        border: lead.status === 'converted' ? '2px solid #34C75922' : '1px solid rgba(26,26,46,0.06)',
       }}
     >
       {/* Top row */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-[12px] flex items-center justify-center flex-shrink-0"
+            className="w-10 h-10 rounded-[14px] flex items-center justify-center flex-shrink-0 shadow-sm"
             style={{ background: meta.bg, color: meta.color }}
           >
             {meta.icon}
           </div>
           <div>
-            <span
-              className="text-[11px] font-black uppercase tracking-widest"
-              style={{ color: meta.color }}
-            >
-              {meta.label}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] font-black uppercase tracking-widest" style={{ color: meta.color }}>
+                {meta.label}
+              </span>
+              <span 
+                className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter"
+                style={{ background: `${getStatusColor(lead.status)}15`, color: getStatusColor(lead.status) }}
+              >
+                {getStatusLabel(lead.status)}
+              </span>
+            </div>
             {lead.product_name && (
-              <div className="flex items-center gap-1 mt-0.5">
-                <Package size={10} color="#C0C0CE" />
-                <p className="text-[11px] text-[#8A8A99] font-medium truncate max-w-[160px]">{lead.product_name}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <Package size={11} color="#C0C0CE" />
+                <p className="text-[12px] text-[#5A5A6E] font-bold">{lead.product_name}</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Check/done button */}
         <button
-          onClick={onToggle}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[11px] font-black active:scale-90 transition-all"
+          onClick={() => onUpdate(lead.id, { is_processed: !lead.is_processed })}
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
           style={lead.is_processed
-            ? { background: 'rgba(52,199,89,0.12)', color: '#34C759' }
-            : { background: 'rgba(26,26,46,0.06)', color: '#8A8A99' }
+            ? { background: 'rgba(52,199,89,0.1)', color: '#34C759' }
+            : { background: 'rgba(26,26,46,0.05)', color: '#C0C0CE' }
           }
         >
-          <CheckCircle2 size={13} />
-          {lead.is_processed ? "Ko'rildi" : "Ko'rish"}
+          <CheckCircle2 size={18} strokeWidth={lead.is_processed ? 3 : 2} />
         </button>
       </div>
 
-      {/* Info block */}
-      <div
-        className="rounded-[14px] p-3 space-y-2"
-        style={{ background: 'rgba(26,26,46,0.03)' }}
-      >
-        {/* User */}
-        <div className="flex items-center gap-2">
-          <UserIcon size={13} color="#C0C0CE" />
-          <span className="text-[12px] font-bold text-[#1A1A2E]">
-            {lead.user_details?.first_name || "Noma'lum mijoz"}
-            {lead.user_details?.username && (
-              <span className="text-[#B0B0BF] font-medium"> @{lead.user_details.username}</span>
-            )}
-          </span>
+      {/* Main Content Area */}
+      <div className="space-y-4">
+        {/* Customer Info Card */}
+        <div className="bg-[#fcfaf7] rounded-[18px] p-4 border border-[#f0ede8] space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-white border border-[#f0ede8] flex items-center justify-center text-[#B0B0BF]">
+                <UserIcon size={14} />
+              </div>
+              <div>
+                <p className="text-[13px] font-black text-[#1A1A2E]">
+                  {lead.user_details?.first_name || "Noma'lum mijoz"}
+                </p>
+                {username && <p className="text-[11px] font-bold text-[#8B5CF6]">@{username}</p>}
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              {username && (
+                <a 
+                  href={`https://t.me/${username}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full bg-[#0088cc] flex items-center justify-center shadow-lg shadow-[#0088cc]/20 active:scale-90 transition-all"
+                >
+                  <MessageCircle size={16} color="white" />
+                </a>
+              )}
+              {phone && (
+                <a 
+                  href={`tel:${phone}`}
+                  className="w-9 h-9 rounded-full bg-[#34C759] flex items-center justify-center shadow-lg shadow-[#34C759]/20 active:scale-90 transition-all"
+                >
+                  <Phone size={16} color="white" />
+                </a>
+              )}
+            </div>
+          </div>
+
+          {phone && (
+            <p className="text-[14px] font-black text-[#34C759] pl-1">{phone}</p>
+          )}
         </div>
 
-        {/* Phone */}
-        {phone && (
-          <div className="flex items-center gap-2">
-            <Phone size={13} color="#34C759" />
-            <a
-              href={`tel:${phone}`}
-              className="text-[13px] font-black"
-              style={{ color: '#34C759' }}
-            >
-              {phone}
-            </a>
-          </div>
-        )}
-
-        {/* Message */}
-        {lead.message && (
-          <div className="pt-2 border-t border-[rgba(26,26,46,0.06)]">
-            <p className="text-[12px] text-[#5A5A6E] leading-relaxed italic">"{lead.message}"</p>
-          </div>
-        )}
-
-        {/* Price info */}
-        {lead.price_info && (
-          <div className="pt-1">
-            <p className="text-[11px] font-bold text-[#FF6B35]">💰 {lead.price_info}</p>
+        {/* Message / Details */}
+        {(lead.message || lead.price_info || lead.calculated_price) && (
+          <div className="px-1 space-y-2.5">
+            {lead.message && (
+              <div className="bg-white/50 rounded-xl p-3 border border-dashed border-[#f0ede8]">
+                <p className="text-[13px] text-[#5A5A6E] leading-relaxed italic">
+                  "{lead.message}"
+                </p>
+              </div>
+            )}
+            
+            <div className="flex flex-wrap gap-2">
+              {lead.price_info && (
+                <div className="px-3 py-1.5 bg-orange-50 rounded-lg border border-orange-100 flex items-center gap-1.5">
+                  <span className="text-[11px] font-black text-[#FF6B35]">💰 {lead.price_info}</span>
+                </div>
+              )}
+              {lead.calculated_price && (
+                <div className="px-3 py-1.5 bg-green-50 rounded-lg border border-green-100 flex items-center gap-1.5">
+                  <span className="text-[11px] font-black text-[#34C759]">💵 {Number(lead.calculated_price).toLocaleString()} so'm</span>
+                </div>
+              )}
+              {lead.width_cm && lead.height_cm && (
+                <div className="px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-100 flex items-center gap-1.5">
+                  <span className="text-[11px] font-black text-[#007AFF]">📐 {lead.width_cm}x{lead.height_cm} sm</span>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Date */}
-      <div className="flex items-center gap-3 mt-2.5">
-        <div className="flex items-center gap-1">
-          <Calendar size={11} color="#C0C0CE" />
-          <span className="text-[10px] text-[#C0C0CE] font-bold">{fmtDate(lead.created_at)}</span>
+      {/* Action Buttons */}
+      <div className="grid grid-cols-2 gap-3 mt-5">
+        <button
+          onClick={() => onUpdate(lead.id, { status: 'converted', is_processed: true })}
+          className={`py-3 rounded-xl text-[12px] font-black transition-all active:scale-95 flex items-center justify-center gap-2 ${
+            lead.status === 'converted' 
+            ? 'bg-[#34C759] text-white' 
+            : 'bg-white border-2 border-[#34C759] text-[#34C759]'
+          }`}
+        >
+          <CheckCircle2 size={14} />
+          Sotildi
+        </button>
+        <button
+          onClick={() => onUpdate(lead.id, { status: 'rejected', is_processed: true })}
+          className={`py-3 rounded-xl text-[12px] font-black transition-all active:scale-95 ${
+            lead.status === 'rejected' 
+            ? 'bg-[#FF3B30] text-white' 
+            : 'bg-white border-2 border-[#FF3B30] text-[#FF3B30]'
+          }`}
+        >
+          Rad etildi
+        </button>
+      </div>
+
+      {/* Footer / Date */}
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-[rgba(26,26,46,0.04)]">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <Calendar size={11} color="#C0C0CE" />
+            <span className="text-[10px] text-[#C0C0CE] font-bold">{fmtDate(lead.created_at)}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Clock size={11} color="#C0C0CE" />
+            <span className="text-[10px] text-[#C0C0CE] font-bold">{fmtTime(lead.created_at)}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Clock size={11} color="#C0C0CE" />
-          <span className="text-[10px] text-[#C0C0CE] font-bold">{fmtTime(lead.created_at)}</span>
-        </div>
+        <p className="text-[10px] font-black text-[#B0B0BF] uppercase tracking-tighter">ID: #{lead.id}</p>
       </div>
     </div>
   );
@@ -185,19 +267,21 @@ const LeadListView: React.FC = () => {
     fetchLeads();
   }, []);
 
-  const toggle = async (leadId: number, current: boolean) => {
+  const updateLead = async (leadId: number, data: Partial<LeadRequest>) => {
     haptic('light');
     try {
-      await apiClient.patch(`/leads/${leadId}/`, { is_processed: !current });
-      setLeads(prev => prev.map(l => l.id === leadId ? { ...l, is_processed: !current } : l));
+      await apiClient.patch(`/leads/${leadId}/`, data);
+      setLeads(prev => prev.map(l => l.id === leadId ? { ...l, ...data } : l));
+      if (data.status === 'converted') haptic('heavy');
+      else if (data.status === 'rejected') haptic('medium');
     } catch (err) {
       console.error(err);
     }
   };
 
   const filtered = leads.filter(l => {
-    if (filter === 'new')  return !l.is_processed;
-    if (filter === 'done') return  l.is_processed;
+    if (filter === 'new')  return !l.is_processed && l.status !== 'rejected';
+    if (filter === 'done') return  l.is_processed || l.status === 'converted' || l.status === 'rejected';
     return true;
   });
 
@@ -257,7 +341,7 @@ const LeadListView: React.FC = () => {
             <LeadCard
               key={lead.id}
               lead={lead}
-              onToggle={() => toggle(lead.id, lead.is_processed)}
+              onUpdate={updateLead}
             />
           ))
         ) : (
