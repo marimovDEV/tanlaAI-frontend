@@ -94,7 +94,7 @@ const CreatorDashboard: React.FC = () => {
   const [leads, setLeads] = useState<LeadRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate  = useNavigate();
-  const { haptic } = useTelegram();
+  const { haptic, profile } = useTelegram();
 
   useEffect(() => {
     const fetch = async () => {
