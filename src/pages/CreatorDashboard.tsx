@@ -253,7 +253,7 @@ const CreatorDashboard: React.FC = () => {
           />
           <StatCard
             icon={<Inbox />}
-            value={leads.length}
+            value={company?.total_leads ?? leads.length}
             label="Jami lead"
             color="#8B5CF6"
             bg="#fff"
