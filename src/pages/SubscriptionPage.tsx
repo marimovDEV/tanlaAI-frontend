@@ -27,6 +27,12 @@ const SubscriptionPage: React.FC = () => {
     if (profile?.has_company && profile?.role === 'COMPANY') {
       if (profile.company_status === 'active' || profile.company_is_vip) {
         navigate('/creator', { replace: true });
+        return;
+      }
+      
+      // If already submitted, show success view
+      if (profile.company_status === 'waiting_confirmation' || profile.company_status === 'review') {
+        setSubmitted(true);
       }
     }
 
@@ -71,9 +77,10 @@ const SubscriptionPage: React.FC = () => {
       setSubmitted(true);
       haptic('heavy');
       await refreshProfile();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment error:', error);
-      alert("Xatolik yuz berdi. Iltimos qayta urinib ko'ring.");
+      const detail = error.response?.data?.detail || error.response?.data?.message || "Xatolik yuz berdi. Iltimos qayta urinib ko'ring.";
+      alert(detail);
     } finally {
       setLoading(false);
     }
