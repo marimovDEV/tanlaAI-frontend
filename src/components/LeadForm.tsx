@@ -80,6 +80,7 @@ const LeadForm: React.FC<Props> = ({
   const [addressText, setAddressText] = useState('');
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
+  const [geoBusy, setGeoBusy] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [productData, setProductData] = useState<any>(null);
   const [dims, setDims] = useState<{ width: string; height: string }[]>(
