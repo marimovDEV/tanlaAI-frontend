@@ -40,13 +40,21 @@ const CompanyCreatePage: React.FC = () => {
     setLoading(true);
     haptic('medium');
     try {
+      const normalizedData = { ...formData };
+      ['telegram_link', 'instagram_link'].forEach(key => {
+        const val = (normalizedData as any)[key];
+        if (val && !val.startsWith('@') && !val.startsWith('http')) {
+          (normalizedData as any)[key] = '@' + val.trim();
+        }
+      });
+
       if (logoFile) {
         const fd = new FormData();
-        Object.entries(formData).forEach(([k, v]) => { if (v) fd.append(k, v); });
+        Object.entries(normalizedData).forEach(([k, v]) => { if (v) fd.append(k, v); });
         fd.append('logo', logoFile);
         await apiClient.post('companies/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       } else {
-        await apiClient.post('companies/', formData);
+        await apiClient.post('companies/', normalizedData);
       }
       haptic('medium');
       

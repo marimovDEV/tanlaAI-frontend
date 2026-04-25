@@ -152,14 +152,10 @@ const CompanyEditPage: React.FC = () => {
     
     if (!formData.telegram_link?.trim()) {
       errors.telegram_link = "Telegram link majburiy";
-    } else if (!formData.telegram_link.startsWith('@') && !formData.telegram_link.startsWith('https://t.me/')) {
-      errors.telegram_link = "@username yoki https://t.me/username";
     }
     
     if (!formData.instagram_link?.trim()) {
       errors.instagram_link = "Instagram link majburiy";
-    } else if (!formData.instagram_link.startsWith('@') && !formData.instagram_link.includes('instagram.com')) {
-      errors.instagram_link = "@username yoki instagram.com link";
     }
     
     if (formData.youtube_link?.trim() && !isValidUrl(formData.youtube_link) && !formData.youtube_link.includes('youtube.com') && !formData.youtube_link.includes('youtu.be')) {
@@ -189,7 +185,17 @@ const CompanyEditPage: React.FC = () => {
       } else if (key === 'logo_file' || key === 'logo') {
         // Skip
       } else if (value !== null && value !== undefined) {
-        data.append(key, value.toString());
+        let finalValue = value.toString();
+        
+        // Auto-prepend @ for usernames if not a link and doesn't start with @
+        if (key === 'telegram_link' || key === 'instagram_link') {
+          const trimmed = finalValue.trim();
+          if (trimmed && !trimmed.startsWith('@') && !trimmed.startsWith('http')) {
+            finalValue = '@' + trimmed;
+          }
+        }
+        
+        data.append(key, finalValue);
       }
     });
 
