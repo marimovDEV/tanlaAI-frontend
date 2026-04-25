@@ -375,7 +375,7 @@ const OrderPage: React.FC = () => {
 
       {/* Fixed bottom bar */}
       {!success && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-xl border-t border-[#f0ede8] flex items-center gap-4 z-[1000]">
+        <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem + var(--sab, 12px))] bg-white/80 backdrop-blur-xl border-t border-[#f0ede8] flex items-center gap-4 z-[10001]">
            <div className="flex-1">
               <p className="text-[10px] font-black uppercase text-[#B0B0BF] leading-none">Jami summa</p>
               <p className="text-xl font-black text-[#1A1A2E] tracking-tight">{totalPrice.toLocaleString()} so'm</p>

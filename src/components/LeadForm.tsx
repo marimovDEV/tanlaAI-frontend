@@ -219,9 +219,9 @@ const LeadForm: React.FC<Props> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center px-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 z-[10001] flex items-end justify-center px-4" onClick={onClose}>
       <div
-        className="bg-surface w-full max-w-lg rounded-t-[32px] p-6 pb-12 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 relative"
+        className="bg-surface w-full max-w-lg rounded-t-[32px] p-6 pb-[calc(1.5rem + var(--sab, 24px))] max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 relative"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-12 h-1.5 bg-outline/20 rounded-full mx-auto mb-6" />
