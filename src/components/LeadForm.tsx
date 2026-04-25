@@ -58,19 +58,55 @@ const LeadForm: React.FC<Props> = ({
   const { haptic } = useTelegram();
 
   // Price calculation
-  // NOTE: In a production app, we'd fetch the latest product price here.
-  // For this UI, we assume price info is passed or we could pass the whole product object.
-  // Since we only have productId, we'll try to use totalPrice/quantity props if available.
-  const unitPrice = quantity && totalPrice ? totalPrice / quantity : 0;
-  const currentTotal = unitPrice > 0 ? unitPrice * qty : 0;
+  const calculateCurrentTotal = () => {
+    if (productData?.price_per_m2) {
+      let total = 0;
+      dims.forEach(d => {
+        const w = parseFloat(d.width) || 0;
+        const h = parseFloat(d.height) || 0;
+        const area = (w * h) / 10000;
+        total += area * Number(productData.price_per_m2);
+      });
+      return Math.round(total);
+    }
+    const unit = quantity && totalPrice ? totalPrice / quantity : (productData?.price || 0);
+    return Number(unit) * qty;
+  };
+
+  const currentTotal = calculateCurrentTotal();
 
   // Address state — user picks exactly one mode, but we only send whichever is filled.
   const [addressMode, setAddressMode] = useState<AddressMode>('location');
   const [addressText, setAddressText] = useState('');
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
-  const [geoBusy, setGeoBusy] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [productData, setProductData] = useState<any>(null);
+  const [dims, setDims] = useState<{ width: string; height: string }[]>(
+    Array(quantity ?? 1).fill({ width: widthCm?.toString() || '', height: heightCm?.toString() || '' })
+  );
+
+  React.useEffect(() => {
+    apiClient.get(`/products/${productId}/`)
+      .then(res => {
+        setProductData(res.data);
+      })
+      .catch(console.error);
+  }, [productId]);
+
+  React.useEffect(() => {
+    setDims(prev => {
+      const next = [...prev];
+      if (next.length < qty) {
+        for (let i = next.length; i < qty; i++) {
+          next.push({ width: '', height: '' });
+        }
+      } else if (next.length > qty) {
+        next.splice(qty);
+      }
+      return next;
+    });
+  }, [qty]);
 
   const requestLocation = () => {
     setGeoError(null);
@@ -170,18 +206,25 @@ const LeadForm: React.FC<Props> = ({
     haptic('medium');
 
     try {
+      let dimensionSummary = "";
+      if (productData?.price_per_m2) {
+        dims.forEach((d, i) => {
+          dimensionSummary += `\nEshik #${i+1}: ${d.width}x${d.height} sm`;
+        });
+      }
+
       const payload: Record<string, unknown> = {
         product: productId,
         lead_type: leadType,
         phone,
-        message: message || "Siz bilan bog'lanishlarini kutmoqda.",
+        message: (message ? message + "\n" : "") + (dimensionSummary ? "O'lchamlar:" + dimensionSummary : "Siz bilan bog'lanishlarini kutmoqda."),
         price_info: initialPriceInfo || "",
-        width_cm: widthCm ?? null,
-        height_cm: heightCm ?? null,
+        width_cm: dims[0]?.width ? parseFloat(dims[0].width) : (widthCm ?? null),
+        height_cm: dims[0]?.height ? parseFloat(dims[0].height) : (heightCm ?? null),
         source: source || "",
         shared_id: sharedId || null,
         quantity: qty,
-        total_price: currentTotal || totalPrice || null,
+        total_price: currentTotal || null,
       };
       if (addressMode === 'location' && hasCoords) {
         payload.latitude = lat;
@@ -270,7 +313,7 @@ const LeadForm: React.FC<Props> = ({
 
             <form onSubmit={handleSubmit} className="space-y-5 pb-4">
               {/* Quantity selector for Direct orders */}
-              {leadType === 'direct' && unitPrice > 0 && (
+              {leadType === 'direct' && (
                 <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10 flex items-center justify-between">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Eshiklar soni</p>
@@ -291,6 +334,54 @@ const LeadForm: React.FC<Props> = ({
                   <div className="text-right">
                     <p className="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Umumiy summa</p>
                     <p className="text-lg font-black text-primary">{formatPrice(currentTotal)}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Dimension inputs for price_per_m2 products */}
+              {productData?.price_per_m2 && (
+                <div className="bg-white p-4 rounded-2xl border border-outline/10 space-y-4">
+                  <div className="flex items-center gap-2 text-primary">
+                    <Pencil size={14} />
+                    <h4 className="text-[10px] font-black uppercase tracking-wider">O'lchamlarni kiriting (sm)</h4>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {dims.map((dim, idx) => (
+                      <div key={idx} className="p-3 bg-surface-variant/30 rounded-xl border border-outline/5">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-outline mb-2">Eshik #{idx + 1}</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-outline ml-1">Eni</label>
+                            <input 
+                              type="number"
+                              value={dim.width}
+                              onChange={(e) => {
+                                const newDims = [...dims];
+                                newDims[idx] = { ...newDims[idx], width: e.target.value };
+                                setDims(newDims);
+                              }}
+                              className="w-full bg-white border border-outline/10 rounded-lg py-2 px-3 text-sm font-bold outline-none focus:border-primary"
+                              placeholder="0"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-outline ml-1">Bo'yi</label>
+                            <input 
+                              type="number"
+                              value={dim.height}
+                              onChange={(e) => {
+                                const newDims = [...dims];
+                                newDims[idx] = { ...newDims[idx], height: e.target.value };
+                                setDims(newDims);
+                              }}
+                              className="w-full bg-white border border-outline/10 rounded-lg py-2 px-3 text-sm font-bold outline-none focus:border-primary"
+                              placeholder="0"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
