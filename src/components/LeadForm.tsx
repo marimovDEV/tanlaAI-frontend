@@ -74,12 +74,54 @@ const LeadForm: React.FC<Props> = ({
 
   const requestLocation = () => {
     setGeoError(null);
-    if (!('geolocation' in navigator)) {
-      setGeoError("Brauzer geolokatsiyani qo'llamayapti. Manzilni qo'lda yozing.");
-      return;
-    }
     setGeoBusy(true);
     haptic('light');
+
+    // 1. Try Telegram's official Location Manager first (if available and version >= 8.0)
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg?.LocationManager && tg.isVersionAtLeast?.('8.0')) {
+      const lm = tg.LocationManager;
+      if (!lm.isInited) {
+        lm.init(() => {
+          lm.getLocation((data: any) => {
+            setGeoBusy(false);
+            if (data?.latitude && data?.longitude) {
+              setLat(data.latitude);
+              setLng(data.longitude);
+              haptic('medium');
+            } else {
+              // Fallback to browser if TG fails
+              useBrowserGeolocation();
+            }
+          });
+        });
+        return;
+      } else {
+        lm.getLocation((data: any) => {
+          setGeoBusy(false);
+          if (data?.latitude && data?.longitude) {
+            setLat(data.latitude);
+            setLng(data.longitude);
+            haptic('medium');
+          } else {
+            useBrowserGeolocation();
+          }
+        });
+        return;
+      }
+    }
+
+    // 2. Browser geolocation fallback
+    useBrowserGeolocation();
+  };
+
+  const useBrowserGeolocation = () => {
+    if (!('geolocation' in navigator)) {
+      setGeoError("Brauzer geolokatsiyani qo'llamayapti. Manzilni qo'lda yozing.");
+      setGeoBusy(false);
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setLat(pos.coords.latitude);
@@ -91,13 +133,19 @@ const LeadForm: React.FC<Props> = ({
         setGeoBusy(false);
         let msg = "Lokatsiyani olishning imkoni bo'lmadi.";
         if (err.code === err.PERMISSION_DENIED) {
-          msg = "Ruxsat berilmadi. Manzilni qo'lda yozing.";
+          msg = "Ruxsat berilmadi. Telefon sozlamalaridan lokatsiyani yoqing yoki manzilni qo'lda yozing.";
         } else if (err.code === err.POSITION_UNAVAILABLE) {
           msg = "Joylashuv aniqlanmadi. Manzilni qo'lda yozing.";
+        } else if (err.code === 3) { // Timeout
+          msg = "Kutilmagan kechikish. Qaytadan urinib ko'ring yoki qo'lda yozing.";
         }
         setGeoError(msg);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { 
+        enableHighAccuracy: true, 
+        timeout: 8000, // Slightly shorter timeout for better UX
+        maximumAge: 1000 * 60 * 5 // Cache for 5 mins
+      }
     );
   };
 
