@@ -105,12 +105,16 @@ const CreatorDashboard: React.FC = () => {
           apiClient.get<ApiListResponse<LeadRequest> | LeadRequest[]>('/leads/'),
         ]);
         const cData = companyRes.data;
-        // Safety: ensure cData is an object and not an array
-        const companyData = Array.isArray(cData) ? cData[0] : cData;
-        setCompany(companyData);
+        if (cData) {
+          const companyData = Array.isArray(cData) ? cData[0] : cData;
+          setCompany(companyData);
+        }
         
-        setProducts(Array.isArray(productsRes.data) ? productsRes.data : productsRes.data.results ?? []);
-        setLeads(Array.isArray(leadsRes.data) ? leadsRes.data : leadsRes.data.results ?? []);
+        const pData = productsRes.data;
+        setProducts(Array.isArray(pData) ? pData : (pData as any).results ?? []);
+        
+        const lData = leadsRes.data;
+        setLeads(Array.isArray(lData) ? lData : (lData as any).results ?? []);
       } catch (err: unknown) {
         if (isAxiosError(err) && err.response?.status === 404) {
           // If company not found, user is not a seller, redirect to home
@@ -168,10 +172,10 @@ const CreatorDashboard: React.FC = () => {
               style={{ background: 'rgba(255,255,255,0.08)' }}
             >
               {company?.logo ? (
-                <img src={getMediaUrl(company.logo)} alt={company?.name || 'Company'} className="w-full h-full object-cover" />
+                <img src={getMediaUrl(company.logo)} alt={company?.name || profile?.first_name || 'Studiyam'} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white text-[24px] font-black">
-                  {company?.name?.charAt(0).toUpperCase() || profile?.first_name?.charAt(0).toUpperCase() || '?'}
+                  {(company?.name || profile?.first_name || '?').charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
