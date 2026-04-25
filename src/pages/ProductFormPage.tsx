@@ -454,9 +454,11 @@ const ProductFormPage: React.FC = () => {
               </label>
             )}
           </div>
-          <p className="text-[10px] text-outline">
-            ⭐ — asosiy rasm (foni olingan). Yulduzchani bosib asosiy rasmni tanlang.
-          </p>
+          <div className="bg-primary/5 border border-primary/10 p-3 rounded-xl">
+            <p className="text-[10px] text-primary/80 font-medium leading-relaxed">
+              <span className="font-black">⭐ ASOSIY RASM:</span> Tanlangan rasmning orqa foni AI orqali avtomatik olib tashlanadi. Toza eshik rasmini (fonisiz) hosil qilish uchun yulduzchani bosing. Qolgan rasmlar interyer/lifestyle uchun qoladi.
+            </p>
+          </div>
         </div>
 
         <div className="space-y-4">
