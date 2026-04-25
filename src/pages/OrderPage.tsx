@@ -35,6 +35,25 @@ const OrderPage: React.FC = () => {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  
+  // Custom dimensions for each item if product.price_per_m2 exists
+  const [dimensions, setDimensions] = useState<{ width: string; height: string }[]>(
+    Array(initialQty).fill({ width: '', height: '' })
+  );
+
+  useEffect(() => {
+    setDimensions(prev => {
+      const next = [...prev];
+      if (next.length < qty) {
+        for (let i = next.length; i < qty; i++) {
+          next.push({ width: '', height: '' });
+        }
+      } else if (next.length > qty) {
+        next.splice(qty);
+      }
+      return next;
+    });
+  }, [qty]);
 
   useEffect(() => {
     apiClient.get<Product>(`/products/${id}/`)
@@ -164,21 +183,38 @@ const OrderPage: React.FC = () => {
     haptic('medium');
 
     try {
-      const price = product.is_on_sale && product.discount_price 
-        ? Number(product.discount_price) 
-        : Number(product.price);
+      let finalPrice = 0;
+      let dimensionSummary = "";
+      
+      if (product.price_per_m2) {
+        dimensions.forEach((d, i) => {
+          const w = parseFloat(d.width) || 0;
+          const h = parseFloat(d.height) || 0;
+          const area = (w * h) / 10000;
+          finalPrice += area * Number(product.price_per_m2);
+          dimensionSummary += `\nEshik #${i+1}: ${w}x${h} sm`;
+        });
+        finalPrice = Math.round(finalPrice);
+      } else {
+        const unit = product.is_on_sale && product.discount_price 
+          ? Number(product.discount_price) 
+          : Number(product.price);
+        finalPrice = unit * qty;
+      }
         
       await apiClient.post('/leads/', {
         product: product.id,
         lead_type: 'direct',
         phone: phone.replace(/\s/g, ''),
-        message: message || "Siz bilan bog'lanishlarini kutmoqda.",
+        message: (message ? message + "\n" : "") + (dimensionSummary ? "O'lchamlar:" + dimensionSummary : "Siz bilan bog'lanishlarini kutmoqda."),
         quantity: qty,
-        total_price: price * qty,
+        total_price: finalPrice,
         latitude: addressMode === 'location' ? lat : null,
         longitude: addressMode === 'location' ? lng : null,
         address_text: addressMode === 'manual' ? addressText : '',
-        ai_result: initialAiId || null
+        ai_result: initialAiId || null,
+        width_cm: product.price_per_m2 ? (parseFloat(dimensions[0]?.width) || null) : null,
+        height_cm: product.price_per_m2 ? (parseFloat(dimensions[0]?.height) || null) : null,
       });
 
       setSuccess(true);
@@ -195,10 +231,26 @@ const OrderPage: React.FC = () => {
   if (loading) return <div className="p-10 text-center">Yuklanmoqda...</div>;
   if (!product) return <div className="p-10 text-center">Mahsulot topilmadi.</div>;
 
-  const unitPrice = product.is_on_sale && product.discount_price 
-    ? Number(product.discount_price) 
-    : Number(product.price);
-  const totalPrice = unitPrice * qty;
+  const calculateTotal = () => {
+    if (!product) return 0;
+    if (product.price_per_m2) {
+      let total = 0;
+      dimensions.forEach(d => {
+        const w = parseFloat(d.width) || 0;
+        const h = parseFloat(d.height) || 0;
+        const area = (w * h) / 10000;
+        total += area * Number(product.price_per_m2);
+      });
+      return Math.round(total);
+    }
+    const unit = product.is_on_sale && product.discount_price 
+      ? Number(product.discount_price) 
+      : Number(product.price);
+    return unit * qty;
+  };
+
+  const totalPrice = calculateTotal();
+  const unitPrice = product.price_per_m2 ? Number(product.price_per_m2) : (product.is_on_sale && product.discount_price ? Number(product.discount_price) : Number(product.price));
 
   return (
     <div className="min-h-screen bg-[#FFFBF6] pb-32">
@@ -274,6 +326,55 @@ const OrderPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Dimension inputs for price_per_m2 products */}
+          {product.price_per_m2 && (
+            <div className="bg-white p-5 rounded-[24px] shadow-sm border border-[#f0ede8] space-y-4">
+              <div className="flex items-center gap-2 text-[#FF6B35]">
+                <Pencil size={16} />
+                <h4 className="text-sm font-black uppercase tracking-wider">O'lchamlarni kiriting (sm)</h4>
+              </div>
+              
+              <div className="space-y-4">
+                {dimensions.map((dim, idx) => (
+                  <div key={idx} className="p-4 bg-[#fcfaf7] rounded-2xl border border-[#f0ede8]">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#B0B0BF] mb-3">Eshik #{idx + 1}</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-outline ml-1">Eni (sm)</label>
+                        <input 
+                          type="number"
+                          value={dim.width}
+                          onChange={(e) => {
+                            const newDims = [...dimensions];
+                            newDims[idx] = { ...newDims[idx], width: e.target.value };
+                            setDimensions(newDims);
+                          }}
+                          className="w-full bg-white border border-[#f0ede8] rounded-xl py-3 px-4 text-sm font-black outline-none focus:border-[#FF6B35]"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-outline ml-1">Bo'yi (sm)</label>
+                        <input 
+                          type="number"
+                          value={dim.height}
+                          onChange={(e) => {
+                            const newDims = [...dimensions];
+                            newDims[idx] = { ...newDims[idx], height: e.target.value };
+                            setDimensions(newDims);
+                          }}
+                          className="w-full bg-white border border-[#f0ede8] rounded-xl py-3 px-4 text-sm font-black outline-none focus:border-[#FF6B35]"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-outline italic">Narx avtomatik ravishda kvadrat metr bo'yicha hisoblanadi.</p>
+            </div>
+          )}
 
           {/* Form */}
           <div className="space-y-4">
