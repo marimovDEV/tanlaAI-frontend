@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Package, Inbox, Settings, PlusCircle, ChevronRight,
   TrendingUp, Phone, MessageCircle, Play,
-  MapPin, Edit3, Eye,
+  MapPin, Edit3, Eye, BarChart3,
 } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
@@ -104,7 +104,11 @@ const CreatorDashboard: React.FC = () => {
           apiClient.get<ApiListResponse<Product> | Product[]>('/products/my/'),
           apiClient.get<ApiListResponse<LeadRequest> | LeadRequest[]>('/leads/'),
         ]);
-        setCompany(companyRes.data);
+        const cData = companyRes.data;
+        // Safety: ensure cData is an object and not an array
+        const companyData = Array.isArray(cData) ? cData[0] : cData;
+        setCompany(companyData);
+        
         setProducts(Array.isArray(productsRes.data) ? productsRes.data : productsRes.data.results ?? []);
         setLeads(Array.isArray(leadsRes.data) ? leadsRes.data : leadsRes.data.results ?? []);
       } catch (err: unknown) {
@@ -164,17 +168,19 @@ const CreatorDashboard: React.FC = () => {
               style={{ background: 'rgba(255,255,255,0.08)' }}
             >
               {company?.logo ? (
-                <img src={getMediaUrl(company.logo)} alt={company.name} className="w-full h-full object-cover" />
+                <img src={getMediaUrl(company.logo)} alt={company?.name || 'Company'} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white text-[24px] font-black">
-                  {company?.name?.charAt(0).toUpperCase() ?? '?'}
+                  {company?.name?.charAt(0).toUpperCase() || profile?.first_name?.charAt(0).toUpperCase() || '?'}
                 </div>
               )}
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h2 className="text-[18px] font-black text-white truncate">{company?.name}</h2>
+                <h2 className="text-[18px] font-black text-white truncate">
+                  {company?.name || profile?.first_name || 'Mening Studiyam'}
+                </h2>
                 {company?.is_currently_active && (
                   <span
                     className="flex-shrink-0 text-[8px] font-black text-white px-1.5 py-0.5 rounded-full"
@@ -236,7 +242,7 @@ const CreatorDashboard: React.FC = () => {
 
       {/* ── Stats ── */}
       <div className="px-4 mb-5">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <StatCard
             icon={<Package />}
             value={products.length}
@@ -260,6 +266,14 @@ const CreatorDashboard: React.FC = () => {
             color="#FF2D55"
             bg="#fff"
             onClick={() => navigate('/creator/leads')}
+          />
+          <StatCard
+            icon={<BarChart3 />}
+            value={company?.ai_usage ?? 0}
+            label="Hisobot"
+            color="#0088cc"
+            bg="#fff"
+            onClick={() => { haptic('light'); }}
           />
         </div>
       </div>
@@ -310,6 +324,24 @@ const CreatorDashboard: React.FC = () => {
             </span>
           )}
           {newLeads === 0 && <ChevronRight size={18} color="#C0C0CE" />}
+        </button>
+
+        {/* Reports (NEW) */}
+        <button
+          onClick={() => { haptic('light'); }}
+          className="w-full flex items-center justify-between p-4 rounded-[20px] active:scale-[0.97] transition-transform bg-white"
+          style={{ boxShadow: '0 4px 16px rgba(26,26,46,0.06)' }}
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-[14px] flex items-center justify-center" style={{ background: 'rgba(0,136,204,0.1)' }}>
+              <BarChart3 size={20} color="#0088cc" />
+            </div>
+            <div className="text-left">
+              <p className="text-[14px] font-black text-[#1A1A2E]">Hisobotlar</p>
+              <p className="text-[10px] text-[#8A8A99] font-bold uppercase tracking-wider">AI va Lead tahlili</p>
+            </div>
+          </div>
+          <ChevronRight size={18} color="#C0C0CE" />
         </button>
 
 
