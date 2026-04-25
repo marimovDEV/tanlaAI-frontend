@@ -33,6 +33,8 @@ export interface Company {
   wishlist_count?: number;
   score?: number;
   is_vip?: boolean;
+  total_leads?: number;
+  converted_leads?: number;
 }
 
 export interface TelegramUser {
