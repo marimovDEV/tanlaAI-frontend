@@ -83,19 +83,26 @@ const MainLayout: React.FC = () => {
   const isSeller  = profile?.role === 'COMPANY' && Boolean(profile?.has_company);
   const rootPaths = isSeller ? SELLER_ROOT_PATHS : USER_ROOT_PATHS;
 
-  /* ── Subscription Guard ── */
+  /* ── Seller Redirect & Subscription Guard ── */
   useEffect(() => {
     if (!ready || !profile) return;
     
-    // If company hasn't paid, force them to subscription page
-    // (Excluding those in review status or VIPs)
-    const isUnpaid = profile.role === 'COMPANY' && 
-                     profile.has_company && 
+    const isSeller = profile.role === 'COMPANY' && profile.has_company;
+    const isUnpaid = isSeller && 
                      (profile.company_status === 'pending_payment' || profile.company_status === 'expired') && 
                      !profile.company_is_vip;
 
+    // 1. If unpaid, force to subscription
     if (isUnpaid && location.pathname !== '/subscription') {
       navigate('/subscription', { replace: true });
+      return;
+    }
+
+    // 2. If seller enters marketplace (root or other user paths), redirect to dashboard
+    // We allow profile and subscription pages for both
+    const marketplacePaths = ['/', '/search', '/discounts', '/companies'];
+    if (isSeller && marketplacePaths.includes(location.pathname)) {
+      navigate('/creator', { replace: true });
     }
   }, [ready, profile, location.pathname, navigate]);
 

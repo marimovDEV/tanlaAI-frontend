@@ -59,12 +59,6 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If user is a company owner, redirect them to their dashboard
-    if (ready && profile?.role === 'COMPANY' && profile?.has_company) {
-      navigate('/creator', { replace: true });
-      return;
-    }
-
     const fetch = async () => {
       try {
         const [bRes, cRes, pRes, sRes] = await Promise.all([
