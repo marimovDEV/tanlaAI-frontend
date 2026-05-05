@@ -77,7 +77,7 @@ const NavItem: React.FC<{
 
 /* ── Main Layout ──────────────────────────────────────────────── */
 const MainLayout: React.FC = () => {
-  const { haptic, profile, webApp, ready, viewMode, setViewMode } = useTelegram();
+  const { haptic, profile, webApp, ready, viewMode } = useTelegram();
   const location = useLocation();
   const navigate  = useNavigate();
 
