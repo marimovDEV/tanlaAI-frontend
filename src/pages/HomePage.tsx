@@ -51,7 +51,7 @@ const SectionHeader: React.FC<{
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { haptic, profile, ready } = useTelegram();
+  const { haptic } = useTelegram();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);

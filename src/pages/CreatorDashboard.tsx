@@ -31,14 +31,13 @@ const StatCard: React.FC<{
   value: number | string;
   label: string;
   color: string;
-  bg: string;
   onClick?: () => void;
-}> = ({ icon, value, label, color, bg, onClick }) => (
+}> = ({ icon, value, label, color, onClick }) => (
   <button
     onClick={onClick}
     disabled={!onClick}
     className="flex flex-col p-4 rounded-[20px] text-left active:scale-95 transition-transform disabled:active:scale-100"
-    style={{ background: bg, border: `1.5px solid ${color}22` }}
+    style={{ border: `1.5px solid ${color}22` }}
   >
     <div
       className="w-10 h-10 rounded-[12px] flex items-center justify-center mb-3"
