@@ -31,6 +31,7 @@ const sellerNavLeft  = [
   { to: '/creator/leads', icon: Inbox,           label: 'Leadlar'   },
 ];
 const sellerNavRight = [
+  { to: '/',               icon: Store,     label: 'Bozor'  },
   { to: '/profile',        icon: User,      label: 'Profil' },
 ];
 
@@ -80,7 +81,7 @@ const MainLayout: React.FC = () => {
   const location = useLocation();
   const navigate  = useNavigate();
 
-  const isSeller  = profile?.role === 'COMPANY' && Boolean(profile?.has_company);
+  const isSeller  = profile?.role === 'COMPANY' || profile?.has_company;
   const rootPaths = isSeller ? SELLER_ROOT_PATHS : USER_ROOT_PATHS;
 
   /* ── Seller Redirect & Subscription Guard ── */
@@ -100,10 +101,10 @@ const MainLayout: React.FC = () => {
 
     // 2. If seller enters marketplace (root or other user paths), redirect to dashboard
     // We allow profile and subscription pages for both
-    const marketplacePaths = ['/', '/search', '/discounts', '/companies'];
-    if (isSeller && marketplacePaths.includes(location.pathname)) {
-      navigate('/creator', { replace: true });
-    }
+    // const marketplacePaths = ['/', '/search', '/discounts', '/companies'];
+    // if (isSeller && marketplacePaths.includes(location.pathname)) {
+    //   navigate('/creator', { replace: true });
+    // }
   }, [ready, profile, location.pathname, navigate]);
 
   /* ── Telegram native Back Button ── */
