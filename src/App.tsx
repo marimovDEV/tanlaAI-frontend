@@ -18,6 +18,7 @@ import ProductFormPage from './pages/ProductFormPage';
 import CompanyEditPage from './pages/CompanyEditPage';
 import LeadListView from './pages/LeadListView';
 import WishlistPage from './pages/WishlistPage';
+import BozorPage from './pages/BozorPage';
 import CompanyDetailPage from './pages/CompanyDetailPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminSystemPage from './pages/AdminSystemPage';
@@ -94,6 +95,7 @@ function App() {
             <Route path="/creator/product/add" element={<RequireCompany><ProductFormPage /></RequireCompany>} />
             <Route path="/creator/product/edit/:id" element={<RequireCompany><ProductFormPage /></RequireCompany>} />
             <Route path="/creator/leads" element={<RequireCompany><LeadListView /></RequireCompany>} />
+            <Route path="/bozor" element={<BozorPage />} />
           </Route>
 
           {/* Catch-all: unknown routes -> home */}

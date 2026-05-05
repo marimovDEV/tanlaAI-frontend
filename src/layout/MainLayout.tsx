@@ -14,7 +14,7 @@ function cn(...inputs: ClassValue[]) {
 
 /* ── Root paths per role ──────────────────────────────────────── */
 const USER_ROOT_PATHS   = new Set(['/', '/search', '/discounts', '/companies', '/profile']);
-const SELLER_ROOT_PATHS = new Set(['/creator', '/creator/leads', '/profile']);
+const SELLER_ROOT_PATHS = new Set(['/creator', '/creator/leads', '/bozor', '/profile']);
 
 /* ── Nav items ────────────────────────────────────────────────── */
 const userNavItems = [
@@ -31,7 +31,7 @@ const sellerNavLeft  = [
   { to: '/creator/leads', icon: Inbox,           label: 'Leadlar'   },
 ];
 const sellerNavRight = [
-  { to: '/',               icon: Store,     label: 'Bozor'  },
+  { to: '/bozor',          icon: Store,     label: 'Bozor'  },
   { to: '/profile',        icon: User,      label: 'Profil' },
 ];
 
