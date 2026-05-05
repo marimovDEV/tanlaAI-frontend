@@ -241,7 +241,6 @@ const CreatorDashboard: React.FC = () => {
             value={products.length}
             label="Mahsulot"
             color="#FF6B35"
-            bg="#fff"
             onClick={() => navigate('/creator/product/add')}
           />
           <StatCard
@@ -249,7 +248,6 @@ const CreatorDashboard: React.FC = () => {
             value={leads.length}
             label="Jami lead"
             color="#8B5CF6"
-            bg="#fff"
             onClick={() => navigate('/creator/leads')}
           />
           <StatCard
@@ -257,7 +255,6 @@ const CreatorDashboard: React.FC = () => {
             value={newLeads}
             label="Yangi"
             color="#FF2D55"
-            bg="#fff"
             onClick={() => navigate('/creator/leads')}
           />
         </div>
