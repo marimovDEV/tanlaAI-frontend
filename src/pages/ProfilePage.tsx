@@ -76,27 +76,42 @@ const ProfilePage: React.FC = () => {
             {tgUser?.username && (
               <p className="text-[12px] text-[#B0B0BF] font-bold mt-0.5">@{tgUser.username}</p>
             )}
-            <div className="flex items-center gap-1.5 mt-2">
-              <button 
-                onClick={() => { haptic('medium'); if (hasCompany) { setViewMode('seller'); navigate('/creator'); } }}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-transform"
-                style={{
-                  background: isVerifiedSeller
-                    ? 'linear-gradient(135deg, #FF6B35, #FF2D55)'
-                    : 'linear-gradient(135deg, #00C9B1, #0096FF)',
-                }}
-              >
-                <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
-                {isVerifiedSeller ? 'Sotuvchi' : 'Xaridor'}
-                {hasCompany && <ChevronRight size={10} />}
-              </button>
-              {isVerifiedSeller && (
+            <div className="flex items-center gap-1.5 mt-4">
+              {/* Segmented Control Switch */}
+              {hasCompany && (
+                <div className="flex p-1 bg-[#F5F0EB] rounded-2xl w-full max-w-[240px]">
+                  <button
+                    onClick={() => { haptic('soft'); setViewMode('buyer'); }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[11px] font-black uppercase tracking-tight transition-all ${
+                      viewMode === 'buyer' 
+                        ? 'bg-white text-[#1A1A2E] shadow-sm' 
+                        : 'text-[#B0B0BF]'
+                    }`}
+                  >
+                    <User size={14} />
+                    Xaridor
+                  </button>
+                  <button
+                    onClick={() => { haptic('soft'); setViewMode('seller'); navigate('/creator'); }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[11px] font-black uppercase tracking-tight transition-all ${
+                      viewMode === 'seller' 
+                        ? 'bg-gradient-to-br from-[#FF6B35] to-[#FF2D55] text-white shadow-md' 
+                        : 'text-[#B0B0BF]'
+                    }`}
+                    style={viewMode === 'seller' ? { background: 'linear-gradient(135deg, #FF6B35, #FF2D55)' } : {}}
+                  >
+                    <LayoutDashboard size={14} />
+                    Sotuvchi
+                  </button>
+                </div>
+              )}
+              {!hasCompany && (
                 <div
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-black uppercase"
-                  style={{ background: 'rgba(255,107,53,0.08)', color: '#FF6B35' }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white"
+                  style={{ background: 'linear-gradient(135deg, #00C9B1, #0096FF)' }}
                 >
-                  <ShieldCheck size={10} />
-                  Verified
+                  <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                  Xaridor
                 </div>
               )}
             </div>
