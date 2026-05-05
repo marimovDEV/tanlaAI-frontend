@@ -318,22 +318,22 @@ const ProductFormPage: React.FC = () => {
     try {
       if (isEdit) {
         await apiClient.patch(`/products/${id}/`, data, {
-          headers: { ‘Content-Type’: ‘multipart/form-data’ }
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
       } else {
-        await apiClient.post(‘/products/’, data, {
-          headers: { ‘Content-Type’: ‘multipart/form-data’ }
+        await apiClient.post('/products/', data, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
       }
-      haptic(‘heavy’);
-      navigate(‘/creator’);
+      haptic('heavy');
+      navigate('/creator');
     } catch (err) {
       if (isAxiosError(err)) {
-        console.error(‘Product save error response:’, JSON.stringify(err.response?.data));
+        console.error('Product save error response:', JSON.stringify(err.response?.data));
       } else {
-        console.error(‘Error saving product:’, err);
+        console.error('Error saving product:', err);
       }
-      setErrorMessage(getErrorMessage(err, "Mahsulotni saqlashning imkoni bo’lmadi."));
+      setErrorMessage(getErrorMessage(err, "Mahsulotni saqlashning imkoni bo'lmadi."));
       setSubmitting(false);
     }
   };
@@ -599,7 +599,7 @@ const ProductFormPage: React.FC = () => {
             navigate('/creator');
           } catch (error) {
             console.error('Error deleting product:', error);
-            setErrorMessage(getErrorMessage(error, "Mahsulotni o'chirishning imkoni bo‘lmadi."));
+            setErrorMessage(getErrorMessage(error, "Mahsulotni o'chirishning imkoni bo'lmadi."));
           }
         }} className="w-full flex items-center justify-center gap-2 text-error text-xs font-black uppercase tracking-widest pt-4"><Trash2 size={16} />Mahsulotni o'chirish</button>}
       </form>
