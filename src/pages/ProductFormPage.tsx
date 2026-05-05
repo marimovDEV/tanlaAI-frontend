@@ -284,23 +284,16 @@ const ProductFormPage: React.FC = () => {
     data.append('is_on_sale', String(Boolean(formData.is_on_sale)));
 
     if (formData.pricing_type === 'total') {
-      data.append('price', formData.price?.toString() ?? '');
-      data.append('price_per_m2', '');
-      data.append('height', formData.height?.toString() ?? '');
-      data.append('width', formData.width?.toString() ?? '');
+      if (formData.price) data.append('price', formData.price.toString());
+      if (formData.height) data.append('height', formData.height.toString());
+      if (formData.width) data.append('width', formData.width.toString());
     } else {
-      data.append('price', '');
-      data.append('price_per_m2', formData.price_per_m2?.toString() ?? '');
-      data.append('height', '');
-      data.append('width', '');
+      if (formData.price_per_m2) data.append('price_per_m2', formData.price_per_m2.toString());
     }
 
     if (formData.is_on_sale) {
-      data.append('discount_price', formData.discount_price?.toString() ?? '');
-      data.append('sale_end_date', formData.sale_end_date ?? '');
-    } else {
-      data.append('discount_price', '');
-      data.append('sale_end_date', '');
+      if (formData.discount_price) data.append('discount_price', formData.discount_price.toString());
+      if (formData.sale_end_date) data.append('sale_end_date', formData.sale_end_date);
     }
 
     if (formData.image_file) {
@@ -325,18 +318,22 @@ const ProductFormPage: React.FC = () => {
     try {
       if (isEdit) {
         await apiClient.patch(`/products/${id}/`, data, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { ‘Content-Type’: ‘multipart/form-data’ }
         });
       } else {
-        await apiClient.post('products/', data, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+        await apiClient.post(‘/products/’, data, {
+          headers: { ‘Content-Type’: ‘multipart/form-data’ }
         });
       }
-      haptic('heavy');
-      navigate('/creator');
+      haptic(‘heavy’);
+      navigate(‘/creator’);
     } catch (err) {
-      console.error('Error saving product:', err);
-      setErrorMessage(getErrorMessage(err, 'Mahsulotni saqlashning imkoni bo‘lmadi.'));
+      if (isAxiosError(err)) {
+        console.error(‘Product save error response:’, JSON.stringify(err.response?.data));
+      } else {
+        console.error(‘Error saving product:’, err);
+      }
+      setErrorMessage(getErrorMessage(err, "Mahsulotni saqlashning imkoni bo’lmadi."));
       setSubmitting(false);
     }
   };
