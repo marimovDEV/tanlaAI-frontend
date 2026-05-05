@@ -221,14 +221,24 @@ const CreatorDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Edit */}
-            <button
-              onClick={() => { haptic('light'); navigate('/creator/studio/edit'); }}
-              className="w-9 h-9 rounded-[12px] flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
-              style={{ background: 'rgba(255,255,255,0.10)' }}
-            >
-              <Settings size={17} color="rgba(255,255,255,0.6)" />
-            </button>
+            {/* Actions */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { haptic('light'); navigate('/creator/studio/edit'); }}
+                className="w-9 h-9 rounded-[12px] flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
+                style={{ background: 'rgba(255,255,255,0.10)' }}
+              >
+                <Settings size={17} color="rgba(255,255,255,0.6)" />
+              </button>
+              <button
+                onClick={() => { haptic('medium'); navigate('/'); }}
+                className="w-9 h-9 rounded-[12px] flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
+                style={{ background: 'rgba(255,255,255,0.15)' }}
+                title="Xaridor bo'limiga o'tish"
+              >
+                <Store size={17} color="#fff" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

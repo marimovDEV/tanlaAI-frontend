@@ -77,8 +77,9 @@ const ProfilePage: React.FC = () => {
               <p className="text-[12px] text-[#B0B0BF] font-bold mt-0.5">@{tgUser.username}</p>
             )}
             <div className="flex items-center gap-1.5 mt-2">
-              <div
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white"
+              <button 
+                onClick={() => { haptic('medium'); navigate(isVerifiedSeller ? '/creator' : '/creator'); }}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-transform"
                 style={{
                   background: isVerifiedSeller
                     ? 'linear-gradient(135deg, #FF6B35, #FF2D55)'
@@ -87,7 +88,8 @@ const ProfilePage: React.FC = () => {
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
                 {isVerifiedSeller ? 'Sotuvchi' : 'Xaridor'}
-              </div>
+                {hasCompany && <ChevronRight size={10} />}
+              </button>
               {isVerifiedSeller && (
                 <div
                   className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-black uppercase"
