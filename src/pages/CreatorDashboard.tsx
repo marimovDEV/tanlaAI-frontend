@@ -141,7 +141,7 @@ const CreatorDashboard: React.FC = () => {
     ? Math.max(0, Math.ceil((new Date(company.subscription_deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
     : 0;
 
-  const aiUsage = company?.ai_usage ?? 0;
+  const aiUsage = company?.ai_usage ?? leads.filter(l => l.lead_type === 'visualize').length;
 
   return (
     <div style={{ background: '#FFFBF6' }} className="min-h-screen pb-28">
@@ -326,8 +326,8 @@ const CreatorDashboard: React.FC = () => {
           />
           <StatCard
             icon={<TrendingUp />}
-            value={newLeads}
-            label="Yangi"
+            value={aiUsage}
+            label="AI Vizual"
             color="#FF2D55"
             onClick={() => navigate('/creator/leads')}
           />
