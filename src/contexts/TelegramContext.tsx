@@ -15,6 +15,16 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [user] = useState<TelegramWebAppUser | null>(() => webApp?.initDataUnsafe?.user ?? browserFallbackUser);
   const [profile, setProfile] = useState<TelegramUser | null>(null);
   const [ready, setReady] = useState(false);
+  const [viewMode, setViewMode] = useState<'buyer' | 'seller'>('buyer');
+
+  const [hasSetInitialMode, setHasSetInitialMode] = useState(false);
+
+  useEffect(() => {
+    if (profile && !hasSetInitialMode) {
+      setViewMode(profile.role === 'COMPANY' || profile.has_company ? 'seller' : 'buyer');
+      setHasSetInitialMode(true);
+    }
+  }, [profile, hasSetInitialMode]);
   const authenticate = async () => {
     try {
       let response;
@@ -59,7 +69,7 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   return (
-    <TelegramContext.Provider value={{ webApp, user, profile, ready, haptic, refreshProfile }}>
+    <TelegramContext.Provider value={{ webApp, user, profile, ready, haptic, refreshProfile, viewMode, setViewMode }}>
       {children}
     </TelegramContext.Provider>
   );

@@ -77,11 +77,11 @@ const NavItem: React.FC<{
 
 /* ── Main Layout ──────────────────────────────────────────────── */
 const MainLayout: React.FC = () => {
-  const { haptic, profile, webApp, ready } = useTelegram();
+  const { haptic, profile, webApp, ready, viewMode, setViewMode } = useTelegram();
   const location = useLocation();
   const navigate  = useNavigate();
 
-  const isSeller  = profile?.role === 'COMPANY' || profile?.has_company;
+  const isSeller  = viewMode === 'seller';
   const rootPaths = isSeller ? SELLER_ROOT_PATHS : USER_ROOT_PATHS;
 
   /* ── Seller Redirect & Subscription Guard ── */

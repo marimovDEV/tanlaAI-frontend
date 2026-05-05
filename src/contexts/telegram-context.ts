@@ -9,6 +9,8 @@ export interface TelegramContextType {
   ready: boolean;
   haptic: (style?: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => void;
   refreshProfile: () => Promise<void>;
+  viewMode: 'buyer' | 'seller';
+  setViewMode: (mode: 'buyer' | 'seller') => void;
 }
 
 export const TelegramContext = createContext<TelegramContextType | undefined>(undefined);

@@ -93,7 +93,7 @@ const CreatorDashboard: React.FC = () => {
   const [leads, setLeads] = useState<LeadRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate  = useNavigate();
-  const { haptic } = useTelegram();
+  const { haptic, setViewMode } = useTelegram();
 
   useEffect(() => {
     const fetch = async () => {
@@ -231,7 +231,7 @@ const CreatorDashboard: React.FC = () => {
                 <Settings size={17} color="rgba(255,255,255,0.6)" />
               </button>
               <button
-                onClick={() => { haptic('medium'); navigate('/'); }}
+                onClick={() => { haptic('medium'); setViewMode('buyer'); navigate('/'); }}
                 className="w-9 h-9 rounded-[12px] flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
                 style={{ background: 'rgba(255,255,255,0.15)' }}
                 title="Xaridor bo'limiga o'tish"

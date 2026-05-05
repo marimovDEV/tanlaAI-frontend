@@ -10,7 +10,7 @@ const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user: tgUser, haptic, profile, refreshProfile } = useTelegram();
+  const { user: tgUser, haptic, profile, refreshProfile, setViewMode } = useTelegram();
 
   const hasCompany = Boolean(profile?.has_company);
   const isVerifiedSeller = profile?.role === 'COMPANY' && hasCompany && profile?.company_status === 'active';
@@ -78,7 +78,7 @@ const ProfilePage: React.FC = () => {
             )}
             <div className="flex items-center gap-1.5 mt-2">
               <button 
-                onClick={() => { haptic('medium'); navigate(isVerifiedSeller ? '/creator' : '/creator'); }}
+                onClick={() => { haptic('medium'); if (hasCompany) { setViewMode('seller'); navigate('/creator'); } }}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-transform"
                 style={{
                   background: isVerifiedSeller
