@@ -43,8 +43,9 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Token ${token}`;
   }
 
-  // Add Telegram init data for regular user auth
-  const telegramInitData = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp?.initData;
+  // Add Telegram init data header for stateless auth on every request
+  const tg = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp;
+  const telegramInitData = tg?.initData;
   if (telegramInitData) {
     config.headers['X-Telegram-Init-Data'] = telegramInitData;
   }
