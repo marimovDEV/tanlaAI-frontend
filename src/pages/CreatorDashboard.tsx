@@ -156,35 +156,46 @@ const CreatorDashboard: React.FC = () => {
       {company && (
         <div className="px-4 pt-4">
           <div 
-            className={`flex items-center justify-between p-3.5 rounded-[20px] shadow-sm animate-in fade-in slide-in-from-top-2 duration-500`}
+            className={`flex flex-col gap-3 p-4 rounded-[24px] shadow-sm animate-in fade-in slide-in-from-top-2 duration-500`}
             style={{ 
-              background: daysLeft <= 3 ? 'rgba(255,45,85,0.08)' : 'rgba(255,107,53,0.08)',
-              border: `1px solid ${daysLeft <= 3 ? 'rgba(255,45,85,0.1)' : 'rgba(255,107,53,0.1)'}`
+              background: daysLeft <= 0 ? 'rgba(255,45,85,0.12)' : daysLeft <= 3 ? 'rgba(255,45,85,0.08)' : 'rgba(255,107,53,0.08)',
+              border: `1px solid ${daysLeft <= 0 ? 'rgba(255,45,85,0.2)' : daysLeft <= 3 ? 'rgba(255,45,85,0.1)' : 'rgba(255,107,53,0.1)'}`
             }}
           >
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-[14px] flex items-center justify-center"
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-[14px] flex items-center justify-center"
+                  style={{ background: daysLeft <= 3 ? '#FF2D55' : '#FF6B35' }}
+                >
+                  <Clock size={20} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-[13px] font-black" style={{ color: daysLeft <= 3 ? '#FF2D55' : '#FF6B35' }}>
+                    {daysLeft === 0 ? 'To\'lov muddati tugagan' : `Sinov muddati: ${daysLeft} kun qoldi`}
+                  </p>
+                  <p className="text-[10px] font-bold text-[#8A8A99] uppercase tracking-wider">
+                    {company.subscription_deadline ? new Date(company.subscription_deadline).toLocaleDateString() : 'Muddatsiz'} gacha
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => { haptic('medium'); navigate('/subscription'); }}
+                className="px-4 py-2 rounded-xl text-[11px] font-black text-white active:scale-95 transition-transform shadow-md"
                 style={{ background: daysLeft <= 3 ? '#FF2D55' : '#FF6B35' }}
               >
-                <Clock size={20} className="text-white" />
-              </div>
-              <div>
-                <p className="text-[13px] font-black" style={{ color: daysLeft <= 3 ? '#FF2D55' : '#FF6B35' }}>
-                  {daysLeft === 0 ? 'Sinov muddati tugagan' : `Sinov muddati: ${daysLeft} kun qoldi`}
-                </p>
-                <p className="text-[10px] font-bold text-[#8A8A99] uppercase tracking-wider">
-                  {company.subscription_deadline ? new Date(company.subscription_deadline).toLocaleDateString() : 'Muddatsiz'} gacha
-                </p>
-              </div>
+                {daysLeft === 0 ? 'To\'lov qilish' : 'Yaxshilash'}
+              </button>
             </div>
-            <button 
-              onClick={() => { haptic('medium'); navigate('/subscription'); }}
-              className="px-4 py-2 rounded-xl text-[11px] font-black text-white active:scale-95 transition-transform shadow-md"
-              style={{ background: daysLeft <= 3 ? '#FF2D55' : '#FF6B35' }}
-            >
-              Yaxshilash
-            </button>
+
+            {daysLeft <= 0 && (
+              <div className="flex items-start gap-2.5 p-3 bg-white/50 rounded-[16px] border border-red-200/50">
+                <AlertTriangle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-[11px] font-bold text-red-600 leading-relaxed">
+                  DIQQAT: To'lov muddati tugagani sababli do'koningiz va mahsulotlaringiz xaridorlarga ko'rinmayapti. Faollashtirish uchun to'lov qiling.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -222,12 +233,19 @@ const CreatorDashboard: React.FC = () => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <h2 className="text-[18px] font-black text-white truncate">{company?.name}</h2>
-                {company?.is_currently_active && (
+                {company?.is_currently_active && daysLeft > 0 ? (
                   <span
                     className="flex-shrink-0 text-[8px] font-black text-white px-1.5 py-0.5 rounded-full"
                     style={{ background: 'rgba(0,180,140,0.8)' }}
                   >
                     FAOL
+                  </span>
+                ) : (
+                  <span
+                    className="flex-shrink-0 text-[8px] font-black text-white px-1.5 py-0.5 rounded-full"
+                    style={{ background: 'rgba(255,45,85,0.8)' }}
+                  >
+                    YOPILGAN
                   </span>
                 )}
               </div>
