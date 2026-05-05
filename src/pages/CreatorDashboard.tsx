@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Package, Inbox, Settings, PlusCircle, ChevronRight,
   TrendingUp, Phone, MessageCircle, Play,
-  MapPin, Edit3, Eye, Store, Clock, AlertTriangle, Sparkles
+  MapPin, Edit3, Eye, Store, Clock, AlertTriangle
 } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
@@ -141,9 +141,7 @@ const CreatorDashboard: React.FC = () => {
     ? Math.max(0, Math.ceil((new Date(company.subscription_deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
     : 0;
 
-  const aiLimit = company?.is_vip ? 999 : 50;
   const aiUsage = company?.ai_usage ?? 0;
-  const aiPercentage = Math.min(100, (aiUsage / aiLimit) * 100);
 
   return (
     <div style={{ background: '#FFFBF6' }} className="min-h-screen pb-28">
