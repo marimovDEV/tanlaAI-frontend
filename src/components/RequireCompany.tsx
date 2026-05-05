@@ -45,6 +45,11 @@ const RequireCompany: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return <Navigate to="/subscription" replace />;
   }
 
+  // Trial tugagan — subscription sahifasiga yo'naltir
+  if (profile.company_status === 'expired' && !profile.company_is_vip) {
+    return <Navigate to="/subscription" replace />;
+  }
+
   if (profile.company_status === 'review') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ background: '#FFFBF6' }}>

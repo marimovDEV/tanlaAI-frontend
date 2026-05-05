@@ -137,9 +137,17 @@ const CreatorDashboard: React.FC = () => {
     );
   }
 
-  const daysLeft = company?.subscription_deadline 
-    ? Math.max(0, Math.ceil((new Date(company.subscription_deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
-    : 0;
+  const daysLeft = (() => {
+    if (!company) return 0;
+    if (company.status === 'trial' && company.trial_ends_at) {
+      return Math.max(0, Math.ceil((new Date(company.trial_ends_at).getTime() - Date.now()) / 86400000));
+    }
+    if (company.subscription_deadline) {
+      return Math.max(0, Math.ceil((new Date(company.subscription_deadline).getTime() - Date.now()) / 86400000));
+    }
+    return 0;
+  })();
+  const showBanner = company && (company.status === 'trial' || (company.status === 'active' && !!company.subscription_deadline));
 
   const aiUsage = company?.ai_usage ?? leads.filter(l => l.lead_type === 'visualize').length;
 
@@ -151,7 +159,7 @@ const CreatorDashboard: React.FC = () => {
       `}</style>
 
       {/* ── Trial / Subscription Banner ── */}
-      {company && (
+      {showBanner && (
         <div className="px-4 pt-4">
           <div 
             className={`flex flex-col gap-3 p-4 rounded-[24px] shadow-sm animate-in fade-in slide-in-from-top-2 duration-500`}
@@ -170,7 +178,9 @@ const CreatorDashboard: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-[13px] font-black" style={{ color: daysLeft <= 3 ? '#FF2D55' : '#FF6B35' }}>
-                    {daysLeft === 0 ? 'To\'lov muddati tugagan' : `Sinov muddati: ${daysLeft} kun qoldi`}
+                    {daysLeft === 0
+                      ? (company?.status === 'trial' ? 'Sinov muddati tugagan' : 'To\'lov muddati tugagan')
+                      : company?.status === 'trial' ? `Sinov muddati: ${daysLeft} kun qoldi` : `Obuna: ${daysLeft} kun qoldi`}
                   </p>
                   <p className="text-[10px] font-bold text-[#8A8A99] uppercase tracking-wider">
                     {company.subscription_deadline ? new Date(company.subscription_deadline).toLocaleDateString() : 'Muddatsiz'} gacha
