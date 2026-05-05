@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Package, Inbox, Settings, PlusCircle, ChevronRight,
   TrendingUp, Phone, MessageCircle, Play,
-  MapPin, Edit3, Eye, Store, Zap, Clock, AlertTriangle, Sparkles
+  MapPin, Edit3, Eye, Store, Clock, AlertTriangle, Sparkles
 } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
