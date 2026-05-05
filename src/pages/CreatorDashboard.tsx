@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Package, Inbox, Settings, PlusCircle, ChevronRight,
   TrendingUp, Phone, MessageCircle, Play,
-  MapPin, Edit3, Eye,
+  MapPin, Edit3, Eye, Store
 } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
