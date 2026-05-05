@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, User, ChevronRight, ShieldCheck, LayoutDashboard, Store, CreditCard } from 'lucide-react';
+import { Heart, User, ChevronRight, LayoutDashboard, Store, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import type { ApiListResponse, Product, WishlistItem } from '../types';
@@ -10,7 +10,7 @@ const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user: tgUser, haptic, profile, refreshProfile, setViewMode } = useTelegram();
+  const { user: tgUser, haptic, profile, refreshProfile, viewMode, setViewMode } = useTelegram();
 
   const hasCompany = Boolean(profile?.has_company);
   const isVerifiedSeller = profile?.role === 'COMPANY' && hasCompany && profile?.company_status === 'active';
