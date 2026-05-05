@@ -1,3 +1,4 @@
+// Re-deployment trigger: April 25th version restoration
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import RequireCompany from './components/RequireCompany';
