@@ -356,48 +356,6 @@ const CreatorDashboard: React.FC = () => {
           <ChevronRight size={18} className="text-white/60" />
         </button>
 
-        {/* AI usage progress */}
-        <div className="px-4 py-4 bg-white rounded-[24px] shadow-sm border border-outline/5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Sparkles size={18} className="text-primary" />
-              </div>
-              <div>
-                <p className="text-[13px] font-black text-[#1A1A2E]">AI Limit</p>
-                <p className="text-[10px] font-bold text-[#8A8A99] uppercase tracking-wider">Vizualizatsiya limiti</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-[14px] font-black text-[#1A1A2E]">{aiUsage} / {aiLimit}</p>
-              <p className={`text-[10px] font-bold uppercase ${aiPercentage > 90 ? 'text-red-500' : 'text-emerald-500'}`}>
-                {Math.round(aiPercentage)}% ishlatildi
-              </p>
-            </div>
-          </div>
-          
-          <div className="h-2.5 w-full bg-surface-variant rounded-full overflow-hidden">
-            <div 
-              className="h-full transition-all duration-1000 ease-out rounded-full"
-              style={{ 
-                width: `${aiPercentage}%`,
-                background: aiPercentage > 90 
-                  ? 'linear-gradient(90deg, #FF2D55, #FF6B35)' 
-                  : 'linear-gradient(90deg, #00C9B1, #0096FF)'
-              }}
-            />
-          </div>
-
-          {aiPercentage > 80 && (
-            <div className="mt-3 p-3 bg-red-50 rounded-xl flex items-center gap-2.5">
-              <AlertTriangle size={14} className="text-red-500" />
-              <p className="text-[11px] font-bold text-red-600">
-                Limitingiz tugash arafasida. Uzluksiz ishlash uchun tarifni yangilang.
-              </p>
-            </div>
-          )}
-        </div>
-
         {/* Leads */}
         <button
           onClick={() => { haptic('light'); navigate('/creator/leads'); }}
