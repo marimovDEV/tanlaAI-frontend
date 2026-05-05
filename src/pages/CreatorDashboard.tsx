@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Package, Inbox, Settings, PlusCircle, ChevronRight,
   TrendingUp, Phone, MessageCircle, Play,
-  MapPin, Edit3, Eye, Store
+  MapPin, Edit3, Eye, Store, Zap, Clock, AlertTriangle, Sparkles
 } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
@@ -137,9 +137,57 @@ const CreatorDashboard: React.FC = () => {
     );
   }
 
+  const daysLeft = company?.subscription_deadline 
+    ? Math.max(0, Math.ceil((new Date(company.subscription_deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+    : 0;
+
+  const aiLimit = company?.is_vip ? 999 : 50;
+  const aiUsage = company?.ai_usage ?? 0;
+  const aiPercentage = Math.min(100, (aiUsage / aiLimit) * 100);
+
   return (
     <div style={{ background: '#FFFBF6' }} className="min-h-screen pb-28">
-      <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`}</style>
+      <style>{`
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+        @keyframes pulse-slow{0%,100%{opacity:1}50%{opacity:0.7}}
+      `}</style>
+
+      {/* ── Trial / Subscription Banner ── */}
+      {company && (
+        <div className="px-4 pt-4">
+          <div 
+            className={`flex items-center justify-between p-3.5 rounded-[20px] shadow-sm animate-in fade-in slide-in-from-top-2 duration-500`}
+            style={{ 
+              background: daysLeft <= 3 ? 'rgba(255,45,85,0.08)' : 'rgba(255,107,53,0.08)',
+              border: `1px solid ${daysLeft <= 3 ? 'rgba(255,45,85,0.1)' : 'rgba(255,107,53,0.1)'}`
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-10 h-10 rounded-[14px] flex items-center justify-center"
+                style={{ background: daysLeft <= 3 ? '#FF2D55' : '#FF6B35' }}
+              >
+                <Clock size={20} className="text-white" />
+              </div>
+              <div>
+                <p className="text-[13px] font-black" style={{ color: daysLeft <= 3 ? '#FF2D55' : '#FF6B35' }}>
+                  {daysLeft === 0 ? 'Sinov muddati tugagan' : `Sinov muddati: ${daysLeft} kun qoldi`}
+                </p>
+                <p className="text-[10px] font-bold text-[#8A8A99] uppercase tracking-wider">
+                  {company.subscription_deadline ? new Date(company.subscription_deadline).toLocaleDateString() : 'Muddatsiz'} gacha
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => { haptic('medium'); navigate('/subscription'); }}
+              className="px-4 py-2 rounded-xl text-[11px] font-black text-white active:scale-95 transition-transform shadow-md"
+              style={{ background: daysLeft <= 3 ? '#FF2D55' : '#FF6B35' }}
+            >
+              Yaxshilash
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Company hero card ── */}
       <div className="px-4 pt-6 mb-5">
@@ -289,6 +337,48 @@ const CreatorDashboard: React.FC = () => {
           </div>
           <ChevronRight size={18} className="text-white/60" />
         </button>
+
+        {/* AI usage progress */}
+        <div className="px-4 py-4 bg-white rounded-[24px] shadow-sm border border-outline/5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Sparkles size={18} className="text-primary" />
+              </div>
+              <div>
+                <p className="text-[13px] font-black text-[#1A1A2E]">AI Limit</p>
+                <p className="text-[10px] font-bold text-[#8A8A99] uppercase tracking-wider">Vizualizatsiya limiti</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-[14px] font-black text-[#1A1A2E]">{aiUsage} / {aiLimit}</p>
+              <p className={`text-[10px] font-bold uppercase ${aiPercentage > 90 ? 'text-red-500' : 'text-emerald-500'}`}>
+                {Math.round(aiPercentage)}% ishlatildi
+              </p>
+            </div>
+          </div>
+          
+          <div className="h-2.5 w-full bg-surface-variant rounded-full overflow-hidden">
+            <div 
+              className="h-full transition-all duration-1000 ease-out rounded-full"
+              style={{ 
+                width: `${aiPercentage}%`,
+                background: aiPercentage > 90 
+                  ? 'linear-gradient(90deg, #FF2D55, #FF6B35)' 
+                  : 'linear-gradient(90deg, #00C9B1, #0096FF)'
+              }}
+            />
+          </div>
+
+          {aiPercentage > 80 && (
+            <div className="mt-3 p-3 bg-red-50 rounded-xl flex items-center gap-2.5">
+              <AlertTriangle size={14} className="text-red-500" />
+              <p className="text-[11px] font-bold text-red-600">
+                Limitingiz tugash arafasida. Uzluksiz ishlash uchun tarifni yangilang.
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Leads */}
         <button
