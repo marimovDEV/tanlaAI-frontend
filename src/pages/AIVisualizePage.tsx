@@ -104,7 +104,6 @@ const AIVisualizePage: React.FC = () => {
   const { haptic, webApp } = useTelegram();
   const [isSaving, setIsSaving] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const [withCrown, setWithCrown] = useState(false);
 
   // Loading step progression
   useEffect(() => {
@@ -203,17 +202,15 @@ const AIVisualizePage: React.FC = () => {
     }
   };
 
-  const handleUpload = async (useCrown: boolean = false) => {
+  const handleUpload = async () => {
     if (!image || !product) return;
     setStatus("uploading");
     haptic("medium");
-    setWithCrown(useCrown);
 
     const formData = new FormData();
     formData.append("room_photo", image);
-    formData.append("with_crown", String(useCrown));
     
-    console.log("DEBUG [AI]: Starting upload for product:", product.id, "with_crown:", useCrown);
+    console.log("DEBUG [AI]: Starting upload for product:", product.id);
     console.log("DEBUG [AI]: Room image file:", image.name, image.size, image.type);
 
     try {
@@ -234,7 +231,7 @@ const AIVisualizePage: React.FC = () => {
         setStatus("processing");
         setError("Mahsulot tayyorlanmoqda...");
         retryTimeoutRef.current = window.setTimeout(() => {
-          void handleUpload(useCrown);
+          void handleUpload();
         }, 5000);
       } else {
         setStatus("error");
@@ -493,29 +490,15 @@ const AIVisualizePage: React.FC = () => {
             </div>
           )}
 
-          {/* CTA buttons */}
+          {/* CTA button */}
           {preview && (
-            <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <button
-                onClick={() => handleUpload(false)}
-                className="w-full bg-slate-800 text-white font-black py-4 rounded-[24px] shadow-lg active:scale-[0.97] transition-all flex items-center justify-center gap-3 text-sm"
-              >
-                <ArrowLeftRight size={18} />
-                Faqat eshikni almashtirish
-              </button>
-              
-              <button
-                onClick={() => handleUpload(true)}
-                className="w-full bg-primary text-white font-black py-5 rounded-[24px] shadow-xl shadow-primary/30 active:scale-[0.97] transition-all flex items-center justify-center gap-3 text-base"
-              >
-                <Wand2 size={22} fill="white" />
-                Karona bilan birga almashtirish
-              </button>
-              
-              <p className="text-[10px] text-center text-slate-400 font-medium px-4">
-                * Agar eski eshikda dekorativ karona bo'lsa, "Karona bilan birga" variantini tanlang.
-              </p>
-            </div>
+            <button
+              onClick={handleUpload}
+              className="w-full bg-primary text-white font-black py-5 rounded-[24px] shadow-xl shadow-primary/30 active:scale-[0.97] transition-all flex items-center justify-center gap-3 text-base animate-in fade-in slide-in-from-bottom-4 duration-300"
+            >
+              <Wand2 size={22} fill="white" />
+              AI bilan vizualizatsiya qilish
+            </button>
           )}
         </div>
       )}
@@ -565,7 +548,7 @@ const AIVisualizePage: React.FC = () => {
                   {currentLoadingLabel}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  ⏳ AI ishlayapti {withCrown ? "(karona bilan)" : "(faqat eshik)"}, iltimos kuting...
+                  ⏳ AI ishlayapti, iltimos kuting...
                 </p>
               </div>
 
