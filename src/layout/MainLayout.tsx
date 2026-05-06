@@ -123,6 +123,10 @@ const MainLayout: React.FC = () => {
     }
   }, [location.pathname, webApp, navigate, haptic, rootPaths]);
 
+  const isOrderPage = location.pathname.includes('/order');
+  const isVisualizePage = location.pathname.includes('/visualize') || location.pathname.includes('/ai-generate');
+  const shouldHideBottomBar = isOrderPage || isVisualizePage;
+
   return (
     <div className="min-h-screen bg-[#FFFBF6] text-[#1A1A2E] flex overflow-x-hidden" style={{ fontFamily: 'Manrope, sans-serif' }}>
 
@@ -315,59 +319,61 @@ const MainLayout: React.FC = () => {
         </main>
 
         {/* ── Mobile Bottom Nav ─────────────────────────── */}
-        <footer
-          className="fixed bottom-0 left-0 right-0 z-[9999] md:hidden"
-          style={{
-            background: 'rgba(255,251,246,0.97)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            borderTop: '1px solid rgba(0,0,0,0.06)',
-            boxShadow: '0 -8px 32px rgba(0,0,0,0.06)',
-            height: 'calc(68px + var(--sab))',
-            paddingBottom: 'var(--sab)',
-          }}
-        >
-          {isSeller ? (
-            /* ── SELLER NAV ─────────────────────────────── */
-            <div className="flex justify-around items-center h-[68px] px-2">
-
-              {/* Left items */}
-              {sellerNavLeft.map(item => (
-                <NavItem key={item.to} to={item.to} icon={item.icon} label={item.label} haptic={haptic} end={item.to === '/creator'} />
-              ))}
-
-              {/* Center ➕ button */}
-              <button
-                onClick={() => { haptic('medium'); navigate('/creator/product/add'); }}
-                className="flex flex-col items-center justify-center active:scale-90 transition-transform -mt-5"
-                style={{ minWidth: '64px' }}
-              >
-                <div
-                  className="w-14 h-14 rounded-[20px] flex items-center justify-center"
-                  style={{
-                    background: 'linear-gradient(135deg, #FF6B35, #FF2D55)',
-                    boxShadow: '0 8px 24px rgba(255,107,53,0.45)',
-                  }}
+        {!shouldHideBottomBar && (
+          <footer
+            className="fixed bottom-0 left-0 right-0 z-[9999] md:hidden"
+            style={{
+              background: 'rgba(255,251,246,0.97)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              borderTop: '1px solid rgba(0,0,0,0.06)',
+              boxShadow: '0 -8px 32px rgba(0,0,0,0.06)',
+              height: 'calc(68px + var(--sab))',
+              paddingBottom: 'var(--sab)',
+            }}
+          >
+            {isSeller ? (
+              /* ── SELLER NAV ─────────────────────────────── */
+              <div className="flex justify-around items-center h-[68px] px-2">
+  
+                {/* Left items */}
+                {sellerNavLeft.map(item => (
+                  <NavItem key={item.to} to={item.to} icon={item.icon} label={item.label} haptic={haptic} end={item.to === '/creator'} />
+                ))}
+  
+                {/* Center ➕ button */}
+                <button
+                  onClick={() => { haptic('medium'); navigate('/creator/product/add'); }}
+                  className="flex flex-col items-center justify-center active:scale-90 transition-transform -mt-5"
+                  style={{ minWidth: '64px' }}
                 >
-                  <PlusCircle size={26} className="text-white" strokeWidth={2} />
-                </div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-[#FF6B35] mt-1">Qo'shish</span>
-              </button>
-
-              {/* Right items */}
-              {sellerNavRight.map(item => (
-                <NavItem key={item.to} to={item.to} icon={item.icon} label={item.label} haptic={haptic} end={false} />
-              ))}
-            </div>
-          ) : (
-            /* ── USER NAV ───────────────────────────────── */
-            <div className="flex justify-around items-center h-[68px]">
-              {userNavItems.map(item => (
-                <NavItem key={item.to} to={item.to} icon={item.icon} label={item.label} haptic={haptic} end={item.to === '/'} />
-              ))}
-            </div>
-          )}
-        </footer>
+                  <div
+                    className="w-14 h-14 rounded-[20px] flex items-center justify-center"
+                    style={{
+                      background: 'linear-gradient(135deg, #FF6B35, #FF2D55)',
+                      boxShadow: '0 8px 24px rgba(255,107,53,0.45)',
+                    }}
+                  >
+                    <PlusCircle size={26} className="text-white" strokeWidth={2} />
+                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-[#FF6B35] mt-1">Qo'shish</span>
+                </button>
+  
+                {/* Right items */}
+                {sellerNavRight.map(item => (
+                  <NavItem key={item.to} to={item.to} icon={item.icon} label={item.label} haptic={haptic} end={false} />
+                ))}
+              </div>
+            ) : (
+              /* ── USER NAV ───────────────────────────────── */
+              <div className="flex justify-around items-center h-[68px]">
+                {userNavItems.map(item => (
+                  <NavItem key={item.to} to={item.to} icon={item.icon} label={item.label} haptic={haptic} end={item.to === '/'} />
+                ))}
+              </div>
+            )}
+          </footer>
+        )}
       </div>
     </div>
   );
