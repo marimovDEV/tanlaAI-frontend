@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Inbox, Phone, MessageCircle, Ruler, CheckCircle2,
-  Calendar, User as UserIcon, Clock, Package,
+  Calendar, User as UserIcon, Clock, Package, ChevronLeft,
 } from 'lucide-react';
 import apiClient from '../api/client';
 import { useTelegram } from '../contexts/useTelegram';
@@ -169,6 +170,7 @@ const LeadListView: React.FC = () => {
   const [leads,   setLeads]   = useState<LeadRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter,  setFilter]  = useState<Filter>('all');
+  const navigate = useNavigate();
   const { haptic } = useTelegram();
 
   useEffect(() => {
@@ -209,8 +211,16 @@ const LeadListView: React.FC = () => {
       <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`}</style>
 
       {/* Header */}
-      <div className="px-4 pt-6 pb-4">
-        <div className="flex items-center justify-between mb-1">
+      <div className="relative px-4 pt-6 pb-4">
+        {/* Back Button */}
+        <button 
+          onClick={() => { haptic('light'); navigate(-1); }}
+          className="absolute left-4 top-6 w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-slate-100 active:scale-90 transition-transform z-10"
+        >
+          <ChevronLeft size={20} className="text-slate-700" />
+        </button>
+
+        <div className="flex items-center justify-between mb-1 pl-12">
           <h1 className="text-[22px] font-black text-[#1A1A2E]">Mijoz so'rovlari</h1>
           {newCount > 0 && (
             <span
@@ -221,7 +231,7 @@ const LeadListView: React.FC = () => {
             </span>
           )}
         </div>
-        <p className="text-[12px] font-bold text-[#B0B0BF] uppercase tracking-widest">
+        <p className="text-[12px] font-bold text-[#B0B0BF] uppercase tracking-widest pl-12">
           Jami: {leads.length} ta • Ko'rilgan: {doneCount} ta
         </p>
       </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { isAxiosError } from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import {
+  ChevronLeft,
   Camera,
   Sparkles,
   CheckCircle2,
@@ -13,6 +14,7 @@ import {
   ArrowLeftRight,
   Wand2,
   ImageIcon,
+  Send,
 } from "lucide-react";
 import apiClient from "../api/client";
 import type { Product } from "../types";
@@ -295,18 +297,11 @@ const AIVisualizePage: React.FC = () => {
     haptic("medium");
     
     try {
-      const downloadUrl = `${apiClient.defaults.baseURL}/ai-results/${currentRequestId}/download/`;
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.setAttribute("download", `tanla_ai_${currentRequestId}.png`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      alert("✅ Vizualizatsiya yuklab olinmoqda...");
+      await apiClient.post(`/ai-results/${currentRequestId}/send-to-bot/`);
+      alert("✅ Rasmlar Telegram botingizga yuborildi!");
     } catch (err) {
       console.error("Save error:", err);
-      alert("Saqlashda xatolik yuz berdi");
+      alert("Botga yuborishda xatolik yuz berdi");
     } finally {
       setIsSaving(false);
     }
@@ -318,22 +313,16 @@ const AIVisualizePage: React.FC = () => {
     haptic("medium");
 
     try {
-      const shareUrl = `${window.location.origin}/share/${currentRequestId}`;
+      const res = await apiClient.post<{ share_url: string }>(`/ai-results/${currentRequestId}/create-share/`);
+      const { share_url } = res.data;
+
+      const shareText = `${product.name} vizualizatsiyasi ✨`;
+      const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(share_url)}&text=${encodeURIComponent(shareText)}`;
 
       if (webApp?.openTelegramLink) {
-        webApp.openTelegramLink(
-          `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(
-            `${product.name} vizualizatsiyasi ✨`
-          )}`
-        );
-      } else if (navigator.share) {
-        await navigator.share({
-          title: "Tanla AI Vizualizatsiyasi",
-          url: shareUrl,
-        });
+        webApp.openTelegramLink(telegramShareUrl);
       } else {
-        await navigator.clipboard.writeText(shareUrl);
-        alert("🔗 Link nusxalandi!");
+        window.open(telegramShareUrl, '_blank');
       }
     } catch (err) {
       console.error("Share error:", err);
@@ -350,7 +339,15 @@ const AIVisualizePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-44">
       {/* ─── HEADER ─── */}
-      <div className="px-5 pt-8 pb-4 text-center space-y-1">
+      <div className="relative px-5 pt-8 pb-4 text-center space-y-1">
+        {/* Back Button */}
+        <button 
+          onClick={() => { haptic('light'); navigate(-1); }}
+          className="absolute left-5 top-8 w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-slate-100 active:scale-90 transition-transform"
+        >
+          <ChevronLeft size={20} className="text-slate-700" />
+        </button>
+
         <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-3">
           <Sparkles size={12} />
           Gemini AI
@@ -743,8 +740,8 @@ const AIVisualizePage: React.FC = () => {
                   <RefreshCcw size={18} className="animate-spin text-slate-400" />
                 ) : (
                   <>
-                    <Download size={18} />
-                    Saqlash
+                    <Send size={18} className="text-primary" />
+                    Botga yuborish
                   </>
                 )}
               </button>
@@ -758,22 +755,24 @@ const AIVisualizePage: React.FC = () => {
                   <RefreshCcw size={18} className="animate-spin text-slate-400" />
                 ) : (
                   <>
-                    <Share2 size={18} />
+                    <Share2 size={18} className="text-blue-500" />
                     Ulashish
                   </>
                 )}
               </button>
             </div>
 
-            {/* Tertiary / Measurement disabled to fix unused var
+            {/* Home Action */}
             <button
               onClick={() => {
                 haptic("medium");
+                navigate('/');
               }}
-              className="w-full py-4 bg-slate-50 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all border border-slate-100/50"
+              className="w-full py-4 bg-slate-50 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all border border-slate-100/50 flex items-center justify-center gap-2"
             >
-              O'lchash xizmatini chaqirish
-            </button> */}
+              <RefreshCcw size={14} />
+              Bosh sahifaga qaytish
+            </button>
           </div>
 
           {/* Analysis card */}
