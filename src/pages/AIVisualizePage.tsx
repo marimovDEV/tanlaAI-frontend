@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCcw,
-  Download,
   Share2,
   ShoppingBag,
   ArrowLeftRight,

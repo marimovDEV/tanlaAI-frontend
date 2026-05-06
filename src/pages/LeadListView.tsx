@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Inbox, Phone, MessageCircle, Ruler, CheckCircle2,
   Calendar, User as UserIcon, Clock, Package, ChevronLeft,
