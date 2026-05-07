@@ -102,9 +102,12 @@ const OrderPage: React.FC = () => {
       setSuccess(true);
       haptic('heavy');
       setTimeout(() => navigate('/'), 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Xatolik yuz berdi. Iltimos qayta urinib ko'ring.");
+      const errMsg = err.response?.data?.address?.[0] 
+        || err.response?.data?.detail 
+        || "Xatolik yuz berdi. Iltimos qayta urinib ko'ring.";
+      alert(errMsg);
     } finally {
       setSubmitting(false);
     }

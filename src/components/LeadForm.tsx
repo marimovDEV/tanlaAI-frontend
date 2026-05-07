@@ -40,9 +40,6 @@ const LEAD_COPY: Record<LeadFormType, { title: string; subtitle: string; cta: st
 };
 
 
-interface AxiosLikeErr {
-  response?: { data?: { address?: string[] | string; detail?: string } };
-}
 
 const LeadForm: React.FC<Props> = ({
   productId, onClose, leadType, initialPriceInfo,
@@ -99,16 +96,12 @@ const LeadForm: React.FC<Props> = ({
       await apiClient.post('/leads/', payload);
       setSuccess(true);
       setTimeout(onClose, 2000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending lead request:', error);
-      const err = error as AxiosLikeErr;
-      const data = err?.response?.data;
-      let msg = "So'rovni yuborib bo'lmadi. Iltimos, qayta urinib ko'ring.";
-      if (data?.address) {
-        msg = Array.isArray(data.address) ? data.address[0] : data.address;
-      } else if (data?.detail) {
-        msg = data.detail;
-      }
+      const data = error.response?.data;
+      const msg = data?.address?.[0] 
+        || data?.detail 
+        || "So'rovni yuborib bo'lmadi. Iltimos, qayta urinib ko'ring.";
       setErrorMsg(msg);
     } finally {
       setLoading(false);
