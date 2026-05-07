@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { 
   ChevronLeft, ShoppingBag, Plus, Minus, MapPin, 
-  Pencil, CheckCircle2, Loader2, Phone, Send, Info
+  CheckCircle2, Loader2, Phone, Send, Info
 } from 'lucide-react';
 import apiClient from '../api/client';
 import { getMediaUrl } from '../utils/media';
 import { useTelegram } from '../contexts/useTelegram';
 import type { Product } from '../types';
-
-type AddressMode = 'location' | 'manual';
 
 const OrderPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

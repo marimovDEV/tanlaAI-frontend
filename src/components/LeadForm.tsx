@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, MapPin, Pencil, CheckCircle2, Loader2, ShoppingBag } from 'lucide-react';
+import { X, Send, ShoppingBag } from 'lucide-react';
 import apiClient from '../api/client';
 import { useTelegram } from '../contexts/useTelegram';
 
@@ -39,7 +39,6 @@ const LEAD_COPY: Record<LeadFormType, { title: string; subtitle: string; cta: st
   },
 };
 
-type AddressMode = 'location' | 'manual';
 
 interface AxiosLikeErr {
   response?: { data?: { address?: string[] | string; detail?: string } };
@@ -116,10 +115,6 @@ const LeadForm: React.FC<Props> = ({
     }
   };
 
-  const tabClass = (active: boolean) =>
-    `flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
-      active ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-outline'
-    }`;
 
   const formatPrice = (p: number) => {
     return p.toLocaleString('ru-RU').replace(/,/g, ' ') + " so'm";
