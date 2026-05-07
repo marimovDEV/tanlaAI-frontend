@@ -32,17 +32,19 @@ const ProductCard: React.FC<Props> = ({
   const fmt = (v?: string, suffix = '') =>
     v ? `${Number(v).toLocaleString()} so'm${suffix}` : null;
 
+  const basePriceValue = product.price ?? product.price_per_m2 ?? 0;
   const basePrice = product.price
     ? fmt(product.price)
     : fmt(product.price_per_m2, " / m²");
+    
   const salePrice = product.price
     ? fmt(product.discount_price)
     : fmt(product.discount_price, " / m²");
 
   let discountPct = 0;
-  if (hasSale && product.price && product.discount_price) {
+  if (hasSale && basePriceValue && product.discount_price) {
     discountPct = Math.round(
-      (1 - Number(product.discount_price) / Number(product.price)) * 100
+      (1 - Number(product.discount_price) / Number(basePriceValue)) * 100
     );
   }
 

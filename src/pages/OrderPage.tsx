@@ -27,12 +27,7 @@ const OrderPage: React.FC = () => {
   const [qty, setQty] = useState(initialQty);
   const [phone, setPhone] = useState('+998 ');
   const [message, setMessage] = useState('');
-  const [addressMode, setAddressMode] = useState<AddressMode>('location');
   const [addressText, setAddressText] = useState('');
-  const [lat, setLat] = useState<number | null>(null);
-  const [lng, setLng] = useState<number | null>(null);
-  const [geoBusy, setGeoBusy] = useState(false);
-  const [geoError, setGeoError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -69,28 +64,6 @@ const OrderPage: React.FC = () => {
     setPhone(formatPhone(val));
   };
 
-  const requestLocation = () => {
-    setGeoError(null);
-    if (!('geolocation' in navigator)) {
-      setGeoError("Brauzer geolokatsiyani qo'llamayapti.");
-      return;
-    }
-    setGeoBusy(true);
-    haptic('light');
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLat(pos.coords.latitude);
-        setLng(pos.coords.longitude);
-        setGeoBusy(false);
-        haptic('medium');
-      },
-      () => {
-        setGeoBusy(false);
-        setGeoError("Lokatsiyani olishning imkoni bo'lmadi.");
-      },
-      { timeout: 10000 }
-    );
-  };
 
   const handleSubmit = async () => {
     if (!product || submitting) return;
@@ -101,12 +74,7 @@ const OrderPage: React.FC = () => {
       return;
     }
 
-    if (addressMode === 'location' && (!lat || !lng)) {
-      alert("Iltimos, lokatsiyangizni yuboring yoki manzilni qo'lda yozing.");
-      return;
-    }
-
-    if (addressMode === 'manual' && !addressText.trim()) {
+    if (!addressText.trim()) {
       alert("Iltimos, manzilni kiriting.");
       return;
     }
@@ -115,9 +83,10 @@ const OrderPage: React.FC = () => {
     haptic('medium');
 
     try {
+      const basePrice = product.price ?? product.price_per_m2 ?? 0;
       const price = product.is_on_sale && product.discount_price 
         ? Number(product.discount_price) 
-        : Number(product.price);
+        : Number(basePrice);
         
       await apiClient.post('/leads/', {
         product: product.id,
@@ -126,9 +95,9 @@ const OrderPage: React.FC = () => {
         message: message || "Siz bilan bog'lanishlarini kutmoqda.",
         quantity: qty,
         total_price: price * qty,
-        latitude: addressMode === 'location' ? lat : null,
-        longitude: addressMode === 'location' ? lng : null,
-        address_text: addressMode === 'manual' ? addressText : '',
+        latitude: null,
+        longitude: null,
+        address_text: addressText,
         ai_result: initialAiId || null
       });
 
@@ -146,9 +115,10 @@ const OrderPage: React.FC = () => {
   if (loading) return <div className="p-10 text-center">Yuklanmoqda...</div>;
   if (!product) return <div className="p-10 text-center">Mahsulot topilmadi.</div>;
 
+  const basePrice = product.price ?? product.price_per_m2 ?? 0;
   const unitPrice = product.is_on_sale && product.discount_price 
     ? Number(product.discount_price) 
-    : Number(product.price);
+    : Number(basePrice);
   const totalPrice = unitPrice * qty;
 
   return (
@@ -248,61 +218,17 @@ const OrderPage: React.FC = () => {
             {/* Address */}
             <div className="space-y-1.5">
                <label className="text-[11px] font-black uppercase tracking-widest text-[#B0B0BF] ml-2">Yetkazib berish manzili</label>
-               <div className="bg-white p-1 rounded-[20px] shadow-sm border border-[#f0ede8] flex gap-1 mb-3">
-                  <button 
-                    onClick={() => setAddressMode('location')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[16px] text-xs font-black uppercase tracking-tighter transition-all ${addressMode === 'location' ? 'bg-[#FF6B35] text-white' : 'text-[#8A8A99]'}`}
-                  >
-                    <MapPin size={14} /> Lokatsiya
-                  </button>
-                  <button 
-                    onClick={() => setAddressMode('manual')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[16px] text-xs font-black uppercase tracking-tighter transition-all ${addressMode === 'manual' ? 'bg-[#FF6B35] text-white' : 'text-[#8A8A99]'}`}
-                  >
-                    <Pencil size={14} /> Qo'lda yozish
-                  </button>
+               <div className="relative">
+                  <div className="absolute left-4 top-4 text-[#C0C0CE]">
+                     <MapPin size={18} />
+                  </div>
+                  <textarea 
+                    value={addressText}
+                    onChange={(e) => setAddressText(e.target.value)}
+                    className="w-full bg-white border border-[#f0ede8] rounded-[20px] py-4 pl-12 pr-4 min-h-[100px] text-sm font-bold text-[#1A1A2E] outline-none shadow-sm focus:border-[#FF6B35] transition-colors"
+                    placeholder="Tuman, ko'cha, uy raqami..."
+                  />
                </div>
-
-               {addressMode === 'location' ? (
-                 <div className="space-y-2">
-                    {lat && lng ? (
-                      <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-[18px]">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                            <CheckCircle2 color="white" size={16} />
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-black uppercase text-green-600">Lokatsiya tayyor</p>
-                            <p className="text-[12px] font-bold text-[#1A1A2E]">{lat.toFixed(5)}, {lng.toFixed(5)}</p>
-                          </div>
-                        </div>
-                        <button onClick={() => { setLat(null); setLng(null); }} className="text-[10px] font-black uppercase text-red-500">O'chirish</button>
-                      </div>
-                    ) : (
-                      <button 
-                        onClick={requestLocation}
-                        disabled={geoBusy}
-                        className="w-full flex items-center justify-center gap-2 py-5 rounded-[22px] border-2 border-dashed border-[#FF6B35]/30 text-[#FF6B35] font-black active:scale-[0.98] transition-all bg-white"
-                      >
-                        {geoBusy ? <Loader2 size={20} className="animate-spin" /> : <MapPin size={20} />}
-                        {geoBusy ? "Aniqlanmoqda..." : "Lokatsiyamni yuborish"}
-                      </button>
-                    )}
-                    {geoError && <p className="text-[10px] text-red-500 px-2">{geoError}</p>}
-                 </div>
-               ) : (
-                 <div className="relative">
-                    <div className="absolute left-4 top-4 text-[#C0C0CE]">
-                       <MapPin size={18} />
-                    </div>
-                    <textarea 
-                      value={addressText}
-                      onChange={(e) => setAddressText(e.target.value)}
-                      className="w-full bg-white border border-[#f0ede8] rounded-[20px] py-4 pl-12 pr-4 min-h-[100px] text-sm font-bold text-[#1A1A2E] outline-none shadow-sm focus:border-[#FF6B35] transition-colors"
-                      placeholder="Tuman, ko'cha, uy raqami..."
-                    />
-                 </div>
-               )}
             </div>
 
             {/* Comment */}

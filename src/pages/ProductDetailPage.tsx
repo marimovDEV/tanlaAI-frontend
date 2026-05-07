@@ -232,31 +232,32 @@ const ProductDetailPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-[#B0B0BF] mb-1">Narx</p>
-              {product.price ? (
-                <>
-                  <p className="text-[24px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
-                    {fmt(hasSale ? product.discount_price : product.price)}
-                  </p>
-                  {hasSale && <p className="text-[12px] text-[#C0C0CE] line-through mt-0.5">{fmt(product.price)}</p>}
-                </>
-              ) : product.price_per_m2 ? (
-                <>
-                  <p className="text-[20px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
-                    {fmt(hasSale ? product.discount_price : product.price_per_m2)} / m²
-                  </p>
-                  {hasSale && <p className="text-[12px] text-[#C0C0CE] line-through mt-0.5">{fmt(product.price_per_m2)} / m²</p>}
-                </>
-              ) : (
-                <p className="text-[18px] font-black text-[#8A8A99]">Kelishilgan narx</p>
-              )}
+              {(() => {
+                const basePrice = product.price ?? product.price_per_m2 ?? 0;
+                const hasActualPrice = Boolean(product.price || product.price_per_m2);
+
+                if (hasActualPrice) {
+                  return (
+                    <>
+                      <p className="text-[24px] font-black leading-none" style={{ color: hasSale ? '#FF6B35' : '#1A1A2E' }}>
+                        {fmt(hasSale ? product.discount_price : basePrice.toString())}
+                        {!product.price && product.price_per_m2 ? ' / m²' : ''}
+                      </p>
+                      {hasSale && <p className="text-[12px] text-[#C0C0CE] line-through mt-0.5">{fmt(basePrice.toString())}{!product.price && product.price_per_m2 ? ' / m²' : ''}</p>}
+                    </>
+                  );
+                } else {
+                  return <p className="text-[18px] font-black text-[#8A8A99]">Kelishilgan narx</p>;
+                }
+              })()}
             </div>
-            {hasSale && product.price && product.discount_price && (
+            {hasSale && (product.price || product.price_per_m2) && product.discount_price && (
               <div className="w-14 h-14 rounded-[18px] flex items-center justify-center"
                 style={{ background: 'linear-gradient(135deg,#FF6B35,#FF2D55)', boxShadow: '0 6px 18px rgba(255,107,53,0.32)' }}>
                 <div className="text-center">
                   <p className="text-white text-[9px] font-black leading-none">MINUS</p>
                   <p className="text-white text-[16px] font-black leading-none mt-0.5">
-                    {Math.round((1 - Number(product.discount_price)/Number(product.price))*100)}%
+                    {Math.round((1 - Number(product.discount_price)/Number(product.price ?? product.price_per_m2))*100)}%
                   </p>
                 </div>
               </div>
